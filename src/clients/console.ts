@@ -21,8 +21,10 @@ export type ConsolePath = (typeof ALLOWED_PATHS)[number];
 const num = z.number();
 const money = z.object({ revenueUsd: num, costUsd: num, profitUsd: num, margin: num.nullable().optional() }).passthrough();
 const audiences = z.object({ payingUsersUsd: money, allUsersUsd: money }).passthrough();
+// An actor with no runs in the month gets `runsStats: {}` (seen live for the current month), so every
+// count is optional and a missing one reads as 0.
 const runCounts = z
-    .object({ TOTAL: num, SUCCEEDED: num.optional(), FAILED: num.optional(), 'TIMED-OUT': num.optional(), ABORTED: num.optional(), RESULTS: num.optional() })
+    .object({ TOTAL: num.optional(), SUCCEEDED: num.optional(), FAILED: num.optional(), 'TIMED-OUT': num.optional(), ABORTED: num.optional(), RESULTS: num.optional() })
     .passthrough();
 
 export const profitMarginSchema = z

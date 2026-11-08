@@ -126,6 +126,12 @@ describe('console client', () => {
         expect(seen[0]!.init.method).toBe('GET');
         expect((seen[0]!.init.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
     });
+    it('accepts an actor with no runs this month (runsStats: {}) as zero runs', async () => {
+        const row = { ...breakdownRow('idle', { revenue: 0, cost: 0, runs: 0 }), runsStats: {} };
+        const api = createConsoleApi(async () => TOKEN, (async () => new Response(JSON.stringify({ monetizationPerActor: [row] }), { status: 200 })) as typeof fetch);
+        const [idle] = normalizeBreakdown((await api.actorBreakdown('2026-11')).monetizationPerActor);
+        expect(idle).toMatchObject({ runs: 0, succeeded: 0, failed: 0, timedOut: 0, results: 0 });
+    });
     it('names the changed field and never puts the token in errors', async () => {
         const changed = createConsoleApi(async () => TOKEN, (async () => new Response(JSON.stringify({ totalProfitMarginStats: {} }), { status: 200 })) as typeof fetch);
         const error = await changed.profitMargin('2026-10').catch((e: unknown) => e);
