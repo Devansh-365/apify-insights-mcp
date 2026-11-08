@@ -7982,9 +7982,9 @@ function floatSafeRemainder(val, step) {
   return ratio - roundedRatio;
 }
 var EVALUATING = /* @__PURE__ */ Symbol("evaluating");
-function defineLazy(object3, key, getter) {
+function defineLazy(object4, key, getter) {
   let value = void 0;
-  Object.defineProperty(object3, key, {
+  Object.defineProperty(object4, key, {
     get() {
       if (value === EVALUATING) {
         return void 0;
@@ -7996,7 +7996,7 @@ function defineLazy(object3, key, getter) {
       return value;
     },
     set(v) {
-      Object.defineProperty(object3, key, {
+      Object.defineProperty(object4, key, {
         value: v
         // configurable: true,
       });
@@ -9269,8 +9269,8 @@ function emoji() {
 }
 var ipv4 = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
 var ipv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
-var mac = (delimiter2) => {
-  const escapedDelim = escapeRegex(delimiter2 ?? ":");
+var mac = (delimiter3) => {
+  const escapedDelim = escapeRegex(delimiter3 ?? ":");
   return new RegExp(`^(?:[0-9A-F]{2}${escapedDelim}){5}[0-9A-F]{2}$|^(?:[0-9a-f]{2}${escapedDelim}){5}[0-9a-f]{2}$`);
 };
 var cidrv4 = /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/;
@@ -23111,8 +23111,8 @@ function foldObjects(members2) {
   }
   const properties = {};
   const required2 = /* @__PURE__ */ new Set();
-  for (const object3 of objects) {
-    for (const key in object3.properties) {
+  for (const object4 of objects) {
+    for (const key in object4.properties) {
       if (Object.prototype.hasOwnProperty.call(properties, key))
         continue;
       const parts = [];
@@ -23126,18 +23126,18 @@ function foldObjects(members2) {
       const merged = parts.length === 1 ? parts[0] : foldObjects(parts) ?? { allOf: parts };
       assignProp(properties, key, merged);
     }
-    for (const key of object3.required ?? [])
+    for (const key of object4.required ?? [])
       required2.add(key);
   }
   const folded = { type: "object", properties };
   if (required2.size)
     folded.required = [...required2];
-  if (objects.every((object3) => object3.additionalProperties === false)) {
+  if (objects.every((object4) => object4.additionalProperties === false)) {
     folded.additionalProperties = false;
   } else {
     const constraints = [];
-    for (const object3 of objects) {
-      const constraint = undeclaredConstraint(object3);
+    for (const object4 of objects) {
+      const constraint = undeclaredConstraint(object4);
       if (constraint && !constraints.some((seen) => JSON.stringify(seen) === JSON.stringify(constraint)))
         constraints.push(constraint);
     }
@@ -28612,10 +28612,10 @@ var StdioServerTransport = class {
 };
 
 // src/cli/main.ts
-import { existsSync } from "node:fs";
-import { access, chmod as chmod2, copyFile, mkdir as mkdir2, rm as rm2, rmdir, writeFile } from "node:fs/promises";
+import { existsSync as existsSync2 } from "node:fs";
+import { access, chmod as chmod2, copyFile as copyFile2, mkdir as mkdir3, rm as rm2, rmdir, writeFile as writeFile2 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import { dirname, join as join3 } from "node:path";
+import { dirname as dirname2, join as join4 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/config.ts
@@ -28761,34 +28761,140 @@ async function runNativeHost(input2, output2, home, now = Date.now, extensionId 
   return 2;
 }
 
+// src/cli/setup.ts
+import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
+import { copyFile, mkdir as mkdir2, readFile, writeFile } from "node:fs/promises";
+import { delimiter as delimiter2, dirname, join as join3 } from "node:path";
+var SERVER_NAME = "apify-insights";
+var defaultRunner = (command, args) => new Promise((resolve2) => {
+  execFile(
+    command,
+    args,
+    { timeout: 3e4, shell: process.platform === "win32" },
+    (error62, stdout, stderr) => resolve2({ ok: !error62, output: `${stdout}${stderr}`.trim() })
+  );
+});
+function onPath(env, platform) {
+  const exts = platform === "win32" ? [".cmd", ".exe", ""] : [""];
+  return (command) => (env.PATH ?? "").split(delimiter2).some((dir) => dir && exts.some((ext) => existsSync(join3(dir, command + ext))));
+}
+async function copyServer(sourceEntry, home) {
+  const entry = join3(home, "app", "index.js");
+  await mkdir2(dirname(entry), { recursive: true, mode: 448 });
+  await copyFile(sourceEntry, entry);
+  return entry;
+}
+var CLI_CLIENTS = [
+  { name: "Claude Code", bin: "claude", remove: ["mcp", "remove", "-s", "user", SERVER_NAME], add: (e) => ["mcp", "add", "-s", "user", SERVER_NAME, "--", "node", e] },
+  { name: "Codex", bin: "codex", remove: ["mcp", "remove", SERVER_NAME], add: (e) => ["mcp", "add", SERVER_NAME, "--", "node", e] },
+  { name: "Gemini CLI", bin: "gemini", remove: ["mcp", "remove", "-s", "user", SERVER_NAME], add: (e) => ["mcp", "add", "-s", "user", SERVER_NAME, "node", e] },
+  { name: "Grok Build", bin: "grok", remove: ["mcp", "remove", SERVER_NAME], add: (e) => ["mcp", "add", SERVER_NAME, "--", "node", e] }
+];
+function reason(output2) {
+  const lines = output2.split("\n").map((line) => line.trim()).filter(Boolean);
+  return (lines.find((line) => /error|unknown|not found|invalid/i.test(line)) ?? lines[0] ?? "unknown error").slice(0, 160);
+}
+function quoteArg(value) {
+  return /^[\w./:@=-]+$/.test(value) ? value : `"${value.replace(/(["\\$`])/g, "\\$1")}"`;
+}
+async function mergeJsonConfig(client, file2, snippet, add, log) {
+  let config2 = {};
+  if (existsSync(file2)) {
+    try {
+      config2 = JSON.parse(await readFile(file2, "utf8"));
+    } catch {
+      log(`- ${client}: ${file2} is not plain JSON, left unchanged. Add:
+    ${snippet}`);
+      return;
+    }
+  }
+  add(config2);
+  await mkdir2(dirname(file2), { recursive: true });
+  await writeFile(file2, `${JSON.stringify(config2, null, 2)}
+`);
+  log(`- ${client}: added to ${file2}`);
+}
+function object2(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+async function setup(options) {
+  const { homeDir, home, log } = options;
+  const run = options.run ?? defaultRunner;
+  const which = options.which ?? onPath(options.env, options.platform);
+  const entry = await copyServer(options.sourceEntry, home);
+  log(`Server installed at ${entry}`);
+  log("");
+  log("AI clients:");
+  let found = 0;
+  for (const client of CLI_CLIENTS) {
+    if (!which(client.bin)) continue;
+    found++;
+    await run(client.bin, client.remove);
+    const result = await run(client.bin, client.add(entry));
+    const command = [client.bin, ...client.add(entry)].map(quoteArg).join(" ");
+    log(result.ok ? `- ${client.name}: added` : `- ${client.name}: could not add (${reason(result.output)}). Run:
+    ${command}`);
+  }
+  const cursorDir = join3(homeDir, ".cursor");
+  if (existsSync(cursorDir)) {
+    found++;
+    const server = { command: "node", args: [entry] };
+    await mergeJsonConfig("Cursor", join3(cursorDir, "mcp.json"), `"mcpServers": { "${SERVER_NAME}": ${JSON.stringify(server)} }`, (config2) => {
+      config2.mcpServers = { ...object2(config2.mcpServers), [SERVER_NAME]: server };
+    }, log);
+  }
+  const openCodeDir = join3(options.env.XDG_CONFIG_HOME || join3(homeDir, ".config"), "opencode");
+  if (which("opencode") || existsSync(openCodeDir)) {
+    found++;
+    const server = { type: "local", command: ["node", entry], enabled: true };
+    const jsonc = join3(openCodeDir, "opencode.jsonc");
+    const file2 = existsSync(jsonc) ? jsonc : join3(openCodeDir, "opencode.json");
+    await mergeJsonConfig("OpenCode", file2, `"mcp": { "${SERVER_NAME}": ${JSON.stringify(server)} }`, (config2) => {
+      const mcp = object2(config2.mcp);
+      if (mcp.servers && typeof mcp.servers === "object") {
+        const { enabled: _enabled, ...v2 } = server;
+        mcp.servers = { ...object2(mcp.servers), [SERVER_NAME]: v2 };
+      } else mcp[SERVER_NAME] = server;
+      config2.mcp = mcp;
+      config2.$schema ??= "https://opencode.ai/config.json";
+    }, log);
+  }
+  if (found === 0) log("  (No Claude Code, Codex, Gemini CLI, Grok Build, Cursor or OpenCode found. See the README for other clients.)");
+  log("");
+  log('Restart your AI client, then ask: "How are my Apify actors doing?"');
+  log("API token: run `apify login` once, or set APIFY_TOKEN. Money tools also need the bridge: npx -y github:Devansh-365/apify-insights-mcp install");
+  return 0;
+}
+
 // src/cli/main.ts
 var MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
 var BRIDGE_FILES = ["manifest.json", "sw.js"];
 var GITHUB_SPEC = "github:Devansh-365/apify-insights-mcp";
 function packageRoot() {
-  let dir = dirname(fileURLToPath(import.meta.url));
-  while (!existsSync(join3(dir, "package.json")) && dirname(dir) !== dir) dir = dirname(dir);
+  let dir = dirname2(fileURLToPath(import.meta.url));
+  while (!existsSync2(join4(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
   return dir;
 }
 function browserDirs(homeDir, platform) {
-  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join3(configDir, "NativeMessagingHosts") });
+  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join4(configDir, "NativeMessagingHosts") });
   if (platform === "darwin") {
-    const base = join3(homeDir, "Library", "Application Support");
+    const base = join4(homeDir, "Library", "Application Support");
     return [
-      entry("Chrome", join3(base, "Google", "Chrome")),
-      entry("Chromium", join3(base, "Chromium")),
-      entry("Brave", join3(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join3(base, "Microsoft Edge")),
-      entry("Arc", join3(base, "Arc", "User Data"))
+      entry("Chrome", join4(base, "Google", "Chrome")),
+      entry("Chromium", join4(base, "Chromium")),
+      entry("Brave", join4(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join4(base, "Microsoft Edge")),
+      entry("Arc", join4(base, "Arc", "User Data"))
     ];
   }
   if (platform === "linux") {
-    const base = join3(homeDir, ".config");
+    const base = join4(homeDir, ".config");
     return [
-      entry("Chrome", join3(base, "google-chrome")),
-      entry("Chromium", join3(base, "chromium")),
-      entry("Brave", join3(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join3(base, "microsoft-edge"))
+      entry("Chrome", join4(base, "google-chrome")),
+      entry("Chromium", join4(base, "chromium")),
+      entry("Brave", join4(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join4(base, "microsoft-edge"))
     ];
   }
   return [];
@@ -28822,26 +28928,23 @@ async function install(options) {
     return 1;
   }
   const nodePath = options.nodePath ?? process.execPath;
-  const sourceEntry = options.entryPath ?? join3(packageRoot(), "dist", "index.js");
-  const sourceBridge = options.extensionDir ?? join3(packageRoot(), "bridge");
-  const appDir = join3(home, "app");
-  const entryPath = join3(appDir, "index.js");
-  const extensionDir = join3(home, "bridge");
-  await mkdir2(appDir, { recursive: true, mode: 448 });
-  await copyFile(sourceEntry, entryPath);
-  await mkdir2(extensionDir, { recursive: true });
-  for (const file2 of BRIDGE_FILES) await copyFile(join3(sourceBridge, file2), join3(extensionDir, file2));
+  const sourceEntry = options.entryPath ?? join4(packageRoot(), "dist", "index.js");
+  const sourceBridge = options.extensionDir ?? join4(packageRoot(), "bridge");
+  const entryPath = await copyServer(sourceEntry, home);
+  const extensionDir = join4(home, "bridge");
+  await mkdir3(extensionDir, { recursive: true });
+  for (const file2 of BRIDGE_FILES) await copyFile2(join4(sourceBridge, file2), join4(extensionDir, file2));
   log(`Server copied to ${entryPath}`);
-  const binDir = join3(home, "bin");
-  await mkdir2(binDir, { recursive: true, mode: 448 });
-  const launcher = join3(binDir, "native-host");
+  const binDir = join4(home, "bin");
+  await mkdir3(binDir, { recursive: true, mode: 448 });
+  const launcher = join4(binDir, "native-host");
   const script = [
     "#!/bin/sh",
     "# Written by `apify-insights-mcp install`. Chrome starts this once per Apify Insights Bridge message.",
     `APIFY_INSIGHTS_HOME=${shellQuote(home)} exec ${shellQuote(nodePath)} ${shellQuote(entryPath)} native-host "$@"`,
     ""
   ].join("\n");
-  await writeFile(launcher, script, { mode: 448 });
+  await writeFile2(launcher, script, { mode: 448 });
   await chmod2(launcher, 448);
   log(`Launcher: ${launcher}`);
   const manifest = {
@@ -28854,10 +28957,10 @@ async function install(options) {
   let installed = 0;
   for (const dir of dirs) {
     if (!await exists(dir.configDir)) continue;
-    await mkdir2(dir.hostsDir, { recursive: true });
-    await writeFile(join3(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
+    await mkdir3(dir.hostsDir, { recursive: true });
+    await writeFile2(join4(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
 `);
-    log(`Native host registered for ${dir.browser}: ${join3(dir.hostsDir, MANIFEST_FILE)}`);
+    log(`Native host registered for ${dir.browser}: ${join4(dir.hostsDir, MANIFEST_FILE)}`);
     installed++;
   }
   if (installed === 0) log("No supported browser profile folder found (Chrome, Chromium, Brave, Edge, Arc). Nothing registered.");
@@ -28866,24 +28969,23 @@ async function install(options) {
   log(`1. In your browser open chrome://extensions, turn on Developer mode, click "Load unpacked" and pick:
    ${extensionDir}`);
   log(`   The extension ID must be ${BRIDGE_EXTENSION_ID}.`);
-  log(`2. Add the MCP server to your AI client. For Claude Code:
-   claude mcp add apify-insights -- npx -y ${GITHUB_SPEC}`);
-  log("   Codex, Cursor, Gemini CLI, Grok and OpenCode: see the README.");
+  log(`2. If you have not yet, register the server with your AI clients:
+   npx -y ${GITHUB_SPEC} setup`);
   return installed > 0 ? 0 : 1;
 }
 async function uninstall(options) {
   const { homeDir, home, platform, log } = resolve(options);
   for (const platformDirs of /* @__PURE__ */ new Set([platform, "darwin", "linux"])) {
     for (const dir of browserDirs(homeDir, platformDirs)) {
-      const path = join3(dir.hostsDir, MANIFEST_FILE);
+      const path = join4(dir.hostsDir, MANIFEST_FILE);
       if (await exists(path)) {
         await rm2(path, { force: true });
         log(`Removed ${path}`);
       }
     }
   }
-  const binDir = join3(home, "bin");
-  for (const path of [join3(binDir, "native-host"), join3(home, "app"), join3(home, "bridge"), join3(home, "sessions"), join3(home, "wanted")]) {
+  const binDir = join4(home, "bin");
+  for (const path of [join4(binDir, "native-host"), join4(home, "app"), join4(home, "bridge"), join4(home, "sessions"), join4(home, "wanted")]) {
     if (await exists(path)) {
       await rm2(path, { recursive: true, force: true });
       log(`Removed ${path}`);
@@ -28901,14 +29003,19 @@ async function runCli(argv, options = {}) {
     const { home } = resolve(options);
     return runNativeHost(options.stdin ?? process.stdin, options.stdout ?? process.stdout, home, Date.now, origin ?? BRIDGE_EXTENSION_ID);
   }
+  if (command === "setup") {
+    const { env, homeDir, home, platform, log } = resolve(options);
+    const sourceEntry = options.entryPath ?? join4(packageRoot(), "dist", "index.js");
+    return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
+  }
   if (command === "install") return install(options);
   if (command === "uninstall") return uninstall(options);
   return null;
 }
 
 // src/auth/console-session.ts
-import { mkdir as mkdir3, utimes, writeFile as writeFile2 } from "node:fs/promises";
-import { join as join5 } from "node:path";
+import { mkdir as mkdir4, utimes, writeFile as writeFile3 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 
 // src/core/envelope.ts
 var ToolError = class extends Error {
@@ -28945,11 +29052,11 @@ function topN(rows, top, hint) {
 }
 
 // src/auth/session.ts
-import { readdir, readFile, stat as stat2 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { readdir, readFile as readFile2, stat as stat2 } from "node:fs/promises";
+import { join as join5 } from "node:path";
 var FRESH_FOR_MS = 2 * 60 * 60 * 1e3;
 async function newestSession(home) {
-  const dir = join4(home, "sessions");
+  const dir = join5(home, "sessions");
   let names;
   try {
     names = (await readdir(dir)).filter((name) => name.endsWith(".json"));
@@ -28959,8 +29066,8 @@ async function newestSession(home) {
   let newest = null;
   for (const name of names) {
     try {
-      const path = join4(dir, name);
-      const [info, raw] = await Promise.all([stat2(path), readFile(path, "utf8")]);
+      const path = join5(dir, name);
+      const [info, raw] = await Promise.all([stat2(path), readFile2(path, "utf8")]);
       const file2 = JSON.parse(raw);
       if (typeof file2.uiToken !== "string" || !file2.uiToken) continue;
       if (!newest || info.mtimeMs > newest.mtime) newest = { file: file2, mtime: info.mtimeMs };
@@ -28990,19 +29097,19 @@ async function readSessionToken(home, accountUserId, now = Date.now()) {
 
 // src/auth/console-session.ts
 async function touchWanted(home) {
-  await mkdir3(home, { recursive: true, mode: 448 });
-  const path = join5(home, "wanted");
+  await mkdir4(home, { recursive: true, mode: 448 });
+  const path = join6(home, "wanted");
   const now = /* @__PURE__ */ new Date();
   try {
     await utimes(path, now, now);
   } catch {
-    await writeFile2(path, "", { mode: 384 });
+    await writeFile3(path, "", { mode: 384 });
   }
 }
 var FIX = {
   bridge_missing: [
     "No Apify Console session is connected, so revenue data is unavailable.",
-    "Install the bridge once: run `apify-insights-mcp install`, load the printed folder in chrome://extensions, and stay logged in to console.apify.com."
+    "Install the bridge once: run `npx -y github:Devansh-365/apify-insights-mcp install`, load the printed folder in chrome://extensions, and stay logged in to console.apify.com."
   ],
   warming_up: ["The Apify Console session is being refreshed.", "Keep Chrome open and logged in to console.apify.com, then retry in a minute."],
   other_account: [
@@ -29030,14 +29137,14 @@ async function waitForConsoleToken(home, accountUserId, options = {}) {
 }
 
 // src/auth/public.ts
-import { readFile as readFile2 } from "node:fs/promises";
+import { readFile as readFile3 } from "node:fs/promises";
 import { homedir as homedir3 } from "node:os";
-import { join as join6 } from "node:path";
+import { join as join7 } from "node:path";
 async function findPublicToken(env = process.env, home = homedir3()) {
   const fromEnv = env.APIFY_TOKEN?.trim();
   if (fromEnv && !/^\$\{.*\}$|^\$[A-Z_]+$/.test(fromEnv)) return { token: fromEnv, source: "env" };
   try {
-    const auth = JSON.parse(await readFile2(join6(home, ".apify", "auth.json"), "utf8"));
+    const auth = JSON.parse(await readFile3(join7(home, ".apify", "auth.json"), "utf8"));
     if (typeof auth.token === "string" && auth.token.trim()) return { token: auth.token.trim(), source: "apify-cli" };
   } catch {
   }
@@ -29357,8 +29464,8 @@ var Cache = class {
 };
 
 // src/core/repo.ts
-import { readdir as readdir2, readFile as readFile3 } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { readdir as readdir2, readFile as readFile4 } from "node:fs/promises";
+import { join as join8 } from "node:path";
 async function scanActorDirs(dirs) {
   const byName = /* @__PURE__ */ new Map();
   for (const dir of dirs) {
@@ -29370,10 +29477,10 @@ async function scanActorDirs(dirs) {
     }
     await Promise.all(
       entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith(".")).map(async (entry) => {
-        const path = join7(dir, entry.name);
+        const path = join8(dir, entry.name);
         let name = entry.name;
         try {
-          const manifest = JSON.parse(await readFile3(join7(path, ".actor", "actor.json"), "utf8"));
+          const manifest = JSON.parse(await readFile4(join8(path, ".actor", "actor.json"), "utf8"));
           if (typeof manifest.name === "string" && manifest.name) name = manifest.name;
         } catch {
           return;
@@ -29455,8 +29562,8 @@ async function wrapApi(call) {
 }
 
 // src/server.ts
-import { appendFile, mkdir as mkdir4 } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { appendFile, mkdir as mkdir5 } from "node:fs/promises";
+import { join as join9 } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
 var util;
@@ -29490,10 +29597,10 @@ var util;
       return obj[e];
     });
   };
-  util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object3) => {
+  util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object4) => {
     const keys = [];
-    for (const key in object3) {
-      if (Object.prototype.hasOwnProperty.call(object3, key)) {
+    for (const key in object4) {
+      if (Object.prototype.hasOwnProperty.call(object4, key)) {
         keys.push(key);
       }
     }
@@ -33410,7 +33517,7 @@ var ZodMiniObject = /* @__PURE__ */ $constructor("ZodMiniObject", (inst, def) =>
   installLazyProp(inst, "shape", (self) => self._zod.def.shape, false);
 });
 // @__NO_SIDE_EFFECTS__
-function object2(shape2, params) {
+function object3(shape2, params) {
   const def = {
     type: "object",
     shape: shape2 ?? {},
@@ -33427,11 +33534,11 @@ function isZ4Schema(s) {
 function objectFromShape(shape2) {
   const values = Object.values(shape2);
   if (values.length === 0)
-    return object2({});
+    return object3({});
   const allV4 = values.every(isZ4Schema);
   const allV3 = values.every((s) => !isZ4Schema(s));
   if (allV4)
-    return object2(shape2);
+    return object3(shape2);
   if (allV3)
     return objectType(shape2);
   throw new Error("Mixed Zod versions detected in object shape.");
@@ -34314,11 +34421,11 @@ function parseMapDef(def, refs) {
 
 // node_modules/zod-to-json-schema/dist/esm/parsers/nativeEnum.js
 function parseNativeEnumDef(def) {
-  const object3 = def.values;
+  const object4 = def.values;
   const actualKeys = Object.keys(def.values).filter((key) => {
-    return typeof object3[object3[key]] !== "number";
+    return typeof object4[object4[key]] !== "number";
   });
-  const actualValues = actualKeys.map((key) => object3[key]);
+  const actualValues = actualKeys.map((key) => object4[key]);
   const parsedTypes = Array.from(new Set(actualValues.map((values) => typeof values)));
   return {
     type: parsedTypes.length === 1 ? parsedTypes[0] === "string" ? "string" : "number" : ["string", "number"],
@@ -35500,7 +35607,7 @@ var Protocol = class {
           }
         };
       }
-      const cancel = (reason) => {
+      const cancel = (reason2) => {
         this._responseHandlers.delete(messageId);
         this._progressHandlers.delete(messageId);
         this._cleanupTimeout(messageId);
@@ -35509,10 +35616,10 @@ var Protocol = class {
           method: "notifications/cancelled",
           params: {
             requestId: messageId,
-            reason: String(reason)
+            reason: String(reason2)
           }
         }, { relatedRequestId, resumptionToken, onresumptiontoken }).catch((error63) => this._onerror(new Error(`Failed to send cancellation: ${error63}`)));
-        const error62 = reason instanceof McpError ? reason : new McpError(ErrorCode.RequestTimeout, String(reason));
+        const error62 = reason2 instanceof McpError ? reason2 : new McpError(ErrorCode.RequestTimeout, String(reason2));
         reject(error62);
       };
       this._responseHandlers.set(messageId, (response) => {
@@ -38089,7 +38196,7 @@ async function actorReport(ctx, args) {
 // src/tools/auth-status.ts
 var CONSOLE_FIX = {
   ok: "Nothing to do.",
-  bridge_missing: "Money tools need the Apify Insights Bridge: run `apify-insights-mcp install`, then load the bridge folder it prints in chrome://extensions. Public tools work without it.",
+  bridge_missing: "Money tools need the Apify Insights Bridge: run `npx -y github:Devansh-365/apify-insights-mcp install`, then load the bridge folder it prints in chrome://extensions. Public tools work without it.",
   warming_up: "The Console session is stale. Keep Chrome open and logged in to console.apify.com; it refreshes on its own.",
   other_account: "The Console session belongs to a different Apify account than the API token. Log in to Console with the same account."
 };
@@ -38251,17 +38358,17 @@ async function dailyBrief(ctx) {
   const today = isoDay(now);
   const month = monthOf(today);
   const catalog = await ctx.catalog();
-  const { api, reason } = await tryConsole(ctx);
+  const { api, reason: reason2 } = await tryConsole(ctx);
   if (!api) {
     const items2 = pickItems(healthItems(catalog, null));
-    const lines2 = [`Morning check ${today} (no money: ${reason})`, ...items2.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}`)];
+    const lines2 = [`Morning check ${today} (no money: ${reason2})`, ...items2.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}`)];
     if (!items2.length) lines2.push("No flagged or failing actors.");
     return ok(lines2.join("\n"), {
       asOf: new Date(now).toISOString(),
       source: ["apify-api"],
       money: null,
       items: items2.map(itemOut),
-      notes: [`Money sections need the Console session: ${reason}`]
+      notes: [`Money sections need the Console session: ${reason2}`]
     });
   }
   const yesterday = resolvePeriod("yesterday", now);
@@ -38684,8 +38791,8 @@ var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: tr
 async function logUsage(ctx, tool) {
   if (!ctx.config.usageLog) return;
   try {
-    await mkdir4(ctx.config.home, { recursive: true, mode: 448 });
-    await appendFile(join8(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
+    await mkdir5(ctx.config.home, { recursive: true, mode: 448 });
+    await appendFile(join9(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
 `, { mode: 384 });
   } catch {
   }

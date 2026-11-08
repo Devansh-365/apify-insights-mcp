@@ -79,7 +79,7 @@ describe('runCli', () => {
         // Brave, Chromium, Edge are not installed: nothing created for them.
         expect((await readdir(join(fakeHome, MAC))).sort()).toEqual(['Arc', 'Google']);
         expect(lines.join('\n')).toContain(join(home, 'bridge'));
-        expect(lines.join('\n')).toContain('claude mcp add apify-insights -- npx -y github:Devansh-365/apify-insights-mcp');
+        expect(lines.join('\n')).toContain('npx -y github:Devansh-365/apify-insights-mcp setup');
 
         // Simulate a bridge session and a wanted marker, then uninstall.
         await mkdir(join(home, 'sessions'), { recursive: true });
@@ -112,6 +112,65 @@ describe('runCli', () => {
 
     it('install refuses unsupported platforms', async () => {
         expect(await runCli(['install'], options('win32'))).toBe(1);
+    });
+
+    it('setup copies the server and registers it with the clients it finds', async () => {
+        const calls: string[][] = [];
+        const run = async (command: string, args: string[]) => {
+            calls.push([command, ...args]);
+            // Codex fails to add, to show the manual command is printed.
+            return command === 'codex' && args[1] === 'add' ? { ok: false, output: 'boom' } : { ok: true, output: '' };
+        };
+        const which = (command: string) => command === 'claude' || command === 'codex';
+        // Cursor is installed and already has another server, which must be kept.
+        await mkdir(join(fakeHome, '.cursor'));
+        await writeFile(join(fakeHome, '.cursor', 'mcp.json'), JSON.stringify({ mcpServers: { other: { command: 'x' } } }));
+
+        expect(await runCli(['setup'], options('darwin', { run, which }))).toBe(0);
+
+        const entry = join(home, 'app', 'index.js');
+        expect(await readFile(entry, 'utf8')).toBe('// bundle\n');
+        expect(calls).toEqual([
+            ['claude', 'mcp', 'remove', '-s', 'user', 'apify-insights'],
+            ['claude', 'mcp', 'add', '-s', 'user', 'apify-insights', '--', 'node', entry],
+            ['codex', 'mcp', 'remove', 'apify-insights'],
+            ['codex', 'mcp', 'add', 'apify-insights', '--', 'node', entry],
+        ]);
+        const cursor = JSON.parse(await readFile(join(fakeHome, '.cursor', 'mcp.json'), 'utf8'));
+        expect(cursor.mcpServers).toEqual({ other: { command: 'x' }, 'apify-insights': { command: 'node', args: [entry] } });
+        const out = lines.join('\n');
+        expect(out).toContain('- Claude Code: added');
+        expect(out).toContain('- Codex: could not add (boom)');
+        expect(out).toContain(`codex mcp add apify-insights -- node "${entry.replace(/(["\\$`])/g, '\\$1')}"`);
+        // OpenCode is not installed here: nothing written.
+        await expect(stat(join(fakeHome, '.config', 'opencode'))).rejects.toThrow();
+    });
+
+    it('setup adds OpenCode in the layout its config already uses', async () => {
+        const dir = join(fakeHome, '.config', 'opencode');
+        await mkdir(dir, { recursive: true });
+        const run = async () => ({ ok: true, output: '' });
+        const entry = join(home, 'app', 'index.js');
+
+        // No config yet: the classic layout, which every OpenCode release reads.
+        expect(await runCli(['setup'], options('linux', { run, which: () => false }))).toBe(0);
+        const created = JSON.parse(await readFile(join(dir, 'opencode.json'), 'utf8'));
+        expect(created.mcp).toEqual({ 'apify-insights': { type: 'local', command: ['node', entry], enabled: true } });
+
+        // A config already on the newer `mcp.servers` layout keeps it and its other servers.
+        await writeFile(join(dir, 'opencode.json'), JSON.stringify({ theme: 'x', mcp: { servers: { other: { type: 'local', command: ['y'] } } } }));
+        expect(await runCli(['setup'], options('linux', { run, which: () => false }))).toBe(0);
+        const merged = JSON.parse(await readFile(join(dir, 'opencode.json'), 'utf8'));
+        expect(merged.theme).toBe('x');
+        expect(merged.mcp.servers).toEqual({ other: { type: 'local', command: ['y'] }, 'apify-insights': { type: 'local', command: ['node', entry] } });
+    });
+
+    it('setup leaves a Cursor config it cannot parse untouched', async () => {
+        await mkdir(join(fakeHome, '.cursor'));
+        await writeFile(join(fakeHome, '.cursor', 'mcp.json'), '{ // comment\n}');
+        expect(await runCli(['setup'], options('linux', { run: async () => ({ ok: true, output: '' }), which: () => false }))).toBe(0);
+        expect(await readFile(join(fakeHome, '.cursor', 'mcp.json'), 'utf8')).toBe('{ // comment\n}');
+        expect(lines.join('\n')).toContain('is not plain JSON, left unchanged');
     });
 
     it('native-host answers one message on the given streams, with the Chrome origin argument', async () => {

@@ -6,8 +6,9 @@ import type { Readable, Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../config.js';
 import { BRIDGE_EXTENSION_ID, NATIVE_HOST_NAME, runNativeHost } from '../native/host.js';
+import { copyServer, setup, type Runner } from './setup.js';
 
-// Command-line entry: `native-host` (started by Chrome), `install` and `uninstall`. Anything else
+// Command-line entry: `native-host` (started by Chrome), `setup`, `install` and `uninstall`. Anything else
 // returns null so index.ts starts the MCP server as usual.
 
 export interface CliOptions {
@@ -26,6 +27,9 @@ export interface CliOptions {
     /** The package's bridge/ folder; install copies the extension files out of it. */
     extensionDir?: string;
     log?: (line: string) => void;
+    /** For `setup`: runs and finds client CLIs. */
+    run?: Runner;
+    which?: (command: string) => boolean;
 }
 
 const MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
@@ -117,11 +121,8 @@ async function install(options: CliOptions): Promise<number> {
 
     // Copy the server and the extension into the home folder. Run through npx, the package lives in
     // npm's cache, which npm may clear; Chrome must keep finding both the host and the extension.
-    const appDir = join(home, 'app');
-    const entryPath = join(appDir, 'index.js');
+    const entryPath = await copyServer(sourceEntry, home);
     const extensionDir = join(home, 'bridge');
-    await mkdir(appDir, { recursive: true, mode: 0o700 });
-    await copyFile(sourceEntry, entryPath);
     await mkdir(extensionDir, { recursive: true });
     for (const file of BRIDGE_FILES) await copyFile(join(sourceBridge, file), join(extensionDir, file));
     log(`Server copied to ${entryPath}`);
@@ -162,8 +163,7 @@ async function install(options: CliOptions): Promise<number> {
     log('Next:');
     log(`1. In your browser open chrome://extensions, turn on Developer mode, click "Load unpacked" and pick:\n   ${extensionDir}`);
     log(`   The extension ID must be ${BRIDGE_EXTENSION_ID}.`);
-    log(`2. Add the MCP server to your AI client. For Claude Code:\n   claude mcp add apify-insights -- npx -y ${GITHUB_SPEC}`);
-    log('   Codex, Cursor, Gemini CLI, Grok and OpenCode: see the README.');
+    log(`2. If you have not yet, register the server with your AI clients:\n   npx -y ${GITHUB_SPEC} setup`);
     return installed > 0 ? 0 : 1;
 }
 
@@ -202,6 +202,11 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
         const { home } = resolve(options);
         // stdout is the protocol channel here: nothing else may be written to it.
         return runNativeHost(options.stdin ?? process.stdin, options.stdout ?? process.stdout, home, Date.now, origin ?? BRIDGE_EXTENSION_ID);
+    }
+    if (command === 'setup') {
+        const { env, homeDir, home, platform, log } = resolve(options);
+        const sourceEntry = options.entryPath ?? join(packageRoot(), 'dist', 'index.js');
+        return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
     }
     if (command === 'install') return install(options);
     if (command === 'uninstall') return uninstall(options);

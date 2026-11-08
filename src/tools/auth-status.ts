@@ -5,7 +5,7 @@ import { ok, ToolError } from '../core/envelope.js';
 
 const CONSOLE_FIX: Record<ConsoleState, string> = {
     ok: 'Nothing to do.',
-    bridge_missing: 'Money tools need the Apify Insights Bridge: run `apify-insights-mcp install`, then load the bridge folder it prints in chrome://extensions. Public tools work without it.',
+    bridge_missing: 'Money tools need the Apify Insights Bridge: run `npx -y github:Devansh-365/apify-insights-mcp install`, then load the bridge folder it prints in chrome://extensions. Public tools work without it.',
     warming_up: 'The Console session is stale. Keep Chrome open and logged in to console.apify.com; it refreshes on its own.',
     other_account: 'The Console session belongs to a different Apify account than the API token. Log in to Console with the same account.',
 };

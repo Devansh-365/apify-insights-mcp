@@ -20,7 +20,7 @@ export async function touchWanted(home: string): Promise<void> {
 const FIX: Record<Exclude<ConsoleState, 'ok'>, [string, string]> = {
     bridge_missing: [
         'No Apify Console session is connected, so revenue data is unavailable.',
-        'Install the bridge once: run `apify-insights-mcp install`, load the printed folder in chrome://extensions, and stay logged in to console.apify.com.',
+        'Install the bridge once: run `npx -y github:Devansh-365/apify-insights-mcp install`, load the printed folder in chrome://extensions, and stay logged in to console.apify.com.',
     ],
     warming_up: ['The Apify Console session is being refreshed.', 'Keep Chrome open and logged in to console.apify.com, then retry in a minute.'],
     other_account: [

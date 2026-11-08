@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-11-08
+
+### Added
+
+- Works in Claude Code, Claude Desktop, Codex, Cursor, Gemini CLI, Grok Build, OpenCode and any other stdio MCP client.
+- `setup` command: `npx -y github:Devansh-365/apify-insights-mcp setup` copies the server to `~/.apify-insights/app` and registers it with every client it finds. Claude Code, Codex, Gemini CLI and Grok Build go through their own `mcp add`; Cursor and OpenCode get one entry merged into their JSON config.
+- Claude Code plugin marketplace: `/plugin install apify-insights --marketplace Devansh-365/apify-insights-mcp`.
+- Gemini CLI extension: `gemini extensions install https://github.com/Devansh-365/apify-insights-mcp`.
+- Claude Desktop extension (`.mcpb`), attached to each GitHub release, with a settings field for the Apify token.
+- "Add to Cursor" button and per-client setup in the README.
+- CI: typecheck, tests, a check that the committed bundle matches the source, and a startup check.
+
+### Changed
+
+- The server ships as one self-contained file, `dist/index.js`, with no runtime dependencies. It is committed so clients can run it straight from GitHub.
+- `install` copies the bridge extension to `~/.apify-insights/bridge` and the server to `~/.apify-insights/app`, so neither depends on npm's cache. If you loaded the extension from the repository's `bridge/` folder before, run `install` again and load `~/.apify-insights/bridge` instead.
+- The MCP `serverInfo.version` now matches the package version (it was stuck at 0.2.0).
+
+### Fixed
+
+- An unresolved client placeholder in `APIFY_TOKEN` (such as `${user_config.apify_token}` when the field is left empty) no longer hides the `apify login` token.
+
 ## [0.2.1] - 2026-11-08
 
 ### Fixed
@@ -42,6 +64,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Actor catalog, resolver, cache, response envelope and local source lookup (`APIFY_INSIGHTS_ACTOR_DIRS`).
 - Unit and protocol tests on made-up data, and a live smoke test over stdio (`scripts/smoke.mjs`).
 
+[0.3.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Devansh-365/apify-insights-mcp/releases/tag/v0.1.0
