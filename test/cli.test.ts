@@ -8,10 +8,19 @@ import { BRIDGE_EXTENSION_ID, encodeMessage } from '../src/native/host.js';
 
 let fakeHome: string;
 let home: string;
+let pkg: string;
 let lines: string[];
 beforeEach(async () => {
     fakeHome = await mkdtemp(join(tmpdir(), 'aim-cli-'));
-    home = join(fakeHome, '.apify-insights');
+    // An installed apify-insights-mcp: a quote in the path checks shell quoting, keys/ must never be copied.
+    home = join(fakeHome, "it's home");
+    pkg = join(fakeHome, 'npx-cache', 'apify-insights-mcp');
+    await mkdir(join(pkg, 'dist'), { recursive: true });
+    await mkdir(join(pkg, 'bridge', 'keys'), { recursive: true });
+    await writeFile(join(pkg, 'dist', 'index.js'), '// bundle\n');
+    await writeFile(join(pkg, 'bridge', 'manifest.json'), '{}\n');
+    await writeFile(join(pkg, 'bridge', 'sw.js'), '// sw\n');
+    await writeFile(join(pkg, 'bridge', 'keys', 'key.pem'), 'secret');
     lines = [];
 });
 afterEach(async () => {
@@ -25,8 +34,8 @@ function options(platform: NodeJS.Platform, extra: CliOptions = {}): CliOptions 
         home,
         platform,
         nodePath: '/opt/node/bin/node',
-        entryPath: "/pkg/it's here/dist/index.js",
-        extensionDir: '/pkg/bridge',
+        entryPath: join(pkg, 'dist', 'index.js'),
+        extensionDir: join(pkg, 'bridge'),
         log: (line) => lines.push(line),
         ...extra,
     };
@@ -50,7 +59,11 @@ describe('runCli', () => {
         const launcher = join(home, 'bin', 'native-host');
         const script = await readFile(launcher, 'utf8');
         expect(script.startsWith('#!/bin/sh\n')).toBe(true);
-        expect(script).toContain(`APIFY_INSIGHTS_HOME='${home}' exec '/opt/node/bin/node' '/pkg/it'\\''s here/dist/index.js' native-host "$@"`);
+        const quotedHome = home.replace(/'/g, `'\\''`);
+        expect(script).toContain(`APIFY_INSIGHTS_HOME='${quotedHome}' exec '/opt/node/bin/node' '${quotedHome}/app/index.js' native-host "$@"`);
+        // The server and the extension now live in the home folder, independent of the npx cache.
+        expect(await readFile(join(home, 'app', 'index.js'), 'utf8')).toBe('// bundle\n');
+        expect((await readdir(join(home, 'bridge'))).sort()).toEqual(['manifest.json', 'sw.js']);
         expect((await stat(launcher)).mode & 0o777).toBe(0o700);
 
         for (const dir of [join(fakeHome, MAC, 'Google', 'Chrome'), join(fakeHome, MAC, 'Arc', 'User Data')]) {
@@ -65,8 +78,8 @@ describe('runCli', () => {
         }
         // Brave, Chromium, Edge are not installed: nothing created for them.
         expect((await readdir(join(fakeHome, MAC))).sort()).toEqual(['Arc', 'Google']);
-        expect(lines.join('\n')).toContain('/pkg/bridge');
-        expect(lines.join('\n')).toContain('claude mcp add apify-insights --');
+        expect(lines.join('\n')).toContain(join(home, 'bridge'));
+        expect(lines.join('\n')).toContain('claude mcp add apify-insights -- npx -y github:Devansh-365/apify-insights-mcp');
 
         // Simulate a bridge session and a wanted marker, then uninstall.
         await mkdir(join(home, 'sessions'), { recursive: true });
@@ -77,6 +90,8 @@ describe('runCli', () => {
             join(fakeHome, MAC, 'Google', 'Chrome', 'NativeMessagingHosts', MANIFEST),
             join(fakeHome, MAC, 'Arc', 'User Data', 'NativeMessagingHosts', MANIFEST),
             launcher,
+            join(home, 'app'),
+            join(home, 'bridge'),
             join(home, 'sessions'),
             join(home, 'wanted'),
         ]) {

@@ -1,0 +1,16 @@
+{
+  "name": "apify-insights",
+  "version": "0.3.0",
+  "description": "Ask Claude about your own Apify actors: revenue, profit, run health, users, pricing and Store rank. Read-only.",
+  "author": { "name": "Devansh Tiwari" },
+  "homepage": "https://github.com/Devansh-365/apify-insights-mcp",
+  "repository": "https://github.com/Devansh-365/apify-insights-mcp",
+  "license": "MIT",
+  "keywords": ["apify", "mcp", "analytics", "revenue"],
+  "mcpServers": {
+    "apify-insights": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.js"]
+    }
+  }
+}

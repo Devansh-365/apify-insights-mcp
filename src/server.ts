@@ -16,7 +16,9 @@ import { revenueSummary, revenueSummaryInput } from './tools/revenue-summary.js'
 import { runHealthInput, runHealthTool } from './tools/run-health.js';
 import { storeRankInput, storeRankTool } from './tools/store-rank.js';
 
-export const VERSION = '0.2.0';
+// Set from package.json by scripts/build.mjs; tests run the source and see the fallback.
+declare const __VERSION__: string | undefined;
+export const VERSION = typeof __VERSION__ === 'string' ? __VERSION__ : '0.0.0-dev';
 
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;
 

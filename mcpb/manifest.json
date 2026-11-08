@@ -1,0 +1,55 @@
+{
+  "manifest_version": "0.3",
+  "name": "apify-insights",
+  "display_name": "Apify Insights",
+  "version": "0.0.0",
+  "description": "Ask Claude about your own Apify actors: revenue, profit, run health, users, pricing and Store rank. Read-only.",
+  "long_description": "Answers an Apify creator's questions about their own actors: what you earned yesterday, which actors lose money and their break-even price, which are broken or flagged by Apify, how many users each has, and where you rank in Store search. It never changes anything in your Apify account. Money tools also need the Apify Insights Bridge; see the README.",
+  "author": {
+    "name": "Devansh Tiwari"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Devansh-365/apify-insights-mcp"
+  },
+  "homepage": "https://github.com/Devansh-365/apify-insights-mcp",
+  "license": "MIT",
+  "keywords": [
+    "apify",
+    "analytics",
+    "revenue",
+    "actors"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "APIFY_TOKEN": "${user_config.apify_token}"
+      }
+    }
+  },
+  "user_config": {
+    "apify_token": {
+      "type": "string",
+      "title": "Apify API token",
+      "description": "From console.apify.com > Settings > API & Integrations. Leave empty if you ran `apify login` on this computer.",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}

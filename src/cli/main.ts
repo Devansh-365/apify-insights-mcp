@@ -1,6 +1,7 @@
-import { access, chmod, mkdir, rm, rmdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { access, chmod, copyFile, mkdir, rm, rmdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { Readable, Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../config.js';
@@ -18,17 +19,26 @@ export interface CliOptions {
     platform?: NodeJS.Platform;
     stdin?: Readable;
     stdout?: Writable;
-    /** Node binary and script the launcher execs. */
+    /** Node binary the launcher execs. */
     nodePath?: string;
+    /** The bundled server (dist/index.js) that install copies into the home folder. */
     entryPath?: string;
-    /** Unpacked extension folder printed by install. */
+    /** The package's bridge/ folder; install copies the extension files out of it. */
     extensionDir?: string;
     log?: (line: string) => void;
 }
 
 const MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
-// Both src/cli and dist/cli sit two levels below the package root.
-const PACKAGE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+// The files the unpacked extension needs. bridge/keys (the signing key) is never copied.
+const BRIDGE_FILES = ['manifest.json', 'sw.js'];
+export const GITHUB_SPEC = 'github:Devansh-365/apify-insights-mcp';
+
+// The folder holding package.json: one level above the bundle (dist/index.js), two above src/cli/main.ts.
+function packageRoot(): string {
+    let dir = dirname(fileURLToPath(import.meta.url));
+    while (!existsSync(join(dir, 'package.json')) && dirname(dir) !== dir) dir = dirname(dir);
+    return dir;
+}
 
 interface BrowserDir {
     browser: string;
@@ -102,8 +112,19 @@ async function install(options: CliOptions): Promise<number> {
         return 1;
     }
     const nodePath = options.nodePath ?? process.execPath;
-    const entryPath = options.entryPath ?? join(PACKAGE_ROOT, 'dist', 'index.js');
-    const extensionDir = options.extensionDir ?? join(PACKAGE_ROOT, 'bridge');
+    const sourceEntry = options.entryPath ?? join(packageRoot(), 'dist', 'index.js');
+    const sourceBridge = options.extensionDir ?? join(packageRoot(), 'bridge');
+
+    // Copy the server and the extension into the home folder. Run through npx, the package lives in
+    // npm's cache, which npm may clear; Chrome must keep finding both the host and the extension.
+    const appDir = join(home, 'app');
+    const entryPath = join(appDir, 'index.js');
+    const extensionDir = join(home, 'bridge');
+    await mkdir(appDir, { recursive: true, mode: 0o700 });
+    await copyFile(sourceEntry, entryPath);
+    await mkdir(extensionDir, { recursive: true });
+    for (const file of BRIDGE_FILES) await copyFile(join(sourceBridge, file), join(extensionDir, file));
+    log(`Server copied to ${entryPath}`);
 
     // Chrome starts the host with its own environment, so the home folder is baked into the launcher:
     // otherwise a custom APIFY_INSIGHTS_HOME would make the host write where the MCP never looks.
@@ -141,7 +162,8 @@ async function install(options: CliOptions): Promise<number> {
     log('Next:');
     log(`1. In your browser open chrome://extensions, turn on Developer mode, click "Load unpacked" and pick:\n   ${extensionDir}`);
     log(`   The extension ID must be ${BRIDGE_EXTENSION_ID}.`);
-    log(`2. Add the MCP server to Claude Code:\n   claude mcp add apify-insights -- ${shellQuote(nodePath)} ${shellQuote(entryPath)}`);
+    log(`2. Add the MCP server to your AI client. For Claude Code:\n   claude mcp add apify-insights -- npx -y ${GITHUB_SPEC}`);
+    log('   Codex, Cursor, Gemini CLI, Grok and OpenCode: see the README.');
     return installed > 0 ? 0 : 1;
 }
 
@@ -158,7 +180,7 @@ async function uninstall(options: CliOptions): Promise<number> {
         }
     }
     const binDir = join(home, 'bin');
-    for (const path of [join(binDir, 'native-host'), join(home, 'sessions'), join(home, 'wanted')]) {
+    for (const path of [join(binDir, 'native-host'), join(home, 'app'), join(home, 'bridge'), join(home, 'sessions'), join(home, 'wanted')]) {
         if (await exists(path)) {
             await rm(path, { recursive: true, force: true });
             log(`Removed ${path}`);

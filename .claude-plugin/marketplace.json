@@ -1,0 +1,12 @@
+{
+  "name": "apify-insights",
+  "description": "The apify-insights MCP server as a Claude Code plugin.",
+  "owner": { "name": "Devansh Tiwari" },
+  "plugins": [
+    {
+      "name": "apify-insights",
+      "source": "./",
+      "description": "Ask Claude about your own Apify actors: revenue, profit, run health, users, pricing and Store rank. Read-only."
+    }
+  ]
+}
