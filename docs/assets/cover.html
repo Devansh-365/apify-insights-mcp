@@ -1,8 +1,5 @@
 <!doctype html>
-<!-- Cover for README.md (1200x360). Re-render after editing:
-     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
-       --window-size=1200,360 --force-device-scale-factor=2 --virtual-time-budget=6000 \
-       --screenshot=docs/assets/cover.png "file://$PWD/docs/assets/cover.html"
+<!-- Cover for README.md (1200x360). Re-render after editing: node scripts/render-cover.mjs
      Logos: Apify (apify.com), others from LobeHub Icons (MIT). Trademarks belong to their owners.
      The JSON is an example answer, not real data. -->
 <html><head><meta charset="utf-8">
@@ -10,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
 <style>
 * { box-sizing:border-box; margin:0; }
-html,body { width:1200px; height:360px; overflow:hidden; background:#fff; }
+html,body { width:1200px; height:360px; overflow:hidden; background:transparent; }
 body { font-family:'Instrument Sans',sans-serif; color:#202124; -webkit-font-smoothing:antialiased; }
-.frame { position:absolute; inset:0; border:1px solid #dadce0; border-radius:16px; background:#fff; }
+.frame { position:absolute; inset:0; border:1px solid #dadce0; border-radius:28px; background:#fff; }
 .left { position:absolute; left:70px; top:66px; width:500px; }
 .mark { display:flex; align-items:center; gap:10px; }
 h1 { font-weight:400; font-size:72px; line-height:1; letter-spacing:-2.6px; margin-top:16px; color:#202124; }

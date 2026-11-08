@@ -14,7 +14,7 @@
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1a1714?style=flat-square">
 </p>
 
-## What you can ask
+## 💬 What you can ask
 
 | Ask | You get |
 |---|---|
@@ -25,7 +25,7 @@
 | *"Where do I rank for tiktok scraper?"* | Your Store search position and who ranks above you |
 | *"Compare me with another creator"* | Your public portfolio next to theirs |
 
-## Install
+## ⚡ Install
 
 **Let your AI agent do it.** Paste this into Claude Code, Codex, Cursor, Gemini CLI or OpenCode:
 
@@ -44,14 +44,14 @@ Restart your AI client and ask *"How did my Apify actors do yesterday?"*
 
 Revenue and profit need a small Chrome extension. Claude Desktop, one-click installs for single clients, updates and fixes are all in **[docs/install.md](docs/install.md)**.
 
-## Good to know
+## 💡 Good to know
 
 - **Read-only.** It never changes anything in your Apify account.
 - **Runs on your computer.** It talks only to Apify, and your token stays in the Apify CLI login.
 - **No guessing.** A number it cannot get shows as "not available", never as zero.
 - Every tool and how each metric is worked out: [docs/tools.md](docs/tools.md).
 
-## Development
+## 🛠️ Development
 
 ```bash
 npm test             # tests on made-up data
@@ -62,6 +62,6 @@ npm run pack:mcpb    # builds the Claude Desktop extension
 
 Why it installs this way: [ADR 0001](docs/adr/0001-multi-client-distribution.md). Release notes: [CHANGELOG.md](CHANGELOG.md).
 
-## License
+## 📄 License
 
 [MIT](LICENSE), by Devansh Tiwari.
