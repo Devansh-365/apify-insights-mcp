@@ -7,11 +7,19 @@ const transport = new StdioClientTransport({ command: process.execPath, args: ['
 const client = new Client({ name: 'smoke', version: '0.0.0' });
 await client.connect(transport);
 const actor = process.argv[2];
+// Optional: node scripts/smoke.mjs <actor> <competitor-username> <store keyword>
+const [, , , competitor, keyword] = process.argv;
 const calls = [
     ['auth_status', {}],
+    ['daily_brief', {}],
     ['list_actors', {}],
     ['run_health', {}],
+    ['revenue_summary', { period: 'lastMonth', compareTo: 'previousPeriod' }],
+    ['actor_profitability', { period: 'lastMonth', view: 'losers' }],
+    ['growth', {}],
     ...(actor ? [['actor_report', { actor }]] : []),
+    ...(keyword ? [['store_rank', { keywords: [keyword] }]] : []),
+    ...(competitor ? [['competitor_benchmark', { username: competitor }]] : []),
 ];
 for (const [name, args] of calls) {
     const started = Date.now();

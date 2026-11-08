@@ -3,7 +3,11 @@ import { z } from 'zod';
 import type { Context } from '../context.js';
 import { resolveActor, type ActorSummary } from '../core/actors.js';
 import { ok, round, ToolError, topN } from '../core/envelope.js';
+import { breakdown } from '../core/console-data.js';
 import { failingFlag, FAILURE_RATE, MIN_FAILURES, noticeFlag, type Flag } from '../core/flags.js';
+import { daysElapsed, type ActorMoney } from '../core/money.js';
+import { MONEY_RULES, moneyFlags, thresholds } from '../core/money-flags.js';
+import { isoDay, monthOf } from '../core/period.js';
 
 export const runHealthInput = {
     actor: z.string().optional().describe('One actor (id, name, username/name or title). Omit to check every actor.'),
@@ -13,17 +17,28 @@ export const runHealthInput = {
 
 type Args = z.infer<z.ZodObject<typeof runHealthInput>>;
 
-const RULES = {
+const RULES: Record<string, string> = {
     flagged: 'Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.',
     failing: `At least ${MIN_FAILURES} failed or timed-out runs and a ${FAILURE_RATE * 100}%+ failure rate in users' runs over 30 days (aborted runs excluded).`,
 };
 
-function flagsFor(actor: ActorSummary): Flag[] {
-    return [noticeFlag(actor.notice), failingFlag(actor.runs30d, 'last 30 days, users\' runs')].filter((flag): flag is Flag => !!flag);
+/** This month's money per actor, when a Console session is available right now. */
+interface MoneyContext {
+    byId: Map<string, ActorMoney>;
+    noRevenueRule: string;
+    month: string;
 }
 
-function row(actor: ActorSummary, flags: Flag[]) {
+function flagsFor(actor: ActorSummary, money: MoneyContext | null, t: ReturnType<typeof thresholds> | null): Flag[] {
+    const flags = [noticeFlag(actor.notice), failingFlag(actor.runs30d, "last 30 days, users' runs")].filter((flag): flag is Flag => !!flag);
+    const row = money?.byId.get(actor.id);
+    if (row && t) flags.push(...moneyFlags(row, t).filter((flag) => flag.flag === 'no_revenue'));
+    return flags;
+}
+
+function row(actor: ActorSummary, flags: Flag[], money: MoneyContext | null) {
     const health = actor.runs30d;
+    const earned = money?.byId.get(actor.id);
     return {
         ref: actor.ref,
         flags: flags.map((flag) => flag.flag),
@@ -35,23 +50,46 @@ function row(actor: ActorSummary, flags: Flag[]) {
         aborted: health?.aborted ?? null,
         failureRatePct: health?.failureRate == null ? null : round(health.failureRate * 100, 1),
         lastRun: actor.lastRunStartedAt?.slice(0, 10) ?? null,
+        ...(money
+            ? {
+                  payingUsersThisMonth: earned?.payingUsers ?? null,
+                  revenueThisMonthUsd: earned ? round(earned.revenueUsd) : null,
+                  revenueAtRiskUsd: earned && health?.failureRate != null ? round(earned.revenueUsd * health.failureRate) : null,
+              }
+            : {}),
     };
 }
 
-/** Flagged actors first (they are hidden from search), then by users hit by failures. */
-function severity(actor: ActorSummary, flags: Flag[]): number {
-    const flagged = flags.some((flag) => flag.flag === 'flagged') ? 1e9 : 0;
+/** Flagged actors first (hidden from search), then money at risk (when known), then users hit by failures. */
+function severity(actor: ActorSummary, flags: Flag[], money: MoneyContext | null): number {
+    const flagged = flags.some((flag) => flag.flag === 'flagged') ? 1e12 : 0;
+    const earned = money?.byId.get(actor.id);
+    const atRisk = earned ? earned.revenueUsd * (actor.runs30d?.failureRate ?? 0) : 0;
+    const noRevenue = flags.some((flag) => flag.flag === 'no_revenue') ? 1e9 : 0;
     const hit = (actor.runs30d?.failureRate ?? 0) * Math.max(1, actor.users30d ?? 0);
-    return flagged + hit * 1000 + (actor.runs30d?.failures ?? 0);
+    return flagged + noRevenue + atRisk * 1e6 + hit * 1000 + (actor.runs30d?.failures ?? 0);
+}
+
+async function loadMoney(ctx: Context): Promise<{ money: MoneyContext | null; t: ReturnType<typeof thresholds> | null; state: string }> {
+    const { api, state } = await ctx.optionalConsole();
+    if (!api) return { money: null, t: null, state };
+    const month = monthOf(isoDay(ctx.now()));
+    const rows = await breakdown(ctx, api, month);
+    const t = thresholds(rows, daysElapsed(month, ctx.now()));
+    return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state };
 }
 
 export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolResult> {
     const catalog = await ctx.catalog();
     const asOf = new Date(ctx.now()).toISOString();
+    const { money, t, state } = await loadMoney(ctx);
+    const rules = money ? { ...RULES, no_revenue: money.noRevenueRule } : RULES;
     const notes = [
         "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
         'Private actors have no public run stats and are not checked here.',
-        'Revenue at risk and paying-user filtering need the Console session (not available in this version).',
+        money
+            ? `Money columns are ${money.month} so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate.`
+            : `No Console session (${state}), so money columns and the no_revenue check are skipped.`,
     ];
 
     if (args.actor) {
@@ -64,19 +102,19 @@ export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolR
                 candidates: found.candidates.map((actor) => actor.ref),
             });
         }
-        const flags = flagsFor(found.actor);
+        const flags = flagsFor(found.actor, money, t);
         const summary = flags.length
             ? `${found.actor.ref}: ${flags.map((flag) => flag.flag).join(', ')}.`
             : `${found.actor.ref}: no problems found.`;
-        return ok(summary, { asOf, source: ['apify-api'], rows: [row(found.actor, flags)], flags, rules: RULES, notes });
+        return ok(summary, { asOf, source: ['apify-api'], rows: [row(found.actor, flags, money)], flags, rules, notes });
     }
 
     const checked = catalog.filter((actor) => actor.isPublic);
-    const assessed = checked.map((actor) => ({ actor, flags: flagsFor(actor) }));
+    const assessed = checked.map((actor) => ({ actor, flags: flagsFor(actor, money, t) }));
     const problems = assessed.filter((item) => item.flags.length);
     const pool = args.onlyProblems ? problems : assessed;
-    pool.sort((a, b) => severity(b.actor, b.flags) - severity(a.actor, a.flags));
-    const page = topN(pool.map((item) => row(item.actor, item.flags)), args.top, 'raise `top`, or pass `actor` for one actor');
+    pool.sort((a, b) => severity(b.actor, b.flags, money) - severity(a.actor, a.flags, money));
+    const page = topN(pool.map((item) => row(item.actor, item.flags, money)), args.top, 'raise `top`, or pass `actor` for one actor');
     const flaggedCount = problems.filter((item) => item.flags.some((flag) => flag.flag === 'flagged')).length;
     const failingCount = problems.filter((item) => item.flags.some((flag) => flag.flag === 'failing')).length;
 
@@ -93,7 +131,7 @@ export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolR
         totals: { checked: checked.length, notCheckedPrivate: catalog.length - checked.length, problems: problems.length, flagged: flaggedCount, failing: failingCount },
         rows: page.rows,
         ...(page.omitted ? { omitted: page.omitted } : {}),
-        rules: RULES,
+        rules,
         notes,
     });
 }

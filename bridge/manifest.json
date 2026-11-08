@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Apify Insights Bridge",
+    "version": "0.1.0",
+    "description": "Keeps the apify-insights-mcp server connected to your own Apify Console session. Talks only to console-backend.apify.com and the local native host.",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62bxNFmFO6g6kz4fjmibRrdQWAQVVIUkcd+meTGhxW7E1QdV9Uvn514bhlDPXPPVbJkyVdE5TuRYDR+w1quoWs08xzNjEwbkpWNNH8kalDuQ2avfIu+GfVflqZ0Swa+dFdGIw+1ZPyJ1Os747jhCu0Xg7K1ZWE+j3dQclkCo21owGJEkXTAwBzPZ6jTq6Omi6oAFCMpZdl7flbjtQ/R5xxkS7KwcCKig9wm35a70uJdOPt5z6Udk8p9/M2Pi+EIPcfsXG4qWw6NwtjXmAP4+dNKdA7nO4HSFakq+8yoxMEvECdKNo5FLcz+TF5B5Uj4JZ3aBpdmM+DWEQX/wlSqlzQIDAQAB",
+    "permissions": ["alarms", "nativeMessaging", "storage"],
+    "host_permissions": ["https://console-backend.apify.com/*"],
+    "background": { "service_worker": "sw.js" }
+}

@@ -1,5 +1,8 @@
+import { consoleError, touchWanted, waitForConsoleToken } from './auth/console-session.js';
 import { findPublicToken, type TokenSource } from './auth/public.js';
-import { ApiError, createApifyApi, type ApifyApi, type Me } from './clients/apifyApi.js';
+import { sessionStatus, type ConsoleState } from './auth/session.js';
+import { ApiError, createApifyApi, type ApifyApi, type Me } from './clients/apify-api.js';
+import { createConsoleApi, type ConsoleApi } from './clients/console.js';
 import type { Config } from './config.js';
 import { buildCatalog, type ActorSummary } from './core/actors.js';
 import { Cache } from './core/cache.js';
@@ -18,10 +21,20 @@ export interface Context {
     account(): Promise<Me>;
     catalog(): Promise<ActorSummary[]>;
     localActorPaths(): Promise<Map<string, string>>;
+    /** The Console client; throws a structured error when no session can be had (waits up to ~1 min for a refresh). */
+    console(): Promise<ConsoleApi>;
+    /** The Console client only if a fresh session exists right now; never waits. Signals demand either way. */
+    optionalConsole(): Promise<{ api: ConsoleApi | null; state: ConsoleState }>;
 }
 
-export function createContext(config: Config, api: ApifyApi | null, tokenSource: TokenSource | null, now = Date.now): Context {
+export interface ContextOptions {
+    /** Tests: a fixed Console client (null = no session). */
+    consoleApi?: ConsoleApi | null;
+}
+
+export function createContext(config: Config, api: ApifyApi | null, tokenSource: TokenSource | null, now = Date.now, options: ContextOptions = {}): Context {
     const cache = new Cache(now);
+    let consoleApi: ConsoleApi | null = null;
     const ctx: Context = {
         config,
         cache,
@@ -45,6 +58,29 @@ export function createContext(config: Config, api: ApifyApi | null, tokenSource:
                 return buildCatalog(mine, store);
             }),
         localActorPaths: () => cache.get('local-actors', 10 * MINUTE, () => scanActorDirs(config.actorDirs)),
+        async console() {
+            if (options.consoleApi !== undefined) {
+                if (!options.consoleApi) throw consoleError('bridge_missing');
+                return options.consoleApi;
+            }
+            const me = await ctx.account();
+            // Fail fast before any request when there has never been a session.
+            const status = await sessionStatus(config.home, me.id, now());
+            if (status.state === 'bridge_missing' || status.state === 'other_account') {
+                await touchWanted(config.home);
+                throw consoleError(status.state);
+            }
+            consoleApi ??= createConsoleApi(() => waitForConsoleToken(config.home, me.id, { now }));
+            return consoleApi;
+        },
+        async optionalConsole() {
+            if (options.consoleApi !== undefined) return { api: options.consoleApi, state: options.consoleApi ? 'ok' : 'bridge_missing' };
+            const me = await ctx.account();
+            const status = await sessionStatus(config.home, me.id, now());
+            await touchWanted(config.home);
+            if (status.state !== 'ok') return { api: null, state: status.state };
+            return { api: await ctx.console(), state: 'ok' };
+        },
     };
     return ctx;
 }

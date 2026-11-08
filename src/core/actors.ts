@@ -1,4 +1,4 @@
-import type { MyActor, StoreActor } from '../clients/apifyApi.js';
+import type { MyActor, StoreActor } from '../clients/apify-api.js';
 import { runHealth, type RunHealth } from './flags.js';
 import { readPricing, type Pricing } from './pricing.js';
 

@@ -2,6 +2,10 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import type { StoreSearchItem } from '../src/clients/apify-api.js';
+import { createContext } from '../src/context.js';
+import { competitorBenchmarkTool } from '../src/tools/competitor-benchmark.js';
+import { storeRankTool } from '../src/tools/store-rank.js';
 import { call, connect, fakeApi, ME, myActor, storeActor, testConfig } from './helpers.js';
 
 const NOW = Date.parse('2026-11-08T03:00:00.000Z');
@@ -27,10 +31,25 @@ async function tempHome() {
 }
 
 describe('server surface', () => {
-    it('lists the four public tools, read-only, and the glossary', async () => {
+    it('lists all ten tools, read-only, the three prompts and the glossary', async () => {
         const { client } = await connect(portfolio(), testConfig(await tempHome()));
         const { tools } = await client.listTools();
-        expect(tools.map((tool) => tool.name).sort()).toEqual(['actor_report', 'auth_status', 'list_actors', 'run_health']);
+        expect(tools.map((tool) => tool.name).sort()).toEqual([
+            'actor_profitability',
+            'actor_report',
+            'auth_status',
+            'competitor_benchmark',
+            'daily_brief',
+            'growth',
+            'list_actors',
+            'revenue_summary',
+            'run_health',
+            'store_rank',
+        ]);
+        const { prompts } = await client.listPrompts();
+        expect(prompts.map((prompt) => prompt.name).sort()).toEqual(['health-check', 'loss-hunt', 'morning-brief']);
+        const brief = await client.getPrompt({ name: 'morning-brief' });
+        expect((brief.messages[0]!.content as { text: string }).text).toContain('daily_brief');
         expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);
         const glossary = await client.readResource({ uri: 'apify-insights://glossary' });
         expect((glossary.contents[0] as { text: string }).text).toContain('Aborted runs are excluded');
@@ -137,5 +156,168 @@ describe('auth_status and errors', () => {
         status = await call((await connect(portfolio(), testConfig(home))).client, 'auth_status');
         expect(status.data.console.state).toBe('other_account');
         expect(JSON.stringify(status.result)).not.toContain(token);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// store_rank — direct handler tests (not registered in server.ts yet)
+// ---------------------------------------------------------------------------
+
+function searchItem(username: string, name: string, users30d?: number): StoreSearchItem {
+    return { username, name, title: `${name} title`, ...(users30d != null ? { stats: { totalUsers30Days: users30d } } : {}) };
+}
+
+describe('storeRankTool', () => {
+    async function ctx(searchData: Map<string, StoreSearchItem[]>) {
+        const api = fakeApi(
+            [myActor('our-widget'), myActor('our-extractor')],
+            [storeActor('our-widget', 30, { TOTAL: 100, SUCCEEDED: 95, FAILED: 5 })],
+            {},
+            searchData,
+        );
+        const home = await mkdtemp(join(tmpdir(), 'aim-'));
+        return createContext(testConfig(home), api, 'env', () => NOW);
+    }
+
+    it('returns best position and actors above when owner is present', async () => {
+        const data = new Map<string, StoreSearchItem[]>([
+            [
+                'widget scraper',
+                [
+                    searchItem('rival-co', 'their-widget', 500),
+                    searchItem('another', 'another-widget'),
+                    searchItem(ME.username, 'our-widget'),
+                    searchItem('trailing', 'trailing-widget'),
+                ],
+            ],
+        ]);
+        const c = await ctx(data);
+        const result = await storeRankTool(c, { keywords: ['widget scraper'], depth: 50 });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const rows = envelope.rows as Array<Record<string, unknown>>;
+        expect(rows).toHaveLength(1);
+        const row = rows[0]!;
+        expect(row.ownerPresent).toBe(true);
+        expect(row.bestPosition).toBe(3);
+        expect(row.ownerActors).toEqual([{ name: 'our-widget', position: 3 }]);
+        // two items are above position 3
+        const above = row.aboveOwnerBest as Array<Record<string, unknown>>;
+        expect(above).toHaveLength(2);
+        expect(above[0]).toMatchObject({ position: 1, username: 'rival-co', name: 'their-widget' });
+        expect(above[1]).toMatchObject({ position: 2, username: 'another', name: 'another-widget' });
+        // users30d null for item without stats, non-null for the one with stats
+        expect(above[0]!.users30d).toBe(500);
+        expect(above[1]!.users30d).toBeNull();
+    });
+
+    it('reports absent when owner is not in results', async () => {
+        const data = new Map<string, StoreSearchItem[]>([
+            ['data pipeline', [searchItem('big-player', 'their-pipeline'), searchItem('big-player', 'their-pipeline-pro')]],
+        ]);
+        const c = await ctx(data);
+        const result = await storeRankTool(c, { keywords: ['data pipeline'], depth: 50 });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const rows = envelope.rows as Array<Record<string, unknown>>;
+        expect(rows[0]).toMatchObject({ ownerPresent: false, bestPosition: null });
+        expect((result.content as Array<{ text: string }>)[0]!.text).toContain('not found');
+    });
+
+    it('handles multiple keywords and caps aboveOwnerBest at 10', async () => {
+        // Build a keyword where owner is at position 12 (11 actors above)
+        const manyAbove: StoreSearchItem[] = Array.from({ length: 11 }, (_, i) => searchItem(`rival-${i}`, `rival-actor-${i}`));
+        manyAbove.push(searchItem(ME.username, 'our-widget'));
+        const data = new Map<string, StoreSearchItem[]>([
+            ['crowded niche', manyAbove],
+            ['easy niche', [searchItem(ME.username, 'our-extractor')]],
+        ]);
+        const c = await ctx(data);
+        const result = await storeRankTool(c, { keywords: ['crowded niche', 'easy niche'], depth: 50 });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const rows = envelope.rows as Array<Record<string, unknown>>;
+        expect(rows).toHaveLength(2);
+        const crowded = rows[0]!;
+        expect((crowded.aboveOwnerBest as unknown[]).length).toBe(10);
+        expect(crowded.aboveOmitted).toBe(1);
+        const easy = rows[1]!;
+        expect(easy.bestPosition).toBe(1);
+        expect((easy.aboveOwnerBest as unknown[]).length).toBe(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// competitor_benchmark — direct handler tests
+// ---------------------------------------------------------------------------
+
+describe('competitorBenchmarkTool', () => {
+    async function ctx(competitorActors: Array<{ name: string; users30d: number }>) {
+        const ownerStore = [
+            storeActor('alpha-scraper', 120, { TOTAL: 2000, SUCCEEDED: 1900, FAILED: 100 }),
+            storeActor('beta-scraper', 30, { TOTAL: 500, SUCCEEDED: 490, FAILED: 10 }),
+            storeActor('gamma-scraper', 5, { TOTAL: 100, SUCCEEDED: 95, FAILED: 5 }),
+        ];
+        const rivalStore = competitorActors.map(({ name, users30d }) =>
+            storeActor(name, users30d, { TOTAL: users30d * 10, SUCCEEDED: users30d * 9, FAILED: users30d }, { username: 'rival-corp' }),
+        );
+        const storeByUsername = new Map([
+            [ME.username, ownerStore],
+            ['rival-corp', rivalStore],
+        ]);
+        const api = fakeApi(
+            ownerStore.map((a) => myActor(a.name)),
+            ownerStore,
+            {},
+            new Map(),
+            storeByUsername,
+        );
+        const home = await mkdtemp(join(tmpdir(), 'aim-'));
+        return createContext(testConfig(home), api, 'env', () => NOW);
+    }
+
+    it('computes totals and top-5 for both sides', async () => {
+        const c = await ctx([
+            { name: 'rival-a', users30d: 200 },
+            { name: 'rival-b', users30d: 50 },
+        ]);
+        const result = await competitorBenchmarkTool(c, { username: 'rival-corp' });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const totals = envelope.totals as Record<string, Record<string, unknown>>;
+
+        // owner: 120 + 30 + 5 = 155 users30d
+        expect(totals.owner.username).toBe(ME.username);
+        expect(totals.owner.totalActors).toBe(3);
+        expect(totals.owner.totalUsers30d).toBe(155);
+        expect(totals.owner.actorsGe10Users30d).toBe(2);
+        expect(totals.owner.actorsGe100Users30d).toBe(1);
+
+        // competitor: 200 + 50 = 250 users30d
+        expect(totals.competitor.username).toBe('rival-corp');
+        expect(totals.competitor.totalActors).toBe(2);
+        expect(totals.competitor.totalUsers30d).toBe(250);
+
+        // top5 entries present for owner
+        const top5 = totals.owner.top5ByUsers30d as Array<Record<string, unknown>>;
+        expect(top5[0]!.name).toBe('alpha-scraper');
+        expect(top5[0]!.users30d).toBe(120);
+    });
+
+    it('reports zero actors gracefully when competitor has no public actors', async () => {
+        const c = await ctx([]);
+        const result = await competitorBenchmarkTool(c, { username: 'rival-corp' });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const totals = envelope.totals as Record<string, Record<string, unknown>>;
+        expect(totals.competitor.totalActors).toBe(0);
+        expect(totals.competitor.totalUsers30d).toBe(0);
+        expect(totals.competitor.medianUsers30d).toBeNull();
+    });
+
+    it('computes correct median for even and odd actor counts', async () => {
+        // 3 owner actors: users30d = [5, 30, 120] → sorted [5, 30, 120] → median = 30
+        const c = await ctx([{ name: 'rival-a', users30d: 10 }, { name: 'rival-b', users30d: 20 }]);
+        const result = await competitorBenchmarkTool(c, { username: 'rival-corp' });
+        const envelope = result.structuredContent as Record<string, unknown>;
+        const totals = envelope.totals as Record<string, Record<string, unknown>>;
+        expect(totals.owner.medianUsers30d).toBe(30);
+        // 2 competitor actors: [10, 20] → median = 15
+        expect(totals.competitor.medianUsers30d).toBe(15);
     });
 });

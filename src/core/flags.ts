@@ -1,11 +1,11 @@
-import type { RunCounts } from '../clients/apifyApi.js';
+import type { RunCounts } from '../clients/apify-api.js';
 
 // Flag rules, plan §6. `failing` is ported from apify-insights-plus lib/portfolio.js so the extension and
 // this server agree: failed + timed-out runs count, aborted runs do not (users abort on purpose).
 export const FAILURE_RATE = 0.05;
 export const MIN_FAILURES = 3;
 
-export type FlagName = 'flagged' | 'failing';
+export type FlagName = 'flagged' | 'failing' | 'losing' | 'thin_margin' | 'below_cost' | 'no_revenue' | 'declining' | 'growing';
 
 export interface Flag {
     flag: FlagName;

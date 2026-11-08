@@ -1,0 +1,176 @@
+{
+  "capturedAt": "2026-11-08",
+  "month": "2026-10",
+  "note": "Field names and types only, no values.",
+  "shapes": {
+    "profitMargin": {
+      "totalProfitMarginStats": {
+        "payingUsersUsd": {
+          "costUsd": "number",
+          "revenueUsd": "number",
+          "profitUsd": "number",
+          "margin": "number"
+        },
+        "allUsersUsd": {
+          "costUsd": "number",
+          "revenueUsd": "number",
+          "profitUsd": "number",
+          "margin": "number"
+        }
+      },
+      "dailyProfitMarginStats": {
+        "<date>": {
+          "payingUsersUsd": {
+            "costUsd": "number",
+            "chainingCostUsd": "number",
+            "chainingCostByActorUsd": {},
+            "revenueUsd": "number",
+            "profitUsd": "number",
+            "margin": "number"
+          },
+          "allUsersUsd": {
+            "costUsd": "number",
+            "chainingCostUsd": "number",
+            "chainingCostByActorUsd": {},
+            "revenueUsd": "number",
+            "profitUsd": "number",
+            "margin": "number"
+          }
+        },
+        "_keys": "31 e.g. 2026-10-01"
+      }
+    },
+    "breakdown": {
+      "actor": {
+        "_id": "string",
+        "isPublic": "boolean",
+        "isDeprecated": "boolean",
+        "notice": "string",
+        "name": "string",
+        "title": "string",
+        "userId": "string",
+        "resourceGroupId": "null",
+        "username": "string",
+        "actorPermissionLevel": "string",
+        "pictureUrl": "string"
+      },
+      "runsStats": {
+        "ABORTED": "number",
+        "FAILED": "number",
+        "SUCCEEDED": "number",
+        "TIMED-OUT": "number",
+        "TOTAL": "number",
+        "RESULTS": "number"
+      },
+      "earningsStats": {
+        "totalRevenueUsd": "number",
+        "totalCostUsd": "number",
+        "totalProfitUsd": "number"
+      },
+      "usersStats": {
+        "freeUsers": "number",
+        "payingUsers": "number"
+      },
+      "chargedResults": "number",
+      "currentPricingInfo": {
+        "minimalMaxTotalChargeUsd": "null",
+        "pricingModel": "string",
+        "isPriceChangeNotificationSuppressed": "boolean",
+        "pricingPerEvent": {
+          "actorChargeEvents": {
+            "apify-default-dataset-item": {
+              "eventTitle": "string",
+              "eventDescription": "string",
+              "isOneTimeEvent": "boolean",
+              "eventTieredPricingUsd": {
+                "FREE": "object",
+                "BRONZE": "object",
+                "SILVER": "object",
+                "GOLD": "object",
+                "PLATINUM": "object",
+                "DIAMOND": "object"
+              },
+              "isPrimaryEvent": "boolean"
+            },
+            "apify-actor-start": {
+              "eventTitle": "string",
+              "eventDescription": "string",
+              "isOneTimeEvent": "boolean",
+              "eventPriceUsd": "number"
+            }
+          }
+        },
+        "startedAt": "string",
+        "createdAt": "string",
+        "apifyMarginPercentage": "number"
+      }
+    },
+    "runStatistics": {
+      "dailyStats": {
+        "<date>": {
+          "ABORTED": "number",
+          "FAILED": "number",
+          "SUCCEEDED": "number",
+          "TIMED-OUT": "number",
+          "TOTAL": "number",
+          "RESULTS": "number"
+        },
+        "_keys": "31 e.g. 2026-10-24"
+      },
+      "runsSummary": {
+        "min": "number",
+        "max": "number",
+        "avg": "number"
+      },
+      "resultsSummary": {
+        "min": "number",
+        "max": "number",
+        "avg": "number"
+      }
+    },
+    "userCounts": {
+      "<date>": {
+        "freeUsers": "number",
+        "payingUsers": "number"
+      },
+      "_keys": "31 e.g. 2026-10-01"
+    },
+    "costsPer1k": {
+      "dailyActorRunsCost": {
+        "<date>": "number",
+        "_keys": "31 e.g. 2026-10-18"
+      },
+      "totalActorRunsCost": {
+        "maxActorRunsCost": "number",
+        "minActorRunsCost": "number",
+        "avgActorRunsCost": "number"
+      }
+    },
+    "marketing": {
+      "monthStartAt": "string",
+      "numUniqueWebPageViews": "number",
+      "numUniqueConsolePageViews": "number",
+      "numUniqueUsersWithRun": "number",
+      "numUniqueViewingUsers": "number",
+      "topReferrers": [
+        {
+          "origin": "string",
+          "trafficPercent": "number"
+        },
+        "len=10"
+      ],
+      "topCountryCodes": [
+        {
+          "origin": "string",
+          "trafficPercent": "number"
+        },
+        "len=10"
+      ]
+    },
+    "breakdownTopKeys": [
+      "monetizationPerActor",
+      "currentMonthProfitUsd",
+      "previousMonthProfitUsd"
+    ]
+  }
+}

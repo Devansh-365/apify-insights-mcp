@@ -5,7 +5,7 @@ import { ok, ToolError } from '../core/envelope.js';
 
 const CONSOLE_FIX: Record<ConsoleState, string> = {
     ok: 'Nothing to do.',
-    bridge_missing: 'Revenue and profit tools need the Apify Insights bridge extension (not released yet). Public tools work without it.',
+    bridge_missing: 'Money tools need the Apify Insights Bridge: run `apify-insights-mcp install`, then load the bridge folder it prints in chrome://extensions. Public tools work without it.',
     warming_up: 'The Console session is stale. Keep Chrome open and logged in to console.apify.com; it refreshes on its own.',
     other_account: 'The Console session belongs to a different Apify account than the API token. Log in to Console with the same account.',
 };
@@ -35,6 +35,6 @@ export async function authStatus(ctx: Context): Promise<CallToolResult> {
         source: ['apify-api'],
         public: publicPart,
         console: consolePart,
-        notes: ['Public tools (list_actors, run_health, actor_report) need only the API token.'],
+        notes: ['list_actors, run_health, actor_report, store_rank and competitor_benchmark need only the API token. revenue_summary, actor_profitability, growth and the money parts of daily_brief, run_health and actor_report need the Console session.'],
     });
 }

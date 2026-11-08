@@ -4,3 +4,6 @@ phase0/keys/*.pem
 phase0/node_modules/
 *.log
 .DS_Store
+
+# Private key of the bridge extension (its public half is the manifest "key").
+bridge/keys/
