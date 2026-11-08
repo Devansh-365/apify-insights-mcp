@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Apify Insights - Phase 0 test",
+  "version": "0.0.1",
+  "description": "Throwaway test: can an extension refresh the Apify Console login token by itself? Writes a token-free report locally.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvZC33RJt8asMvIueQ59u4c94us8Lcmg8XfFObtku1Ciakg0kO/P+qMaM368fMG3u2lXyxtj/CB2SGM/TJlbBiYqP9dPJW0mnSuLWBga/q/7Fr+VYHt6Mv7pLkIPWSuzx7XhDOB+xwuYSL3SSTP0txFObngZvoYq3ebbKlLwegj991qHtoqFmCrejQNEgKli3H+5jnm+3bPNFC0tq6tuH/FECnVs5Pi5+52dnkq9PmpUFV0EIyhm2TngLRsKp5ozt6l7ssl0Q+3CxqPpEPNiSGEVdt7MnX1pHOLFvPV0Kgd6EWFJP3UCZkDX7NzZlX/QjK2m/VIXEO/+Zwxb4rzvN8QIDAQAB",
+  "permissions": ["alarms", "nativeMessaging", "storage"],
+  "host_permissions": ["https://console-backend.apify.com/*", "https://console.apify.com/*"],
+  "background": { "service_worker": "sw.js" }
+}
