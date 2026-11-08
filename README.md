@@ -4,7 +4,8 @@
 
 <p align="center">
   <b>Find the Apify actors that lose money, leak users or need a fix.</b><br>
-  Ask your AI about your own account and get exact numbers back: profit, break-even prices, failing runs, quality fixes and Store rank.<br>
+  Ask your AI about your own account and get exact numbers back:<br>
+  profit, break-even prices, failing runs, quality fixes and Store rank.<br>
   <sub>Works in Claude, Codex, Cursor, Gemini, Grok and OpenCode.</sub>
 </p>
 
@@ -13,6 +14,10 @@
   <img alt="Read-only" src="https://img.shields.io/badge/read--only-safe-1f9a4b?style=flat-square">
   <img alt="Node 20+" src="https://img.shields.io/badge/node-20%2B-e85d04?style=flat-square">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1a1714?style=flat-square">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Devansh-365/apify-insights-mcp"><img alt="Star on GitHub" src="https://img.shields.io/badge/Star_on_GitHub-white?style=social&logo=github"></a>
 </p>
 
 ## 💬 What you can ask
@@ -68,3 +73,7 @@ Why it installs this way: [ADR 0001](docs/adr/0001-multi-client-distribution.md)
 ## 📄 License
 
 [MIT](LICENSE), by Devansh Tiwari.
+
+<p align="center">
+  <sub>If it saves you a trip to the Apify Console, a ⭐ helps other creators find it.</sub>
+</p>
