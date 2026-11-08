@@ -75,3 +75,7 @@ node scripts/trial-report.mjs                              # active days per wee
 ## Author
 
 Devansh Tiwari
+
+## License
+
+[MIT](LICENSE). See [CHANGELOG.md](CHANGELOG.md) for release notes.
