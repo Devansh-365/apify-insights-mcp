@@ -23,7 +23,7 @@ Measured on macOS, Node 26:
 
 ## Decision
 
-1. **One self-contained bundle, committed.** esbuild bundles `src/` into `dist/index.js` with no runtime dependencies. It is committed, so a git install needs no build step and no dependency install. CI fails when the bundle is out of date (`npm run check:dist`).
+1. **One self-contained bundle, committed.** esbuild bundles `src/` into `dist/index.js` with no runtime dependencies. It is committed, so a git install needs no build step and no dependency install. `npm run check:dist` fails when the bundle is out of date, so run it before committing.
 2. **`setup` command.** `npx -y github:... setup` copies the bundle to `~/.apify-insights/app/index.js` and registers `node <that path>` with every client it finds. Claude Code, Codex, Gemini CLI and Grok Build go through their own `mcp add` commands. For Cursor and OpenCode it merges one entry into their JSON config, and never rewrites a file it cannot parse as plain JSON. This takes one command, gives a 0.1 s start with no network, and updating is the same command again.
 3. **Native packages where a client has one.** These run their own copy of the bundle:
    - a Claude Code plugin marketplace (`.claude-plugin/`),
