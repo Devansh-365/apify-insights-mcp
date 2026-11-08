@@ -1,0 +1,6 @@
+node_modules/
+dist/
+phase0/keys/*.pem
+phase0/node_modules/
+*.log
+.DS_Store
