@@ -2,8 +2,9 @@
   <img src="docs/assets/cover.png" alt="apify insights: ask your AI about your Apify actors. Earnings, losses, broken runs and Store rank, over MCP. An example search, which actors lose money, returns an actor with its profit and break-even price." width="100%">
 </p>
 
+<h3 align="center">Find the Apify actors that lose money, leak users or need a fix.</h3>
+
 <p align="center">
-  <b>Find the Apify actors that lose money, leak users or need a fix.</b><br>
   Ask your AI about your own account and get exact numbers back:<br>
   profit, break-even prices, failing runs, quality fixes and Store rank.<br>
   <sub>Works in Claude, Codex, Cursor, Gemini, Grok and OpenCode.</sub>
@@ -14,10 +15,7 @@
   <img alt="Read-only" src="https://img.shields.io/badge/read--only-safe-1f9a4b?style=flat-square">
   <img alt="Node 20+" src="https://img.shields.io/badge/node-20%2B-e85d04?style=flat-square">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1a1714?style=flat-square">
-</p>
-
-<p align="center">
-  <a href="https://github.com/Devansh-365/apify-insights-mcp"><img alt="Star on GitHub" src="https://img.shields.io/badge/Star_on_GitHub-white?style=social&logo=github"></a>
+  <a href="https://github.com/Devansh-365/apify-insights-mcp"><img alt="Star on GitHub" src="https://img.shields.io/badge/GitHub-star-e3b341?style=flat-square&logo=github&logoColor=white"></a>
 </p>
 
 ## 💬 What you can ask
