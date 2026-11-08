@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path';
 import type { Readable, Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../config.js';
+import { cacheRoot, clearDiskCache } from '../core/disk-cache.js';
 import { BRIDGE_EXTENSION_ID, NATIVE_HOST_NAME, runNativeHost } from '../native/host.js';
 import { copyServer, setup, type Runner } from './setup.js';
 
@@ -207,6 +208,15 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
         const { env, homeDir, home, platform, log } = resolve(options);
         const sourceEntry = options.entryPath ?? join(packageRoot(), 'dist', 'index.js');
         return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
+    }
+    if (command === 'cache') {
+        const { home, log } = resolve(options);
+        if (rest[0] !== 'clear') {
+            log('Usage: apify-insights-mcp cache clear   (deletes the local money cache; always safe)');
+            return 1;
+        }
+        log((await clearDiskCache(home)) ? `Cleared the local cache in ${cacheRoot(home)}.` : 'The local cache was already empty.');
+        return 0;
     }
     if (command === 'install') return install(options);
     if (command === 'uninstall') return uninstall(options);

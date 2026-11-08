@@ -3,6 +3,7 @@ import type { ConsoleApi } from '../clients/console.js';
 import type { Context } from '../context.js';
 import type { ActorSummary } from '../core/actors.js';
 import { breakdown, profitMargins } from '../core/console-data.js';
+import { reportProgress } from '../core/progress.js';
 import { ok, round, ToolError } from '../core/envelope.js';
 import { failingFlag, noticeFlag, type Flag } from '../core/flags.js';
 import { daysElapsed, moneyForPeriod, type ActorMoney, type Money } from '../core/money.js';
@@ -106,6 +107,7 @@ export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
     const today = isoDay(now);
     const month = monthOf(today);
     const catalog = await ctx.catalog();
+    reportProgress(1, 3, 'Actors loaded');
     const { api, reason } = await tryConsole(ctx);
 
     if (!api) {
@@ -127,6 +129,7 @@ export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
     const mtdCompare = mtd ? comparisonPeriod(mtd, 'sameDaysLastMonth', now) : null;
     const months = [...new Set([...yesterday.months, ...(mtd?.months ?? []), ...(mtdCompare?.months ?? [])])];
     const margins = await profitMargins(ctx, api, months);
+    reportProgress(2, 3, 'Account money loaded; loading per-actor money');
     const y = moneyForPeriod(yesterday, margins, 'paying').money;
     const m = mtd ? moneyForPeriod(mtd, margins, 'paying').money : null;
     const mc = mtdCompare ? moneyForPeriod(mtdCompare, margins, 'paying').money : null;

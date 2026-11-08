@@ -138,7 +138,19 @@ Optional environment variables, set in your client's MCP config:
 | `APIFY_TOKEN` | Apify API token. Without it the server uses your `apify login`. |
 | `APIFY_INSIGHTS_ACTOR_DIRS` | Folders that hold one actor per subfolder, so reports link an actor to its source code. |
 | `APIFY_INSIGHTS_USAGE_LOG=1` | Appends tool name and time (nothing else) to `~/.apify-insights/usage.jsonl`, for the 14-day trial. |
-| `APIFY_INSIGHTS_HOME` | Where the server copy, session files and the usage log live (default `~/.apify-insights`). |
+| `APIFY_INSIGHTS_HOME` | Where the server copy, session files, the local cache and the usage log live (default `~/.apify-insights`). |
+| `APIFY_INSIGHTS_CACHE=0` | Turns off the local cache of finished months (see below). |
+| `APIFY_INSIGHTS_PREFETCH=0` | Turns off the background load of this and last month after the first money question. |
+| `APIFY_INSIGHTS_DEBUG=timing` | Writes one line per request to stderr: status, milliseconds, size and path, with actor IDs masked. Tokens, headers and other query values are never written. |
+
+## Speed
+
+The Apify Console takes 3 to 8 s to compute a month of per-actor money. To keep repeat questions fast:
+
+- **Answers within a session** reuse what was already fetched: 5 minutes for the current month, 60 minutes for finished months.
+- **Finished months** (ended more than 3 days ago) are also saved under `~/.apify-insights/cache/` and reused for up to 24 hours, so a new client session does not refetch them. A finished month can still change by a few cents, so an answer that used the cache says so and when the numbers were fetched. Files hold numbers only, never a token, and are readable only by you. Delete them any time with `npx -y github:Devansh-365/apify-insights-mcp cache clear`.
+- **After your first money question** the server loads this and last month in the background (2 to 4 Console requests, once per session), so the next money question is answered from memory.
+- **Long calls** send progress messages to clients that ask for them, so the client keeps waiting and shows what is happening.
 
 ## Check it works
 

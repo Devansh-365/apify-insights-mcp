@@ -38,12 +38,16 @@ function n(value: unknown): number {
 }
 
 /** Cache lifetime for a month's data: the current month and a month that ended < 3 days ago still change. */
-export function monthTtl(month: string, now: number): number {
+/** A month that ended more than 3 days ago: late usage has mostly landed (it can still move by cents). */
+export function isSettledMonth(month: string, now: number): boolean {
     const today = isoDay(now);
     const current = monthOf(today);
-    if (month >= current) return 5 * MINUTE;
-    if (month === addMonths(current, -1) && Number(today.slice(8)) <= 3) return 5 * MINUTE;
-    return 60 * MINUTE;
+    if (month >= current) return false;
+    return !(month === addMonths(current, -1) && Number(today.slice(8)) <= 3);
+}
+
+export function monthTtl(month: string, now: number): number {
+    return isSettledMonth(month, now) ? 60 * MINUTE : 5 * MINUTE;
 }
 
 /** One row per actor. A few backend versions returned duplicates: keep the larger value per field (as the extension does). */

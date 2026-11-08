@@ -4,7 +4,7 @@ import { ToolError } from '../src/core/envelope.js';
 import { daysElapsed, moneyForPeriod, normalizeBreakdown } from '../src/core/money.js';
 import { moneyFlags, thresholds, unitEconomics } from '../src/core/money-flags.js';
 import { comparisonPeriod, resolvePeriod } from '../src/core/period.js';
-import { breakdownRow, fakeConsole } from './helpers.js';
+import { breakdownRow, fakeConsole, fakeTokens } from './helpers.js';
 
 const NOW = Date.parse('2026-11-08T03:00:00.000Z');
 
@@ -117,7 +117,7 @@ describe('console client', () => {
     });
     it('sends GET with the token and a month start date', async () => {
         const seen: Array<{ url: string; init: RequestInit }> = [];
-        const api = createConsoleApi(async () => TOKEN, (async (url: string, init: RequestInit) => {
+        const api = createConsoleApi(fakeTokens(TOKEN), (async (url: string, init: RequestInit) => {
             seen.push({ url, init });
             return new Response(JSON.stringify(shape), { status: 200 });
         }) as typeof fetch);
@@ -128,19 +128,23 @@ describe('console client', () => {
     });
     it('accepts an actor with no runs this month (runsStats: {}) as zero runs', async () => {
         const row = { ...breakdownRow('idle', { revenue: 0, cost: 0, runs: 0 }), runsStats: {} };
-        const api = createConsoleApi(async () => TOKEN, (async () => new Response(JSON.stringify({ monetizationPerActor: [row] }), { status: 200 })) as typeof fetch);
+        const api = createConsoleApi(fakeTokens(TOKEN), (async () => new Response(JSON.stringify({ monetizationPerActor: [row] }), { status: 200 })) as typeof fetch);
         const [idle] = normalizeBreakdown((await api.actorBreakdown('2026-11')).monetizationPerActor);
         expect(idle).toMatchObject({ runs: 0, succeeded: 0, failed: 0, timedOut: 0, results: 0 });
     });
     it('names the changed field and never puts the token in errors', async () => {
-        const changed = createConsoleApi(async () => TOKEN, (async () => new Response(JSON.stringify({ totalProfitMarginStats: {} }), { status: 200 })) as typeof fetch);
+        const changed = createConsoleApi(fakeTokens(TOKEN), (async () => new Response(JSON.stringify({ totalProfitMarginStats: {} }), { status: 200 })) as typeof fetch);
         const error = await changed.profitMargin('2026-10').catch((e: unknown) => e);
         expect(error).toBeInstanceOf(ToolError);
         expect(error).toMatchObject({ code: 'endpoint_changed' });
         expect((error as ToolError).message).toContain('totalProfitMarginStats.payingUsersUsd');
-        const rejected = createConsoleApi(async () => TOKEN, (async () => new Response('{}', { status: 401 })) as typeof fetch);
+        const rejected = createConsoleApi(fakeTokens(TOKEN, ['newer-token-0123456789']), (async () => new Response('{}', { status: 401 })) as typeof fetch);
         const denied = await rejected.actorBreakdown('2026-10').catch((e: unknown) => e);
         expect(denied).toMatchObject({ code: 'logged_out' });
-        for (const e of [error, denied]) expect(JSON.stringify({ ...(e as object), message: (e as Error).message })).not.toContain(TOKEN);
+        for (const e of [error, denied]) {
+            const dump = JSON.stringify({ ...(e as object), message: (e as Error).message });
+            expect(dump).not.toContain(TOKEN);
+            expect(dump).not.toContain('newer-token-0123456789');
+        }
     });
 });

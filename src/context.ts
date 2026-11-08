@@ -1,4 +1,4 @@
-import { consoleError, touchWanted, waitForConsoleToken } from './auth/console-session.js';
+import { consoleError, currentConsoleToken, refreshedConsoleToken, touchWanted } from './auth/console-session.js';
 import { findPublicToken, type TokenSource } from './auth/public.js';
 import { sessionStatus, type ConsoleState } from './auth/session.js';
 import { ApiError, createApifyApi, type ApifyApi, type Me } from './clients/apify-api.js';
@@ -6,6 +6,8 @@ import { createConsoleApi, type ConsoleApi } from './clients/console.js';
 import type { Config } from './config.js';
 import { buildCatalog, type ActorSummary } from './core/actors.js';
 import { Cache } from './core/cache.js';
+import { prefetchMoney } from './core/console-data.js';
+import { createDiskCache, type DiskCache } from './core/disk-cache.js';
 import { ToolError } from './core/envelope.js';
 import { scanActorDirs } from './core/repo.js';
 
@@ -25,6 +27,10 @@ export interface Context {
     console(): Promise<ConsoleApi>;
     /** The Console client only if a fresh session exists right now; never waits. Signals demand either way. */
     optionalConsole(): Promise<{ api: ConsoleApi | null; state: ConsoleState }>;
+    /** The on-disk cache for finished months, or null when turned off or there is no account. */
+    disk(): Promise<DiskCache | null>;
+    /** Called after every tool call: starts the one-time background prefetch once a money tool has run. */
+    afterTool(): void;
 }
 
 export interface ContextOptions {
@@ -35,6 +41,9 @@ export interface ContextOptions {
 export function createContext(config: Config, api: ApifyApi | null, tokenSource: TokenSource | null, now = Date.now, options: ContextOptions = {}): Context {
     const cache = new Cache(now);
     let consoleApi: ConsoleApi | null = null;
+    // The Console client a tool actually used this session (prefetch waits for the first one).
+    let usedConsole: ConsoleApi | null = null;
+    let prefetched = false;
     const ctx: Context = {
         config,
         cache,
@@ -53,14 +62,16 @@ export function createContext(config: Config, api: ApifyApi | null, tokenSource:
         account: () => cache.get('me', 60 * MINUTE, () => wrapApi(() => ctx.api().me())),
         catalog: () =>
             cache.get('catalog', 10 * MINUTE, async () => {
-                const me = await ctx.account();
-                const [mine, store] = await wrapApi(() => Promise.all([ctx.api().myActors(), ctx.api().storeActors(me.username)]));
+                // `/acts?my=1` does not need the username, so it runs alongside `/users/me` (measured 3.0 s → 1.4 s).
+                const [me, mine] = await Promise.all([ctx.account(), wrapApi(() => ctx.api().myActors())]);
+                const store = await wrapApi(() => ctx.api().storeActors(me.username));
                 return buildCatalog(mine, store);
             }),
         localActorPaths: () => cache.get('local-actors', 10 * MINUTE, () => scanActorDirs(config.actorDirs)),
         async console() {
             if (options.consoleApi !== undefined) {
                 if (!options.consoleApi) throw consoleError('bridge_missing');
+                usedConsole = options.consoleApi;
                 return options.consoleApi;
             }
             const me = await ctx.account();
@@ -70,7 +81,11 @@ export function createContext(config: Config, api: ApifyApi | null, tokenSource:
                 await touchWanted(config.home);
                 throw consoleError(status.state);
             }
-            consoleApi ??= createConsoleApi(() => waitForConsoleToken(config.home, me.id, { now }));
+            consoleApi ??= createConsoleApi({
+                current: () => currentConsoleToken(config.home, me.id, now()),
+                refresh: (rejected) => refreshedConsoleToken(config.home, me.id, rejected, { now }),
+            });
+            usedConsole = consoleApi;
             return consoleApi;
         },
         async optionalConsole() {
@@ -80,6 +95,17 @@ export function createContext(config: Config, api: ApifyApi | null, tokenSource:
             await touchWanted(config.home);
             if (status.state !== 'ok') return { api: null, state: status.state };
             return { api: await ctx.console(), state: 'ok' };
+        },
+        disk: () =>
+            cache.get('disk', 24 * 60 * MINUTE, async () => {
+                if (!config.diskCache) return null;
+                const me = await ctx.account();
+                return createDiskCache(config.home, me.id, now);
+            }),
+        afterTool() {
+            if (!config.prefetch || prefetched || !usedConsole) return;
+            prefetched = true;
+            void prefetchMoney(ctx, usedConsole).catch(() => {});
         },
     };
     return ctx;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALLOWED_ID_PATHS, consoleIdUrl, createConsoleApi, MAX_CONCURRENT } from '../src/clients/console.js';
+import { fakeTokens } from './helpers.js';
 
 const TOKEN = 'fake-ui-token-0123456789abcdefghijklmnopqrstu';
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -20,7 +21,7 @@ describe('console client: quality endpoints (AC10)', () => {
             'business-value-improvements': [],
         };
         const seen: string[] = [];
-        const api = createConsoleApi(async () => TOKEN, (async (url: string, init: RequestInit) => {
+        const api = createConsoleApi(fakeTokens(TOKEN), (async (url: string, init: RequestInit) => {
             seen.push(`${init.method} ${url}`);
             return json(bodies[url.split('/')[4]!]);
         }) as typeof fetch);
@@ -30,7 +31,7 @@ describe('console client: quality endpoints (AC10)', () => {
         expect(seen.every((line) => line.startsWith('GET https://console-backend.apify.com/actor-quality/'))).toBe(true);
     });
     it('names the endpoint when a quality response changes shape', async () => {
-        const api = createConsoleApi(async () => TOKEN, (async () => json({ improvements: 'nope' })) as typeof fetch);
+        const api = createConsoleApi(fakeTokens(TOKEN), (async () => json({ improvements: 'nope' })) as typeof fetch);
         await expect(api.qualityImprovements('abc')).rejects.toMatchObject({ code: 'endpoint_changed', details: { endpoint: 'actor-quality/praises-and-improvements/:id' } });
     });
 });
@@ -39,7 +40,7 @@ describe('console client: concurrency and retries (AC21)', () => {
     it(`runs at most ${MAX_CONCURRENT} requests at once`, async () => {
         let active = 0;
         let peak = 0;
-        const api = createConsoleApi(async () => TOKEN, (async () => {
+        const api = createConsoleApi(fakeTokens(TOKEN), (async () => {
             active++;
             peak = Math.max(peak, active);
             await new Promise((resolve) => setTimeout(resolve, 5));
@@ -53,20 +54,20 @@ describe('console client: concurrency and retries (AC21)', () => {
         let attempts = 0;
         let jitterCalls = 0;
         const flaky = createConsoleApi(
-            async () => TOKEN,
+            fakeTokens(TOKEN),
             (async () => (++attempts < 3 ? new Response('busy', { status: 429 }) : json({ actorQuality: 0.5 }))) as typeof fetch,
-            { retryDelayMs: 0, jitter: () => (jitterCalls++, 0) },
+            { retryDelayMs: 0, rateLimitDelayMs: 0, jitter: () => (jitterCalls++, 0) },
         );
         expect(await flaky.qualityScores('abc')).toEqual({ actorQuality: 0.5 });
         expect(attempts).toBe(3);
         expect(jitterCalls).toBe(2);
 
-        const down = createConsoleApi(async () => TOKEN, (async () => new Response('down', { status: 503 })) as typeof fetch, { retryDelayMs: 0, jitter: () => 0 });
+        const down = createConsoleApi(fakeTokens(TOKEN), (async () => new Response('down', { status: 503 })) as typeof fetch, { retryDelayMs: 0, jitter: () => 0 });
         await expect(down.qualityScores('abc')).rejects.toMatchObject({ code: 'endpoint_changed' });
     });
     it('frees the slot after a rejected session so later requests still run', async () => {
         let calls = 0;
-        const api = createConsoleApi(async () => TOKEN, (async () => (++calls <= MAX_CONCURRENT ? new Response('{}', { status: 401 }) : json({}))) as typeof fetch);
+        const api = createConsoleApi(fakeTokens(TOKEN), (async () => (++calls <= MAX_CONCURRENT ? new Response('{}', { status: 401 }) : json({}))) as typeof fetch);
         const first = await Promise.allSettled(Array.from({ length: MAX_CONCURRENT }, (_, i) => api.qualityScores(`a${i}`)));
         expect(first.every((item) => item.status === 'rejected')).toBe(true);
         await expect(api.qualityScores('later')).resolves.toEqual({});

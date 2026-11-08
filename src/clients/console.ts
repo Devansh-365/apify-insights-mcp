@@ -103,8 +103,11 @@ export type QualityBusinessValue = z.infer<typeof qualityBusinessValueSchema>;
 export interface ConsoleApi {
     /** Totals and daily money for the account, or for the given actors only. `month` is YYYY-MM. */
     profitMargin(month: string, actorIds?: string[]): Promise<ProfitMargin>;
-    /** One row per public actor with revenue, cost, runs, users and pricing (paying-users money). */
-    actorBreakdown(month: string): Promise<Breakdown>;
+    /**
+     * One row per public actor with revenue, cost, runs, users and pricing (paying-users money). With
+     * `actorIds`, only those actors' rows (checked live: same rows as the full list, ~11 KB instead of ~770 KB).
+     */
+    actorBreakdown(month: string, actorIds?: string[]): Promise<Breakdown>;
     runStatistics(month: string, actorIds?: string[]): Promise<RunStatistics>;
     userCounts(month: string, actorIds?: string[]): Promise<UserCounts>;
     /**
@@ -150,21 +153,60 @@ function parse<T>(schema: z.ZodType<T>, path: string, body: unknown): T {
     );
 }
 
-export type TokenProvider = () => Promise<string>;
+export interface ConsoleToken {
+    value: string;
+    receivedAt: string;
+}
+
+/** `current` returns the stored token whatever its age; `refresh` waits for one newer than a rejected token. */
+export interface TokenProvider {
+    current(): Promise<ConsoleToken>;
+    refresh(rejected: ConsoleToken): Promise<ConsoleToken>;
+}
 
 export interface ConsoleClientOptions {
     /** Extra random delay added to each retry so parallel requests do not retry in step. */
     jitter?: () => number;
     /** First retry waits this long, then double. */
     retryDelayMs?: number;
+    /** First wait after a 429 without Retry-After, then double. */
+    rateLimitDelayMs?: number;
 }
 
 /** Requests in flight at once. The extension uses 8; staying lower leaves room for the Console page itself. */
 export const MAX_CONCURRENT = 6;
+const SERVER_RETRIES = 2;
+const RATE_LIMIT_RETRIES = 3;
+const BREAKDOWN_IDS_PER_CALL = 50;
+const MAX_RETRY_AFTER_MS = 30_000;
 
-export function createConsoleApi(getToken: TokenProvider, fetchImpl: typeof fetch = fetch, options: ConsoleClientOptions = {}): ConsoleApi {
+/**
+ * A dropped connection (HTTP/2 GOAWAY, reset socket) surfaces as `TypeError: fetch failed` with a socket
+ * cause. Safe to retry: every request here is a GET. A timeout abort is a DOMException and is not retried.
+ */
+export function isNetworkError(error: unknown): boolean {
+    if (!(error instanceof TypeError)) return false;
+    const code = (error as { cause?: { code?: unknown } }).cause?.code;
+    return typeof code === 'string' && (code.startsWith('UND_ERR_') || ['ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'ECONNREFUSED', 'EAI_AGAIN'].includes(code));
+}
+
+/** Retry-After in ms (seconds or an HTTP date), capped; null when absent or unreadable. */
+export function retryAfterMs(header: string | null, now = Date.now()): number | null {
+    if (!header) return null;
+    const seconds = Number(header);
+    const ms = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(header) - now;
+    return Number.isFinite(ms) && ms >= 0 ? Math.min(ms, MAX_RETRY_AFTER_MS) : null;
+}
+
+export function createConsoleApi(tokens: TokenProvider, fetchImpl: typeof fetch = fetch, options: ConsoleClientOptions = {}): ConsoleApi {
     const jitter = options.jitter ?? (() => Math.random() * 500);
     const retryDelayMs = options.retryDelayMs ?? 1000;
+    const rateLimitDelayMs = options.rateLimitDelayMs ?? 2000;
+    const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    // One refresh per rejected token, shared by every request that saw the same 401.
+    const refreshing = new Map<string, Promise<ConsoleToken>>();
+    // After a 429 the whole queue waits, so the other slots do not keep hitting the limit.
+    let pausedUntil = 0;
     let active = 0;
     const waiting: Array<() => void> = [];
 
@@ -183,28 +225,70 @@ export function createConsoleApi(getToken: TokenProvider, fetchImpl: typeof fetc
         else active--;
     }
 
+    async function refreshOnce(rejected: ConsoleToken): Promise<ConsoleToken> {
+        // Another request may already have refreshed it: use that token instead of waiting again.
+        const latest = await tokens.current();
+        if (latest.value !== rejected.value) return latest;
+        // Keyed in memory by the rejected token itself; never logged or stored.
+        const key = rejected.value;
+        let pending = refreshing.get(key);
+        if (!pending) {
+            pending = tokens.refresh(rejected).finally(() => refreshing.delete(key));
+            refreshing.set(key, pending);
+        }
+        return pending;
+    }
+
     /** `label` names the endpoint in errors; `url` is already built from the allowlist. */
     async function request<T>(label: string, url: string, schema: z.ZodType<T>): Promise<T> {
         await slot();
         try {
-            for (let attempt = 0; ; attempt++) {
-                const token = await getToken();
-                const response = await fetchImpl(url, {
-                    method: 'GET',
-                    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-                    signal: AbortSignal.timeout(30_000),
-                });
+            let token = await tokens.current();
+            let refreshed = false;
+            let serverRetries = 0;
+            let rateRetries = 0;
+            for (;;) {
+                const wait = pausedUntil - Date.now();
+                if (wait > 0) await sleep(wait);
+                let response: Response;
+                let body: unknown;
+                try {
+                    response = await fetchImpl(url, {
+                        method: 'GET',
+                        headers: { Authorization: `Bearer ${token.value}`, Accept: 'application/json' },
+                        signal: AbortSignal.timeout(30_000),
+                    });
+                    // The body is read here too: a connection can drop half-way through a large response.
+                    if (response.ok) body = await response.json();
+                } catch (error) {
+                    if (isNetworkError(error) && serverRetries < SERVER_RETRIES) {
+                        await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
+                        continue;
+                    }
+                    throw error;
+                }
                 if (response.status === 401 || response.status === 403) {
+                    if (!refreshed) {
+                        refreshed = true;
+                        token = await refreshOnce(token);
+                        continue;
+                    }
                     throw new ToolError('logged_out', 'The Apify Console session was rejected.', 'Open console.apify.com in Chrome and make sure you are logged in.');
                 }
-                if ((response.status === 429 || response.status >= 500) && attempt < 2) {
-                    await new Promise((resolve) => setTimeout(resolve, retryDelayMs * 2 ** attempt + jitter()));
+                if (response.status === 429 && rateRetries < RATE_LIMIT_RETRIES) {
+                    const delay = retryAfterMs(response.headers.get('retry-after')) ?? rateLimitDelayMs * 2 ** rateRetries + jitter();
+                    rateRetries++;
+                    pausedUntil = Math.max(pausedUntil, Date.now() + delay);
+                    continue;
+                }
+                if (response.status >= 500 && serverRetries < SERVER_RETRIES) {
+                    await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
                     continue;
                 }
                 if (!response.ok) {
                     throw new ToolError('endpoint_changed', `Apify Console returned ${response.status} for ${label}.`, 'Try again later; public tools still work.', { endpoint: label });
                 }
-                return parse(schema, label, await response.json());
+                return parse(schema, label, body);
             }
         } finally {
             release();
@@ -219,7 +303,14 @@ export function createConsoleApi(getToken: TokenProvider, fetchImpl: typeof fetc
 
     return {
         profitMargin: (m, actorIds) => get('actor-analytics/profit-margin', { month: month(m), actorIds: ids(actorIds) }, profitMarginSchema),
-        actorBreakdown: (m) => get('actor-analytics/actor-breakdown', { month: month(m) }, breakdownSchema),
+        actorBreakdown: async (m, actorIds) => {
+            if (!actorIds) return get('actor-analytics/actor-breakdown', { month: month(m) }, breakdownSchema);
+            for (const id of actorIds) if (!ACTOR_ID.test(id)) throw new Error(`Not an actor ID: ${JSON.stringify(id)}`);
+            const chunks: string[][] = [];
+            for (let i = 0; i < actorIds.length; i += BREAKDOWN_IDS_PER_CALL) chunks.push(actorIds.slice(i, i + BREAKDOWN_IDS_PER_CALL));
+            const parts = await Promise.all(chunks.map((chunk) => get('actor-analytics/actor-breakdown', { month: month(m), actorIds: chunk.join(',') }, breakdownSchema)));
+            return { monetizationPerActor: parts.flatMap((part) => part.monetizationPerActor) };
+        },
         runStatistics: (m, actorIds) => get('actor-analytics/run-statistics/monthly/all-users', { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
         userCounts: (m, actorIds) => get('actor-analytics/user-count-statistics', { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
         // This endpoint wants `actorIds` present (empty = all actors) and a month start date.

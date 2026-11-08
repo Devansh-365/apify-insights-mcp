@@ -4,6 +4,12 @@ export class Cache {
 
     constructor(private now: () => number = Date.now) {}
 
+    /** True when an unexpired entry exists, finished or still loading. Never starts a load. */
+    has(key: string): boolean {
+        const hit = this.entries.get(key);
+        return !!hit && hit.expires > this.now();
+    }
+
     get<T>(key: string, ttlMs: number, load: () => Promise<T>): Promise<T> {
         const hit = this.entries.get(key);
         if (hit && hit.expires > this.now()) return hit.value as Promise<T>;

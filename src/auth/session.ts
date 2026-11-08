@@ -60,6 +60,14 @@ export async function sessionStatus(home: string, accountUserId: string | null, 
     return { state, producer, receivedAt, ageMinutes };
 }
 
+/** The newest token for this account whatever its age, with when it arrived. Null if none or another account's. */
+export async function readAnySessionToken(home: string, accountUserId: string): Promise<{ value: string; receivedAt: string } | null> {
+    const file = await newestSession(home);
+    if (!file || typeof file.uiToken !== 'string' || !file.uiToken) return null;
+    if (typeof file.userId === 'string' && file.userId !== accountUserId) return null;
+    return { value: file.uiToken, receivedAt: typeof file.receivedAt === 'string' ? file.receivedAt : '' };
+}
+
 /** For the Console client (M3). Returns the token only when the session is fresh and belongs to this account. */
 export async function readSessionToken(home: string, accountUserId: string, now = Date.now()): Promise<string | null> {
     const status = await sessionStatus(home, accountUserId, now);

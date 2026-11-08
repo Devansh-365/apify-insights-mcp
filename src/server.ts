@@ -3,7 +3,10 @@ import { join } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Context } from './context.js';
+import { diskNote, withDiskUse } from './core/disk-cache.js';
 import { fail, ToolError } from './core/envelope.js';
+import { withProgress } from './core/progress.js';
+import { logTiming } from './core/timing.js';
 import { GLOSSARY } from './glossary.js';
 import { acquisitionScore, acquisitionScoreInput } from './tools/acquisition-score.js';
 import { actorProfitability, actorProfitabilityInput } from './tools/actor-profitability.js';
@@ -35,16 +38,24 @@ async function logUsage(ctx: Context, tool: string): Promise<void> {
     }
 }
 
-function guarded(ctx: Context, tool: string, run: () => Promise<CallToolResult>): Promise<CallToolResult> {
-    return (async () => {
+function guarded(ctx: Context, tool: string, run: () => Promise<CallToolResult>, extra?: Parameters<typeof withProgress>[0]): Promise<CallToolResult> {
+    return withProgress(extra, async () => {
         await logUsage(ctx, tool);
+        const started = Date.now();
         try {
-            return await run();
+            const { result, used } = await withDiskUse(run);
+            const note = diskNote(used);
+            const notes = (result.structuredContent as { notes?: unknown } | undefined)?.notes;
+            if (note && Array.isArray(notes)) notes.push(note);
+            return result;
         } catch (error) {
             if (error instanceof ToolError) return fail(error);
             return fail(new ToolError('public_api_error', error instanceof Error ? error.message : String(error), 'Try again in a minute.'));
+        } finally {
+            logTiming(`tool ${tool} ${Date.now() - started}ms`);
+            ctx.afterTool();
         }
-    })();
+    });
 }
 
 export function createServer(ctx: Context): McpServer {
@@ -67,7 +78,7 @@ export function createServer(ctx: Context): McpServer {
             description: 'Whether the Apify API token works (and for which account) and the state of the Console session used for money data. Call this when another tool returns an auth error.',
             annotations: READ_ONLY,
         },
-        () => guarded(ctx, 'auth_status', () => authStatus(ctx)),
+        (extra) => guarded(ctx, 'auth_status', () => authStatus(ctx), extra),
     );
 
     server.registerTool(
@@ -78,7 +89,7 @@ export function createServer(ctx: Context): McpServer {
                 'Yesterday and month-to-date money (paying users) vs the same days last month, plus up to three actors to look at, each with the rule that flagged it and the next call to make. Falls back to health only without a Console session.',
             annotations: READ_ONLY,
         },
-        () => guarded(ctx, 'daily_brief', () => dailyBrief(ctx)),
+        (extra) => guarded(ctx, 'daily_brief', () => dailyBrief(ctx), extra),
     );
 
     server.registerTool(
@@ -89,7 +100,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: revenueSummaryInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'revenue_summary', () => revenueSummary(ctx, args)),
+        (args, extra) => guarded(ctx, 'revenue_summary', () => revenueSummary(ctx, args), extra),
     );
 
     server.registerTool(
@@ -102,7 +113,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: actorProfitabilityInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'actor_profitability', () => actorProfitability(ctx, args)),
+        (args, extra) => guarded(ctx, 'actor_profitability', () => actorProfitability(ctx, args), extra),
     );
 
     server.registerTool(
@@ -115,7 +126,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: runHealthInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'run_health', () => runHealthTool(ctx, args)),
+        (args, extra) => guarded(ctx, 'run_health', () => runHealthTool(ctx, args), extra),
     );
 
     server.registerTool(
@@ -127,7 +138,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: actorReportInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'actor_report', () => actorReport(ctx, args)),
+        (args, extra) => guarded(ctx, 'actor_report', () => actorReport(ctx, args), extra),
     );
 
     server.registerTool(
@@ -139,7 +150,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: listActorsInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'list_actors', () => listActors(ctx, args)),
+        (args, extra) => guarded(ctx, 'list_actors', () => listActors(ctx, args), extra),
     );
 
     server.registerTool(
@@ -152,7 +163,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: growthInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'growth', () => growth(ctx, args)),
+        (args, extra) => guarded(ctx, 'growth', () => growth(ctx, args), extra),
     );
 
     server.registerTool(
@@ -165,7 +176,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: acquisitionScoreInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'acquisition_score', () => acquisitionScore(ctx, args)),
+        (args, extra) => guarded(ctx, 'acquisition_score', () => acquisitionScore(ctx, args), extra),
     );
 
     server.registerTool(
@@ -178,7 +189,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: actorQualityInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'actor_quality', () => actorQuality(ctx, args)),
+        (args, extra) => guarded(ctx, 'actor_quality', () => actorQuality(ctx, args), extra),
     );
 
     server.registerTool(
@@ -190,7 +201,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: storeRankInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'store_rank', () => storeRankTool(ctx, args)),
+        (args, extra) => guarded(ctx, 'store_rank', () => storeRankTool(ctx, args), extra),
     );
 
     server.registerTool(
@@ -201,7 +212,7 @@ export function createServer(ctx: Context): McpServer {
             inputSchema: competitorBenchmarkInput,
             annotations: READ_ONLY,
         },
-        (args) => guarded(ctx, 'competitor_benchmark', () => competitorBenchmarkTool(ctx, args)),
+        (args, extra) => guarded(ctx, 'competitor_benchmark', () => competitorBenchmarkTool(ctx, args), extra),
     );
 
     server.registerResource(

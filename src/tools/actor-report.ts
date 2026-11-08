@@ -5,7 +5,7 @@ import { wrapApi } from '../context.js';
 import { resolveActor } from '../core/actors.js';
 import { ok, round, ToolError } from '../core/envelope.js';
 import { failingFlag, noticeFlag, runHealth, type Flag } from '../core/flags.js';
-import { breakdown } from '../core/console-data.js';
+import { breakdown, breakdownFor } from '../core/console-data.js';
 import { daysElapsed, type ActorMoney } from '../core/money.js';
 import { moneyFlags, thresholds, unitEconomics } from '../core/money-flags.js';
 import { addMonths, isoDay, monthOf } from '../core/period.js';
@@ -18,7 +18,8 @@ async function moneySection(ctx: Context, actorId: string) {
     const now = ctx.now();
     const current = monthOf(isoDay(now));
     const months = [current, addMonths(current, -1), addMonths(current, -2)];
-    const all = await Promise.all(months.map((month) => breakdown(ctx, api, month)));
+    // The current month needs every row (thresholds are portfolio-wide); past months need only this actor.
+    const all = await Promise.all(months.map((month, i) => (i === 0 ? breakdown(ctx, api, month) : breakdownFor(ctx, api, month, [actorId]))));
     const mine = all.map((rows) => rows.find((row) => row.id === actorId) ?? null);
     const latest = mine[0];
     const t = thresholds(all[0]!, daysElapsed(current, now));
@@ -66,9 +67,10 @@ export async function actorReport(ctx: Context, args: Args): Promise<CallToolRes
         });
     }
     const summary = found.actor;
-    const [detail, localPaths] = await Promise.all([
+    const [detail, localPaths, money] = await Promise.all([
         ctx.cache.get(`actor:${summary.id}`, 5 * 60_000, () => wrapApi(() => ctx.api().actor(summary.id))),
         ctx.localActorPaths(),
+        moneySection(ctx, summary.id),
     ]);
 
     const health = detail.stats?.publicActorRunStats30Days ? runHealth(detail.stats.publicActorRunStats30Days) : summary.runs30d;
@@ -77,7 +79,6 @@ export async function actorReport(ctx: Context, args: Args): Promise<CallToolRes
     const pricing = readPricing(currentPricingInfo(detail.pricingInfos, ctx.now())) ?? summary.pricing;
     const latest = detail.taggedBuilds?.latest;
     const localPath = localPaths.get(summary.name) ?? null;
-    const money = await moneySection(ctx, summary.id);
     // The public 30-day failing flag wins over the monthly one; keep one flag per name.
     flags.push(...money.flags.filter((flag) => !flags.some((seen) => seen.flag === flag.flag)));
     const notes = [money.note];

@@ -28613,9 +28613,9 @@ var StdioServerTransport = class {
 
 // src/cli/main.ts
 import { existsSync as existsSync2 } from "node:fs";
-import { access, chmod as chmod2, copyFile as copyFile2, mkdir as mkdir3, rm as rm2, rmdir, writeFile as writeFile2 } from "node:fs/promises";
+import { access, chmod as chmod3, copyFile as copyFile2, mkdir as mkdir4, rm as rm3, rmdir, writeFile as writeFile3 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import { dirname as dirname2, join as join4 } from "node:path";
+import { dirname as dirname2, join as join5 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/config.ts
@@ -28626,14 +28626,84 @@ function loadConfig(env = process.env) {
     home: env.APIFY_INSIGHTS_HOME || join(homedir(), ".apify-insights"),
     actorDirs: (env.APIFY_INSIGHTS_ACTOR_DIRS || "").split(delimiter).map((dir) => dir.trim()).filter(Boolean),
     apiBase: env.APIFY_API_BASE || "https://api.apify.com/v2",
-    usageLog: env.APIFY_INSIGHTS_USAGE_LOG === "1"
+    usageLog: env.APIFY_INSIGHTS_USAGE_LOG === "1",
+    diskCache: env.APIFY_INSIGHTS_CACHE !== "0",
+    prefetch: env.APIFY_INSIGHTS_PREFETCH !== "0"
   };
+}
+
+// src/core/disk-cache.ts
+import { AsyncLocalStorage } from "node:async_hooks";
+import { chmod, mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { join as join2 } from "node:path";
+var DISK_TTL_MS = 24 * 60 * 60 * 1e3;
+var KEEP_PER_KIND = 24;
+var VERSION = 1;
+var SAFE = /^[A-Za-z0-9_-]{1,64}$/;
+var MONTH = /^\d{4}-\d{2}$/;
+function cacheRoot(home) {
+  return join2(home, "cache");
+}
+function createDiskCache(home, accountId, now = Date.now) {
+  if (!SAFE.test(accountId)) return null;
+  const dir = join2(cacheRoot(home), `v${VERSION}`, accountId);
+  const file2 = (kind, month) => {
+    if (!SAFE.test(kind) || !MONTH.test(month)) throw new Error(`bad cache key ${kind}-${month}`);
+    return join2(dir, `${kind}-${month}.json`);
+  };
+  return {
+    async read(kind, month) {
+      try {
+        const parsed = JSON.parse(await readFile(file2(kind, month), "utf8"));
+        const fetchedAt = Date.parse(parsed.fetchedAt ?? "");
+        if (parsed.version !== VERSION || parsed.month !== month || !Number.isFinite(fetchedAt) || parsed.value === void 0) return null;
+        return { fetchedAt, value: parsed.value };
+      } catch {
+        return null;
+      }
+    },
+    async write(kind, month, value) {
+      await mkdir(dir, { recursive: true, mode: 448 });
+      await chmod(dir, 448);
+      const target = file2(kind, month);
+      const tmp = `${target}.${process.pid}.tmp`;
+      await writeFile(tmp, JSON.stringify({ version: VERSION, fetchedAt: new Date(now()).toISOString(), month, value }), { mode: 384 });
+      await rename(tmp, target);
+      const months = (await readdir(dir)).map((name) => new RegExp(`^${kind}-(\\d{4}-\\d{2})\\.json$`).exec(name)?.[1]).filter((m) => !!m).sort().reverse();
+      await Promise.all(months.slice(KEEP_PER_KIND).map((m) => rm(file2(kind, m), { force: true })));
+    }
+  };
+}
+async function clearDiskCache(home) {
+  const root = cacheRoot(home);
+  try {
+    await readdir(root);
+  } catch {
+    return false;
+  }
+  await rm(root, { recursive: true, force: true });
+  return true;
+}
+var used = new AsyncLocalStorage();
+function withDiskUse(run) {
+  const map2 = /* @__PURE__ */ new Map();
+  return used.run(map2, async () => ({ result: await run(), used: map2 }));
+}
+function recordDiskUse(month, fetchedAt) {
+  const map2 = used.getStore();
+  if (map2) map2.set(month, Math.min(map2.get(month) ?? Infinity, fetchedAt));
+}
+function diskNote(usedMonths) {
+  if (!usedMonths.size) return null;
+  const oldest = Math.min(...usedMonths.values());
+  const months = [...usedMonths.keys()].sort().join(", ");
+  return `Money for ${months} came from the local cache (fetched ${new Date(oldest).toISOString().slice(0, 16).replace("T", " ")} UTC); finished months change by cents at most.`;
 }
 
 // src/native/host.ts
 import { createHash, randomBytes } from "node:crypto";
-import { chmod, mkdir, open as open2, rename, rm, stat } from "node:fs/promises";
-import { join as join2 } from "node:path";
+import { chmod as chmod2, mkdir as mkdir2, open as open2, rename as rename2, rm as rm2, stat } from "node:fs/promises";
+import { join as join3 } from "node:path";
 var NATIVE_HOST_NAME = "com.apify_insights.bridge";
 var BRIDGE_EXTENSION_ID = "anbbmeclegmfflfnjlcegimmjeepkaoe";
 var WANTED_FOR_MS = 10 * 60 * 1e3;
@@ -28681,7 +28751,7 @@ function sessionFileName(extensionId, profileId) {
 }
 async function isWanted(home, now) {
   try {
-    const info = await stat(join2(home, "wanted"));
+    const info = await stat(join3(home, "wanted"));
     return now - info.mtimeMs < WANTED_FOR_MS;
   } catch {
     return false;
@@ -28695,11 +28765,11 @@ function validateWrite(message) {
   return { uiToken, userId, profileId };
 }
 async function writeSession(home, fileName, input2, now) {
-  const dir = join2(home, "sessions");
-  await mkdir(dir, { recursive: true, mode: 448 });
-  await chmod(dir, 448);
+  const dir = join3(home, "sessions");
+  await mkdir2(dir, { recursive: true, mode: 448 });
+  await chmod2(dir, 448);
   const file2 = { uiToken: input2.uiToken, userId: input2.userId, receivedAt: new Date(now).toISOString(), producer: "bridge", profileId: input2.profileId };
-  const tmp = join2(dir, `${fileName}.${process.pid}.${randomBytes(4).toString("hex")}.tmp`);
+  const tmp = join3(dir, `${fileName}.${process.pid}.${randomBytes(4).toString("hex")}.tmp`);
   try {
     const handle = await open2(tmp, "wx", 384);
     try {
@@ -28708,10 +28778,10 @@ async function writeSession(home, fileName, input2, now) {
     } finally {
       await handle.close();
     }
-    await chmod(tmp, 384);
-    await rename(tmp, join2(dir, fileName));
+    await chmod2(tmp, 384);
+    await rename2(tmp, join3(dir, fileName));
   } catch (error62) {
-    await rm(tmp, { force: true });
+    await rm2(tmp, { force: true });
     throw error62;
   }
 }
@@ -28764,8 +28834,8 @@ async function runNativeHost(input2, output2, home, now = Date.now, extensionId 
 // src/cli/setup.ts
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { copyFile, mkdir as mkdir2, readFile, writeFile } from "node:fs/promises";
-import { delimiter as delimiter2, dirname, join as join3 } from "node:path";
+import { copyFile, mkdir as mkdir3, readFile as readFile2, writeFile as writeFile2 } from "node:fs/promises";
+import { delimiter as delimiter2, dirname, join as join4 } from "node:path";
 var SERVER_NAME = "apify-insights";
 var defaultRunner = (command, args) => new Promise((resolve2) => {
   execFile(
@@ -28777,11 +28847,11 @@ var defaultRunner = (command, args) => new Promise((resolve2) => {
 });
 function onPath(env, platform) {
   const exts = platform === "win32" ? [".cmd", ".exe", ""] : [""];
-  return (command) => (env.PATH ?? "").split(delimiter2).some((dir) => dir && exts.some((ext) => existsSync(join3(dir, command + ext))));
+  return (command) => (env.PATH ?? "").split(delimiter2).some((dir) => dir && exts.some((ext) => existsSync(join4(dir, command + ext))));
 }
 async function copyServer(sourceEntry, home) {
-  const entry = join3(home, "app", "index.js");
-  await mkdir2(dirname(entry), { recursive: true, mode: 448 });
+  const entry = join4(home, "app", "index.js");
+  await mkdir3(dirname(entry), { recursive: true, mode: 448 });
   await copyFile(sourceEntry, entry);
   return entry;
 }
@@ -28802,7 +28872,7 @@ async function mergeJsonConfig(client, file2, snippet, add, log) {
   let config2 = {};
   if (existsSync(file2)) {
     try {
-      config2 = JSON.parse(await readFile(file2, "utf8"));
+      config2 = JSON.parse(await readFile2(file2, "utf8"));
     } catch {
       log(`- ${client}: ${file2} is not plain JSON, left unchanged. Add:
     ${snippet}`);
@@ -28810,8 +28880,8 @@ async function mergeJsonConfig(client, file2, snippet, add, log) {
     }
   }
   add(config2);
-  await mkdir2(dirname(file2), { recursive: true });
-  await writeFile(file2, `${JSON.stringify(config2, null, 2)}
+  await mkdir3(dirname(file2), { recursive: true });
+  await writeFile2(file2, `${JSON.stringify(config2, null, 2)}
 `);
   log(`- ${client}: added to ${file2}`);
 }
@@ -28836,20 +28906,20 @@ async function setup(options) {
     log(result.ok ? `- ${client.name}: added` : `- ${client.name}: could not add (${reason(result.output)}). Run:
     ${command}`);
   }
-  const cursorDir = join3(homeDir, ".cursor");
+  const cursorDir = join4(homeDir, ".cursor");
   if (existsSync(cursorDir)) {
     found++;
     const server = { command: "node", args: [entry] };
-    await mergeJsonConfig("Cursor", join3(cursorDir, "mcp.json"), `"mcpServers": { "${SERVER_NAME}": ${JSON.stringify(server)} }`, (config2) => {
+    await mergeJsonConfig("Cursor", join4(cursorDir, "mcp.json"), `"mcpServers": { "${SERVER_NAME}": ${JSON.stringify(server)} }`, (config2) => {
       config2.mcpServers = { ...object2(config2.mcpServers), [SERVER_NAME]: server };
     }, log);
   }
-  const openCodeDir = join3(options.env.XDG_CONFIG_HOME || join3(homeDir, ".config"), "opencode");
+  const openCodeDir = join4(options.env.XDG_CONFIG_HOME || join4(homeDir, ".config"), "opencode");
   if (which("opencode") || existsSync(openCodeDir)) {
     found++;
     const server = { type: "local", command: ["node", entry], enabled: true };
-    const jsonc = join3(openCodeDir, "opencode.jsonc");
-    const file2 = existsSync(jsonc) ? jsonc : join3(openCodeDir, "opencode.json");
+    const jsonc = join4(openCodeDir, "opencode.jsonc");
+    const file2 = existsSync(jsonc) ? jsonc : join4(openCodeDir, "opencode.json");
     await mergeJsonConfig("OpenCode", file2, `"mcp": { "${SERVER_NAME}": ${JSON.stringify(server)} }`, (config2) => {
       const mcp = object2(config2.mcp);
       if (mcp.servers && typeof mcp.servers === "object") {
@@ -28873,28 +28943,28 @@ var BRIDGE_FILES = ["manifest.json", "sw.js"];
 var GITHUB_SPEC = "github:Devansh-365/apify-insights-mcp";
 function packageRoot() {
   let dir = dirname2(fileURLToPath(import.meta.url));
-  while (!existsSync2(join4(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
+  while (!existsSync2(join5(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
   return dir;
 }
 function browserDirs(homeDir, platform) {
-  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join4(configDir, "NativeMessagingHosts") });
+  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join5(configDir, "NativeMessagingHosts") });
   if (platform === "darwin") {
-    const base = join4(homeDir, "Library", "Application Support");
+    const base = join5(homeDir, "Library", "Application Support");
     return [
-      entry("Chrome", join4(base, "Google", "Chrome")),
-      entry("Chromium", join4(base, "Chromium")),
-      entry("Brave", join4(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join4(base, "Microsoft Edge")),
-      entry("Arc", join4(base, "Arc", "User Data"))
+      entry("Chrome", join5(base, "Google", "Chrome")),
+      entry("Chromium", join5(base, "Chromium")),
+      entry("Brave", join5(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join5(base, "Microsoft Edge")),
+      entry("Arc", join5(base, "Arc", "User Data"))
     ];
   }
   if (platform === "linux") {
-    const base = join4(homeDir, ".config");
+    const base = join5(homeDir, ".config");
     return [
-      entry("Chrome", join4(base, "google-chrome")),
-      entry("Chromium", join4(base, "chromium")),
-      entry("Brave", join4(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join4(base, "microsoft-edge"))
+      entry("Chrome", join5(base, "google-chrome")),
+      entry("Chromium", join5(base, "chromium")),
+      entry("Brave", join5(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join5(base, "microsoft-edge"))
     ];
   }
   return [];
@@ -28928,24 +28998,24 @@ async function install(options) {
     return 1;
   }
   const nodePath = options.nodePath ?? process.execPath;
-  const sourceEntry = options.entryPath ?? join4(packageRoot(), "dist", "index.js");
-  const sourceBridge = options.extensionDir ?? join4(packageRoot(), "bridge");
+  const sourceEntry = options.entryPath ?? join5(packageRoot(), "dist", "index.js");
+  const sourceBridge = options.extensionDir ?? join5(packageRoot(), "bridge");
   const entryPath = await copyServer(sourceEntry, home);
-  const extensionDir = join4(home, "bridge");
-  await mkdir3(extensionDir, { recursive: true });
-  for (const file2 of BRIDGE_FILES) await copyFile2(join4(sourceBridge, file2), join4(extensionDir, file2));
+  const extensionDir = join5(home, "bridge");
+  await mkdir4(extensionDir, { recursive: true });
+  for (const file2 of BRIDGE_FILES) await copyFile2(join5(sourceBridge, file2), join5(extensionDir, file2));
   log(`Server copied to ${entryPath}`);
-  const binDir = join4(home, "bin");
-  await mkdir3(binDir, { recursive: true, mode: 448 });
-  const launcher = join4(binDir, "native-host");
+  const binDir = join5(home, "bin");
+  await mkdir4(binDir, { recursive: true, mode: 448 });
+  const launcher = join5(binDir, "native-host");
   const script = [
     "#!/bin/sh",
     "# Written by `apify-insights-mcp install`. Chrome starts this once per Apify Insights Bridge message.",
     `APIFY_INSIGHTS_HOME=${shellQuote(home)} exec ${shellQuote(nodePath)} ${shellQuote(entryPath)} native-host "$@"`,
     ""
   ].join("\n");
-  await writeFile2(launcher, script, { mode: 448 });
-  await chmod2(launcher, 448);
+  await writeFile3(launcher, script, { mode: 448 });
+  await chmod3(launcher, 448);
   log(`Launcher: ${launcher}`);
   const manifest = {
     name: NATIVE_HOST_NAME,
@@ -28957,10 +29027,10 @@ async function install(options) {
   let installed = 0;
   for (const dir of dirs) {
     if (!await exists(dir.configDir)) continue;
-    await mkdir3(dir.hostsDir, { recursive: true });
-    await writeFile2(join4(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
+    await mkdir4(dir.hostsDir, { recursive: true });
+    await writeFile3(join5(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
 `);
-    log(`Native host registered for ${dir.browser}: ${join4(dir.hostsDir, MANIFEST_FILE)}`);
+    log(`Native host registered for ${dir.browser}: ${join5(dir.hostsDir, MANIFEST_FILE)}`);
     installed++;
   }
   if (installed === 0) log("No supported browser profile folder found (Chrome, Chromium, Brave, Edge, Arc). Nothing registered.");
@@ -28977,17 +29047,17 @@ async function uninstall(options) {
   const { homeDir, home, platform, log } = resolve(options);
   for (const platformDirs of /* @__PURE__ */ new Set([platform, "darwin", "linux"])) {
     for (const dir of browserDirs(homeDir, platformDirs)) {
-      const path = join4(dir.hostsDir, MANIFEST_FILE);
+      const path = join5(dir.hostsDir, MANIFEST_FILE);
       if (await exists(path)) {
-        await rm2(path, { force: true });
+        await rm3(path, { force: true });
         log(`Removed ${path}`);
       }
     }
   }
-  const binDir = join4(home, "bin");
-  for (const path of [join4(binDir, "native-host"), join4(home, "app"), join4(home, "bridge"), join4(home, "sessions"), join4(home, "wanted")]) {
+  const binDir = join5(home, "bin");
+  for (const path of [join5(binDir, "native-host"), join5(home, "app"), join5(home, "bridge"), join5(home, "sessions"), join5(home, "wanted")]) {
     if (await exists(path)) {
-      await rm2(path, { recursive: true, force: true });
+      await rm3(path, { recursive: true, force: true });
       log(`Removed ${path}`);
     }
   }
@@ -29005,8 +29075,17 @@ async function runCli(argv, options = {}) {
   }
   if (command === "setup") {
     const { env, homeDir, home, platform, log } = resolve(options);
-    const sourceEntry = options.entryPath ?? join4(packageRoot(), "dist", "index.js");
+    const sourceEntry = options.entryPath ?? join5(packageRoot(), "dist", "index.js");
     return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
+  }
+  if (command === "cache") {
+    const { home, log } = resolve(options);
+    if (rest[0] !== "clear") {
+      log("Usage: apify-insights-mcp cache clear   (deletes the local money cache; always safe)");
+      return 1;
+    }
+    log(await clearDiskCache(home) ? `Cleared the local cache in ${cacheRoot(home)}.` : "The local cache was already empty.");
+    return 0;
   }
   if (command === "install") return install(options);
   if (command === "uninstall") return uninstall(options);
@@ -29014,8 +29093,8 @@ async function runCli(argv, options = {}) {
 }
 
 // src/auth/console-session.ts
-import { mkdir as mkdir4, utimes, writeFile as writeFile3 } from "node:fs/promises";
-import { join as join6 } from "node:path";
+import { mkdir as mkdir5, utimes, writeFile as writeFile4 } from "node:fs/promises";
+import { join as join7 } from "node:path";
 
 // src/core/envelope.ts
 var ToolError = class extends Error {
@@ -29051,23 +29130,61 @@ function topN(rows, top, hint) {
   return { rows: rows.slice(0, top), omitted: { rows: rows.length - top, hint } };
 }
 
+// src/core/progress.ts
+import { AsyncLocalStorage as AsyncLocalStorage2 } from "node:async_hooks";
+var store = new AsyncLocalStorage2();
+var MIN_GAP_MS = 250;
+function createReporter(extra, now = Date.now) {
+  const token = extra?._meta?.progressToken;
+  const send = extra?.sendNotification;
+  if (token === void 0 || !send) return null;
+  let last = 0;
+  let lastSentAt = -Infinity;
+  const emit = (progress, total, message, force) => {
+    if (progress <= last) return;
+    if (!force && now() - lastSentAt < MIN_GAP_MS) return;
+    last = progress;
+    lastSentAt = now();
+    const params = { progressToken: token, progress };
+    if (total !== void 0) params.total = total;
+    if (message) params.message = message;
+    send({ method: "notifications/progress", params }).catch(() => {
+    });
+  };
+  return {
+    report: (done, total, message) => emit(done, total, message, total !== void 0 && done >= total),
+    // A small step past the last value, for waits with no count (e.g. a session refresh).
+    ping: (message) => emit(last + 0.01, void 0, message, true)
+  };
+}
+function withProgress(extra, run) {
+  const reporter = createReporter(extra);
+  return reporter ? store.run(reporter, run) : run();
+}
+function reportProgress(done, total, message) {
+  store.getStore()?.report(done, total, message);
+}
+function progressPing(message) {
+  store.getStore()?.ping(message);
+}
+
 // src/auth/session.ts
-import { readdir, readFile as readFile2, stat as stat2 } from "node:fs/promises";
-import { join as join5 } from "node:path";
+import { readdir as readdir2, readFile as readFile3, stat as stat2 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 var FRESH_FOR_MS = 2 * 60 * 60 * 1e3;
 async function newestSession(home) {
-  const dir = join5(home, "sessions");
+  const dir = join6(home, "sessions");
   let names;
   try {
-    names = (await readdir(dir)).filter((name) => name.endsWith(".json"));
+    names = (await readdir2(dir)).filter((name) => name.endsWith(".json"));
   } catch {
     return null;
   }
   let newest = null;
   for (const name of names) {
     try {
-      const path = join5(dir, name);
-      const [info, raw] = await Promise.all([stat2(path), readFile2(path, "utf8")]);
+      const path = join6(dir, name);
+      const [info, raw] = await Promise.all([stat2(path), readFile3(path, "utf8")]);
       const file2 = JSON.parse(raw);
       if (typeof file2.uiToken !== "string" || !file2.uiToken) continue;
       if (!newest || info.mtimeMs > newest.mtime) newest = { file: file2, mtime: info.mtimeMs };
@@ -29088,22 +29205,22 @@ async function sessionStatus(home, accountUserId, now = Date.now()) {
   else if (!Number.isFinite(received) || now - received > FRESH_FOR_MS) state = "warming_up";
   return { state, producer, receivedAt, ageMinutes };
 }
-async function readSessionToken(home, accountUserId, now = Date.now()) {
-  const status = await sessionStatus(home, accountUserId, now);
-  if (status.state !== "ok") return null;
+async function readAnySessionToken(home, accountUserId) {
   const file2 = await newestSession(home);
-  return typeof file2?.uiToken === "string" ? file2.uiToken : null;
+  if (!file2 || typeof file2.uiToken !== "string" || !file2.uiToken) return null;
+  if (typeof file2.userId === "string" && file2.userId !== accountUserId) return null;
+  return { value: file2.uiToken, receivedAt: typeof file2.receivedAt === "string" ? file2.receivedAt : "" };
 }
 
 // src/auth/console-session.ts
 async function touchWanted(home) {
-  await mkdir4(home, { recursive: true, mode: 448 });
-  const path = join6(home, "wanted");
+  await mkdir5(home, { recursive: true, mode: 448 });
+  const path = join7(home, "wanted");
   const now = /* @__PURE__ */ new Date();
   try {
     await utimes(path, now, now);
   } catch {
-    await writeFile3(path, "", { mode: 384 });
+    await writeFile4(path, "", { mode: 384 });
   }
 }
 var FIX = {
@@ -29121,30 +29238,43 @@ function consoleError(state) {
   const [message, fix] = FIX[state];
   return new ToolError(state, message, fix);
 }
-async function waitForConsoleToken(home, accountUserId, options = {}) {
+async function currentConsoleToken(home, accountUserId, now = Date.now()) {
+  await touchWanted(home);
+  const status = await sessionStatus(home, accountUserId, now);
+  if (status.state === "bridge_missing" || status.state === "other_account") throw consoleError(status.state);
+  const token = await readAnySessionToken(home, accountUserId);
+  if (!token) throw consoleError("bridge_missing");
+  return token;
+}
+function arrived(token) {
+  const at = Date.parse(token.receivedAt);
+  return Number.isFinite(at) ? at : 0;
+}
+async function refreshedConsoleToken(home, accountUserId, rejected, options = {}) {
   const now = options.now ?? Date.now;
   const sleep = options.sleep ?? ((ms) => new Promise((resolve2) => setTimeout(resolve2, ms)));
   const deadline = now() + (options.timeoutMs ?? 65e3);
-  await touchWanted(home);
   for (; ; ) {
-    const token = await readSessionToken(home, accountUserId, now());
-    if (token) return token;
+    await touchWanted(home);
+    const token = await readAnySessionToken(home, accountUserId);
+    if (token && arrived(token) > arrived(rejected)) return token;
     const status = await sessionStatus(home, accountUserId, now());
     if (status.state === "bridge_missing" || status.state === "other_account") throw consoleError(status.state);
     if (now() >= deadline) throw consoleError("warming_up");
+    progressPing("Waiting for the Apify Console session to refresh");
     await sleep(3e3);
   }
 }
 
 // src/auth/public.ts
-import { readFile as readFile3 } from "node:fs/promises";
+import { readFile as readFile4 } from "node:fs/promises";
 import { homedir as homedir3 } from "node:os";
-import { join as join7 } from "node:path";
+import { join as join8 } from "node:path";
 async function findPublicToken(env = process.env, home = homedir3()) {
   const fromEnv = env.APIFY_TOKEN?.trim();
   if (fromEnv && !/^\$\{.*\}$|^\$[A-Z_]+$/.test(fromEnv)) return { token: fromEnv, source: "env" };
   try {
-    const auth = JSON.parse(await readFile3(join7(home, ".apify", "auth.json"), "utf8"));
+    const auth = JSON.parse(await readFile4(join8(home, ".apify", "auth.json"), "utf8"));
     if (typeof auth.token === "string" && auth.token.trim()) return { token: auth.token.trim(), source: "apify-cli" };
   } catch {
   }
@@ -29299,9 +29429,28 @@ function parse3(schema, path, body) {
   );
 }
 var MAX_CONCURRENT = 6;
-function createConsoleApi(getToken, fetchImpl = fetch, options = {}) {
+var SERVER_RETRIES = 2;
+var RATE_LIMIT_RETRIES = 3;
+var BREAKDOWN_IDS_PER_CALL = 50;
+var MAX_RETRY_AFTER_MS = 3e4;
+function isNetworkError(error62) {
+  if (!(error62 instanceof TypeError)) return false;
+  const code = error62.cause?.code;
+  return typeof code === "string" && (code.startsWith("UND_ERR_") || ["ECONNRESET", "ETIMEDOUT", "EPIPE", "ECONNREFUSED", "EAI_AGAIN"].includes(code));
+}
+function retryAfterMs(header, now = Date.now()) {
+  if (!header) return null;
+  const seconds = Number(header);
+  const ms = Number.isFinite(seconds) ? seconds * 1e3 : Date.parse(header) - now;
+  return Number.isFinite(ms) && ms >= 0 ? Math.min(ms, MAX_RETRY_AFTER_MS) : null;
+}
+function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
   const jitter = options.jitter ?? (() => Math.random() * 500);
   const retryDelayMs = options.retryDelayMs ?? 1e3;
+  const rateLimitDelayMs = options.rateLimitDelayMs ?? 2e3;
+  const sleep = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
+  const refreshing = /* @__PURE__ */ new Map();
+  let pausedUntil = 0;
   let active = 0;
   const waiting = [];
   async function slot() {
@@ -29316,27 +29465,65 @@ function createConsoleApi(getToken, fetchImpl = fetch, options = {}) {
     if (next) next();
     else active--;
   }
+  async function refreshOnce(rejected) {
+    const latest = await tokens.current();
+    if (latest.value !== rejected.value) return latest;
+    const key = rejected.value;
+    let pending = refreshing.get(key);
+    if (!pending) {
+      pending = tokens.refresh(rejected).finally(() => refreshing.delete(key));
+      refreshing.set(key, pending);
+    }
+    return pending;
+  }
   async function request(label, url2, schema) {
     await slot();
     try {
-      for (let attempt = 0; ; attempt++) {
-        const token = await getToken();
-        const response = await fetchImpl(url2, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-          signal: AbortSignal.timeout(3e4)
-        });
+      let token = await tokens.current();
+      let refreshed = false;
+      let serverRetries = 0;
+      let rateRetries = 0;
+      for (; ; ) {
+        const wait = pausedUntil - Date.now();
+        if (wait > 0) await sleep(wait);
+        let response;
+        let body;
+        try {
+          response = await fetchImpl(url2, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token.value}`, Accept: "application/json" },
+            signal: AbortSignal.timeout(3e4)
+          });
+          if (response.ok) body = await response.json();
+        } catch (error62) {
+          if (isNetworkError(error62) && serverRetries < SERVER_RETRIES) {
+            await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
+            continue;
+          }
+          throw error62;
+        }
         if (response.status === 401 || response.status === 403) {
+          if (!refreshed) {
+            refreshed = true;
+            token = await refreshOnce(token);
+            continue;
+          }
           throw new ToolError("logged_out", "The Apify Console session was rejected.", "Open console.apify.com in Chrome and make sure you are logged in.");
         }
-        if ((response.status === 429 || response.status >= 500) && attempt < 2) {
-          await new Promise((resolve2) => setTimeout(resolve2, retryDelayMs * 2 ** attempt + jitter()));
+        if (response.status === 429 && rateRetries < RATE_LIMIT_RETRIES) {
+          const delay = retryAfterMs(response.headers.get("retry-after")) ?? rateLimitDelayMs * 2 ** rateRetries + jitter();
+          rateRetries++;
+          pausedUntil = Math.max(pausedUntil, Date.now() + delay);
+          continue;
+        }
+        if (response.status >= 500 && serverRetries < SERVER_RETRIES) {
+          await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
           continue;
         }
         if (!response.ok) {
           throw new ToolError("endpoint_changed", `Apify Console returned ${response.status} for ${label}.`, "Try again later; public tools still work.", { endpoint: label });
         }
-        return parse3(schema, label, await response.json());
+        return parse3(schema, label, body);
       }
     } finally {
       release();
@@ -29348,7 +29535,14 @@ function createConsoleApi(getToken, fetchImpl = fetch, options = {}) {
   const month = (value) => `${value}-01`;
   return {
     profitMargin: (m, actorIds) => get("actor-analytics/profit-margin", { month: month(m), actorIds: ids(actorIds) }, profitMarginSchema),
-    actorBreakdown: (m) => get("actor-analytics/actor-breakdown", { month: month(m) }, breakdownSchema),
+    actorBreakdown: async (m, actorIds) => {
+      if (!actorIds) return get("actor-analytics/actor-breakdown", { month: month(m) }, breakdownSchema);
+      for (const id of actorIds) if (!ACTOR_ID.test(id)) throw new Error(`Not an actor ID: ${JSON.stringify(id)}`);
+      const chunks = [];
+      for (let i = 0; i < actorIds.length; i += BREAKDOWN_IDS_PER_CALL) chunks.push(actorIds.slice(i, i + BREAKDOWN_IDS_PER_CALL));
+      const parts = await Promise.all(chunks.map((chunk) => get("actor-analytics/actor-breakdown", { month: month(m), actorIds: chunk.join(",") }, breakdownSchema)));
+      return { monetizationPerActor: parts.flatMap((part) => part.monetizationPerActor) };
+    },
     runStatistics: (m, actorIds) => get("actor-analytics/run-statistics/monthly/all-users", { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
     userCounts: (m, actorIds) => get("actor-analytics/user-count-statistics", { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
     // This endpoint wants `actorIds` present (empty = all actors) and a month start date.
@@ -29443,8 +29637,8 @@ function currentPricingInfo(infos, now = Date.now()) {
 function num2(value) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
-function buildCatalog(mine, store) {
-  const storeById = new Map(store.map((item) => [item.id, item]));
+function buildCatalog(mine, store2) {
+  const storeById = new Map(store2.map((item) => [item.id, item]));
   return mine.map((actor) => {
     const listed = storeById.get(actor.id);
     const stats = listed?.stats;
@@ -29489,6 +29683,11 @@ var Cache = class {
   }
   now;
   entries = /* @__PURE__ */ new Map();
+  /** True when an unexpired entry exists, finished or still loading. Never starts a load. */
+  has(key) {
+    const hit = this.entries.get(key);
+    return !!hit && hit.expires > this.now();
+  }
   get(key, ttlMs, load) {
     const hit = this.entries.get(key);
     if (hit && hit.expires > this.now()) return hit.value;
@@ -29501,24 +29700,282 @@ var Cache = class {
   }
 };
 
+// src/core/period.ts
+var periodInput = external_exports.union([
+  external_exports.enum(["today", "yesterday", "last7d", "last30d", "thisMonth", "lastMonth"]),
+  external_exports.string().regex(/^\d{4}-\d{2}$/, "YYYY-MM"),
+  external_exports.object({ from: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/) })
+]).describe('today | yesterday | last7d | last30d (both end yesterday) | thisMonth | lastMonth | "YYYY-MM" | {from, to} (YYYY-MM-DD, max 12 months)');
+var DAY = 864e5;
+function isoDay(ms) {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+function parseDay(day) {
+  const ms = Date.parse(`${day}T00:00:00Z`);
+  if (!Number.isFinite(ms) || isoDay(ms) !== day) throw new ToolError("period_invalid", `"${day}" is not a valid date.`, "Use YYYY-MM-DD.");
+  return ms;
+}
+function monthOf(day) {
+  return day.slice(0, 7);
+}
+function monthStart(month) {
+  return `${month}-01`;
+}
+function monthEnd(month) {
+  const [y, m] = month.split("-").map(Number);
+  return isoDay(Date.UTC(y, m, 0));
+}
+function addMonths(month, delta2) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1 + delta2, 1)).toISOString().slice(0, 7);
+}
+function daysInRange(from, to) {
+  const days = [];
+  for (let t = parseDay(from); t <= parseDay(to); t += DAY) days.push(isoDay(t));
+  return days;
+}
+function build(label, from, to, today) {
+  if (from > to) throw new ToolError("period_invalid", `Period starts after it ends (${from} > ${to}).`, "Swap from and to.");
+  if (from > today) throw new ToolError("period_invalid", `Period starts in the future (${from}).`, "Use a past period.");
+  const months = [];
+  for (let month = monthOf(from); month <= monthOf(to); month = addMonths(month, 1)) months.push(month);
+  if (months.length > 12) throw new ToolError("period_invalid", "Periods are limited to 12 months.", "Use a shorter range.");
+  const only = months.length === 1 ? months[0] : null;
+  const wholeMonth = only && from === monthStart(only) && (to === monthEnd(only) || to === today && monthOf(today) === only) ? only : null;
+  return { label, from, to, months, wholeMonth, partial: to >= today };
+}
+function resolvePeriod(input2, now) {
+  const today = isoDay(now);
+  const yesterday = isoDay(parseDay(today) - DAY);
+  const thisMonth = monthOf(today);
+  if (typeof input2 === "object") {
+    parseDay(input2.from);
+    parseDay(input2.to);
+    const to = input2.to > today ? today : input2.to;
+    return build(`${input2.from}..${input2.to}`, input2.from, to, today);
+  }
+  switch (input2) {
+    case "today":
+      return build("today", today, today, today);
+    case "yesterday":
+      return build("yesterday", yesterday, yesterday, today);
+    case "last7d":
+      return build("last7d", isoDay(parseDay(yesterday) - 6 * DAY), yesterday, today);
+    case "last30d":
+      return build("last30d", isoDay(parseDay(yesterday) - 29 * DAY), yesterday, today);
+    case "thisMonth":
+      return build("thisMonth", monthStart(thisMonth), today, today);
+    case "lastMonth": {
+      const last = addMonths(thisMonth, -1);
+      return build("lastMonth", monthStart(last), monthEnd(last), today);
+    }
+    default: {
+      if (input2 > thisMonth) throw new ToolError("period_invalid", `${input2} is in the future.`, "Use a past month.");
+      return build(input2, monthStart(input2), input2 === thisMonth ? today : monthEnd(input2), today);
+    }
+  }
+}
+function comparisonPeriod(period, compareTo, now) {
+  const today = isoDay(now);
+  if (compareTo === "previousPeriod" && period.wholeMonth && !period.partial) {
+    const previous = addMonths(period.wholeMonth, -1);
+    return build(`${previous} (previous month)`, monthStart(previous), monthEnd(previous), today);
+  }
+  if (compareTo === "previousPeriod") {
+    const length = daysInRange(period.from, period.to).length;
+    const end = parseDay(period.from) - DAY;
+    return build("previous period", isoDay(end - (length - 1) * DAY), isoDay(end), today);
+  }
+  const shift = (day) => {
+    const month = addMonths(monthOf(day), -1);
+    const last = monthEnd(month);
+    const candidate = `${month}-${day.slice(8)}`;
+    return candidate > last ? last : candidate;
+  };
+  return build("same days last month", shift(period.from), shift(period.to), today);
+}
+
+// src/core/money.ts
+var MINUTE = 6e4;
+function n(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+function isSettledMonth(month, now) {
+  const today = isoDay(now);
+  const current = monthOf(today);
+  if (month >= current) return false;
+  return !(month === addMonths(current, -1) && Number(today.slice(8)) <= 3);
+}
+function monthTtl(month, now) {
+  return isSettledMonth(month, now) ? 60 * MINUTE : 5 * MINUTE;
+}
+function normalizeBreakdown(rows) {
+  const byId = /* @__PURE__ */ new Map();
+  for (const row3 of rows) {
+    const runs = row3.runsStats ?? { TOTAL: 0 };
+    const succeeded = n(runs.SUCCEEDED);
+    const aborted2 = n(runs.ABORTED);
+    const timedOut = n(runs["TIMED-OUT"]);
+    const total = n(runs.TOTAL);
+    const next = {
+      id: row3.actor._id,
+      name: row3.actor.name,
+      title: row3.actor.title ?? null,
+      notice: row3.actor.notice && row3.actor.notice !== "NONE" ? row3.actor.notice : null,
+      revenueUsd: n(row3.earningsStats.totalRevenueUsd),
+      costUsd: n(row3.earningsStats.totalCostUsd),
+      profitUsd: row3.earningsStats.totalProfitUsd != null ? n(row3.earningsStats.totalProfitUsd) : n(row3.earningsStats.totalRevenueUsd) - n(row3.earningsStats.totalCostUsd),
+      runs: total,
+      succeeded,
+      failed: runs.FAILED == null ? Math.max(0, total - succeeded - aborted2 - timedOut) : n(runs.FAILED),
+      timedOut,
+      aborted: aborted2,
+      results: n(runs.RESULTS),
+      chargedResults: row3.chargedResults ?? null,
+      payingUsers: row3.usersStats ? n(row3.usersStats.payingUsers) : null,
+      freeUsers: row3.usersStats ? n(row3.usersStats.freeUsers) : null,
+      pricing: readPricing(row3.currentPricingInfo)
+    };
+    const seen = byId.get(next.id);
+    if (!seen) {
+      byId.set(next.id, next);
+      continue;
+    }
+    for (const key of ["revenueUsd", "costUsd", "runs", "succeeded", "failed", "timedOut", "aborted", "results"]) {
+      seen[key] = Math.max(seen[key], next[key]);
+    }
+    seen.profitUsd = seen.revenueUsd - seen.costUsd;
+  }
+  return [...byId.values()];
+}
+function sumMoney(rows) {
+  const total = { revenueUsd: 0, costUsd: 0, profitUsd: 0 };
+  for (const row3 of rows) {
+    total.revenueUsd += row3.revenueUsd;
+    total.costUsd += row3.costUsd;
+    total.profitUsd += row3.profitUsd;
+  }
+  return total;
+}
+function pick2(stats, audience) {
+  const side = audience === "paying" ? stats.payingUsersUsd : stats.allUsersUsd;
+  return { revenueUsd: side.revenueUsd, costUsd: side.costUsd, profitUsd: side.profitUsd };
+}
+function moneyForPeriod(period, monthly, audience) {
+  if (period.wholeMonth) {
+    const data = monthly.get(period.wholeMonth);
+    if (!data) throw new Error(`missing month ${period.wholeMonth}`);
+    return { money: pick2(data.totalProfitMarginStats, audience), daysWithData: Object.keys(data.dailyProfitMarginStats).length };
+  }
+  const days = new Set(daysInRange(period.from, period.to));
+  const parts = [];
+  for (const data of monthly.values()) {
+    for (const [day, stats] of Object.entries(data.dailyProfitMarginStats)) {
+      if (days.has(day.slice(0, 10))) parts.push(pick2(stats, audience));
+    }
+  }
+  return { money: sumMoney(parts), daysWithData: parts.length };
+}
+function daysElapsed(month, now) {
+  const today = isoDay(now);
+  if (monthOf(today) > month) return Number(monthEnd(month).slice(8));
+  return Number(today.slice(8));
+}
+
+// src/core/console-data.ts
+var diskOrigins = /* @__PURE__ */ new WeakMap();
+function origins(ctx) {
+  let map2 = diskOrigins.get(ctx);
+  if (!map2) diskOrigins.set(ctx, map2 = /* @__PURE__ */ new Map());
+  return map2;
+}
+async function settled(ctx, key, kind, month, load) {
+  const value = await ctx.cache.get(key, monthTtl(month, ctx.now()), async () => {
+    if (!isSettledMonth(month, ctx.now())) return load();
+    const disk = await ctx.disk();
+    if (!disk) return load();
+    const hit = await disk.read(kind, month);
+    if (hit && ctx.now() - hit.fetchedAt < DISK_TTL_MS) {
+      origins(ctx).set(key, { month, fetchedAt: hit.fetchedAt });
+      return hit.value;
+    }
+    const fresh = await load();
+    origins(ctx).delete(key);
+    await disk.write(kind, month, fresh).catch(() => {
+    });
+    return fresh;
+  });
+  const origin = origins(ctx).get(key);
+  if (origin) recordDiskUse(origin.month, origin.fetchedAt);
+  return value;
+}
+async function freshOnDisk(ctx, kind, month) {
+  if (!isSettledMonth(month, ctx.now())) return false;
+  const hit = await (await ctx.disk())?.read(kind, month);
+  return !!hit && ctx.now() - hit.fetchedAt < DISK_TTL_MS;
+}
+function breakdown(ctx, api, month) {
+  return settled(ctx, `breakdown:${month}`, "breakdown", month, async () => normalizeBreakdown((await api.actorBreakdown(month)).monetizationPerActor));
+}
+async function breakdownFor(ctx, api, month, actorIds) {
+  const wanted = new Set(actorIds);
+  if (ctx.cache.has(`breakdown:${month}`) || await freshOnDisk(ctx, "breakdown", month)) return (await breakdown(ctx, api, month)).filter((row3) => wanted.has(row3.id));
+  const ids = [...wanted].sort();
+  const key = `breakdownFor:${month}:${ids.join(",")}`;
+  try {
+    return await ctx.cache.get(key, monthTtl(month, ctx.now()), async () => normalizeBreakdown((await api.actorBreakdown(month, ids)).monetizationPerActor));
+  } catch (error62) {
+    if (error62 instanceof ToolError && error62.code === "endpoint_changed") return (await breakdown(ctx, api, month)).filter((row3) => wanted.has(row3.id));
+    throw error62;
+  }
+}
+function profitMargin(ctx, api, month, actorIds) {
+  const key = `pm:${month}:${actorIds?.join(",") ?? "*"}`;
+  if (!actorIds) return settled(ctx, key, "pm", month, () => api.profitMargin(month));
+  return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.profitMargin(month, actorIds));
+}
+async function prefetchMoney(ctx, api) {
+  const current = monthOf(isoDay(ctx.now()));
+  const previous = addMonths(current, -1);
+  await Promise.allSettled([breakdown(ctx, api, current), breakdown(ctx, api, previous), profitMargins(ctx, api, [current, previous])]);
+}
+async function profitMargins(ctx, api, months, actorIds) {
+  const entries = await Promise.all(months.map(async (month) => [month, await profitMargin(ctx, api, month, actorIds)]));
+  return new Map(entries);
+}
+function marketing(ctx, api, month, actorIds, portion) {
+  const key = `mk:${month}:${actorIds?.join(",") ?? "*"}:${portion ?? "all"}`;
+  return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
+}
+var QUALITY_TTL = 5 * 6e4;
+function qualityScores(ctx, api, actorId) {
+  return ctx.cache.get(`qs:${actorId}`, QUALITY_TTL, () => api.qualityScores(actorId));
+}
+function qualityImprovements(ctx, api, actorId) {
+  return ctx.cache.get(`qi:${actorId}`, QUALITY_TTL, () => api.qualityImprovements(actorId));
+}
+function qualityBusinessValue(ctx, api, actorId) {
+  return ctx.cache.get(`qbv:${actorId}`, QUALITY_TTL, () => api.qualityBusinessValue(actorId));
+}
+
 // src/core/repo.ts
-import { readdir as readdir2, readFile as readFile4 } from "node:fs/promises";
-import { join as join8 } from "node:path";
+import { readdir as readdir3, readFile as readFile5 } from "node:fs/promises";
+import { join as join9 } from "node:path";
 async function scanActorDirs(dirs) {
   const byName = /* @__PURE__ */ new Map();
   for (const dir of dirs) {
     let entries;
     try {
-      entries = await readdir2(dir, { withFileTypes: true });
+      entries = await readdir3(dir, { withFileTypes: true });
     } catch {
       continue;
     }
     await Promise.all(
       entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith(".")).map(async (entry) => {
-        const path = join8(dir, entry.name);
+        const path = join9(dir, entry.name);
         let name = entry.name;
         try {
-          const manifest = JSON.parse(await readFile4(join8(path, ".actor", "actor.json"), "utf8"));
+          const manifest = JSON.parse(await readFile5(join9(path, ".actor", "actor.json"), "utf8"));
           if (typeof manifest.name === "string" && manifest.name) name = manifest.name;
         } catch {
           return;
@@ -29531,10 +29988,12 @@ async function scanActorDirs(dirs) {
 }
 
 // src/context.ts
-var MINUTE = 6e4;
+var MINUTE2 = 6e4;
 function createContext(config2, api, tokenSource, now = Date.now, options = {}) {
   const cache = new Cache(now);
   let consoleApi = null;
+  let usedConsole = null;
+  let prefetched = false;
   const ctx = {
     config: config2,
     cache,
@@ -29550,16 +30009,17 @@ function createContext(config2, api, tokenSource, now = Date.now, options = {}) 
       }
       return api;
     },
-    account: () => cache.get("me", 60 * MINUTE, () => wrapApi(() => ctx.api().me())),
-    catalog: () => cache.get("catalog", 10 * MINUTE, async () => {
-      const me = await ctx.account();
-      const [mine, store] = await wrapApi(() => Promise.all([ctx.api().myActors(), ctx.api().storeActors(me.username)]));
-      return buildCatalog(mine, store);
+    account: () => cache.get("me", 60 * MINUTE2, () => wrapApi(() => ctx.api().me())),
+    catalog: () => cache.get("catalog", 10 * MINUTE2, async () => {
+      const [me, mine] = await Promise.all([ctx.account(), wrapApi(() => ctx.api().myActors())]);
+      const store2 = await wrapApi(() => ctx.api().storeActors(me.username));
+      return buildCatalog(mine, store2);
     }),
-    localActorPaths: () => cache.get("local-actors", 10 * MINUTE, () => scanActorDirs(config2.actorDirs)),
+    localActorPaths: () => cache.get("local-actors", 10 * MINUTE2, () => scanActorDirs(config2.actorDirs)),
     async console() {
       if (options.consoleApi !== void 0) {
         if (!options.consoleApi) throw consoleError("bridge_missing");
+        usedConsole = options.consoleApi;
         return options.consoleApi;
       }
       const me = await ctx.account();
@@ -29568,7 +30028,11 @@ function createContext(config2, api, tokenSource, now = Date.now, options = {}) 
         await touchWanted(config2.home);
         throw consoleError(status.state);
       }
-      consoleApi ??= createConsoleApi(() => waitForConsoleToken(config2.home, me.id, { now }));
+      consoleApi ??= createConsoleApi({
+        current: () => currentConsoleToken(config2.home, me.id, now()),
+        refresh: (rejected) => refreshedConsoleToken(config2.home, me.id, rejected, { now })
+      });
+      usedConsole = consoleApi;
       return consoleApi;
     },
     async optionalConsole() {
@@ -29578,6 +30042,17 @@ function createContext(config2, api, tokenSource, now = Date.now, options = {}) 
       await touchWanted(config2.home);
       if (status.state !== "ok") return { api: null, state: status.state };
       return { api: await ctx.console(), state: "ok" };
+    },
+    disk: () => cache.get("disk", 24 * 60 * MINUTE2, async () => {
+      if (!config2.diskCache) return null;
+      const me = await ctx.account();
+      return createDiskCache(config2.home, me.id, now);
+    }),
+    afterTool() {
+      if (!config2.prefetch || prefetched || !usedConsole) return;
+      prefetched = true;
+      void prefetchMoney(ctx, usedConsole).catch(() => {
+      });
     }
   };
   return ctx;
@@ -29599,9 +30074,61 @@ async function wrapApi(call) {
   }
 }
 
+// src/core/keepalive.ts
+var DISPATCHER = /* @__PURE__ */ Symbol.for("undici.globalDispatcher.1");
+function tuneKeepAlive(holder = globalThis, undiciVersion = process.versions.undici ?? "") {
+  const major = Number(undiciVersion.split(".")[0]);
+  if (!Number.isFinite(major) || major >= 7) return false;
+  const current = holder[DISPATCHER];
+  if (!current || current.tunedKeepAlive || current.constructor?.name !== "Agent") return false;
+  try {
+    const tuned = new current.constructor({ keepAliveTimeout: 6e4, keepAliveMaxTimeout: 6e5 });
+    tuned.tunedKeepAlive = true;
+    holder[DISPATCHER] = tuned;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// src/core/timing.ts
+var enabled = false;
+var ACTOR_ID_SEGMENT = /\/[A-Za-z0-9]{17}(?=\/|$)/g;
+function describeRequest(url2) {
+  try {
+    const u = new URL(url2);
+    const month = u.searchParams.get("month") ?? u.searchParams.get("monthStartAt");
+    return `${u.host}${u.pathname.replace(ACTOR_ID_SEGMENT, "/:id")}${month ? ` month=${month.slice(0, 7)}` : ""}`;
+  } catch {
+    return "(unparsable url)";
+  }
+}
+function logTiming(line) {
+  if (enabled) process.stderr.write(`[timing] ${line}
+`);
+}
+function installTiming(env = process.env, target = globalThis) {
+  if (!/\btiming\b/.test(env.APIFY_INSIGHTS_DEBUG ?? "")) return false;
+  enabled = true;
+  const original = target.fetch;
+  target.fetch = (async (input2, init) => {
+    const started = Date.now();
+    const what = describeRequest(typeof input2 === "string" ? input2 : input2 instanceof URL ? input2.href : input2.url);
+    try {
+      const response = await original(input2, init);
+      logTiming(`http ${response.status} ${Date.now() - started}ms ${response.headers.get("content-length") ?? "?"}B ${what}`);
+      return response;
+    } catch (error62) {
+      logTiming(`http ERR ${Date.now() - started}ms ${what} ${error62?.cause?.code ?? error62?.name ?? "error"}`);
+      throw error62;
+    }
+  });
+  return true;
+}
+
 // src/server.ts
-import { appendFile, mkdir as mkdir5 } from "node:fs/promises";
-import { join as join9 } from "node:path";
+import { appendFile, mkdir as mkdir6 } from "node:fs/promises";
+import { join as join10 } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
 var util;
@@ -35300,13 +35827,13 @@ var Protocol = class {
     const capturedTransport = this._transport;
     const relatedTaskId = request.params?._meta?.[RELATED_TASK_META_KEY]?.taskId;
     const sessionId = capturedTransport?.sessionId;
-    const store = this._taskStore;
+    const store2 = this._taskStore;
     let relatedTaskFound = true;
     let relatedTaskLookup;
-    if (relatedTaskId && store && this._taskMessageQueue && sessionId !== void 0) {
+    if (relatedTaskId && store2 && this._taskMessageQueue && sessionId !== void 0) {
       relatedTaskFound = false;
       relatedTaskLookup = (async () => {
-        if (!await store.getTask(relatedTaskId, sessionId)) {
+        if (!await store2.getTask(relatedTaskId, sessionId)) {
           throw new McpError(ErrorCode.InvalidParams, `Task not found: ${relatedTaskId}`);
         }
         relatedTaskFound = true;
@@ -37813,213 +38340,6 @@ function buildTriage(actors, entries, thresholds2, { early = false } = {}) {
   return { buckets: [...buckets.values()], scanned, viewers };
 }
 
-// src/core/period.ts
-var periodInput = external_exports.union([
-  external_exports.enum(["today", "yesterday", "last7d", "last30d", "thisMonth", "lastMonth"]),
-  external_exports.string().regex(/^\d{4}-\d{2}$/, "YYYY-MM"),
-  external_exports.object({ from: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/) })
-]).describe('today | yesterday | last7d | last30d (both end yesterday) | thisMonth | lastMonth | "YYYY-MM" | {from, to} (YYYY-MM-DD, max 12 months)');
-var DAY = 864e5;
-function isoDay(ms) {
-  return new Date(ms).toISOString().slice(0, 10);
-}
-function parseDay(day) {
-  const ms = Date.parse(`${day}T00:00:00Z`);
-  if (!Number.isFinite(ms) || isoDay(ms) !== day) throw new ToolError("period_invalid", `"${day}" is not a valid date.`, "Use YYYY-MM-DD.");
-  return ms;
-}
-function monthOf(day) {
-  return day.slice(0, 7);
-}
-function monthStart(month) {
-  return `${month}-01`;
-}
-function monthEnd(month) {
-  const [y, m] = month.split("-").map(Number);
-  return isoDay(Date.UTC(y, m, 0));
-}
-function addMonths(month, delta2) {
-  const [y, m] = month.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1 + delta2, 1)).toISOString().slice(0, 7);
-}
-function daysInRange(from, to) {
-  const days = [];
-  for (let t = parseDay(from); t <= parseDay(to); t += DAY) days.push(isoDay(t));
-  return days;
-}
-function build(label, from, to, today) {
-  if (from > to) throw new ToolError("period_invalid", `Period starts after it ends (${from} > ${to}).`, "Swap from and to.");
-  if (from > today) throw new ToolError("period_invalid", `Period starts in the future (${from}).`, "Use a past period.");
-  const months = [];
-  for (let month = monthOf(from); month <= monthOf(to); month = addMonths(month, 1)) months.push(month);
-  if (months.length > 12) throw new ToolError("period_invalid", "Periods are limited to 12 months.", "Use a shorter range.");
-  const only = months.length === 1 ? months[0] : null;
-  const wholeMonth = only && from === monthStart(only) && (to === monthEnd(only) || to === today && monthOf(today) === only) ? only : null;
-  return { label, from, to, months, wholeMonth, partial: to >= today };
-}
-function resolvePeriod(input2, now) {
-  const today = isoDay(now);
-  const yesterday = isoDay(parseDay(today) - DAY);
-  const thisMonth = monthOf(today);
-  if (typeof input2 === "object") {
-    parseDay(input2.from);
-    parseDay(input2.to);
-    const to = input2.to > today ? today : input2.to;
-    return build(`${input2.from}..${input2.to}`, input2.from, to, today);
-  }
-  switch (input2) {
-    case "today":
-      return build("today", today, today, today);
-    case "yesterday":
-      return build("yesterday", yesterday, yesterday, today);
-    case "last7d":
-      return build("last7d", isoDay(parseDay(yesterday) - 6 * DAY), yesterday, today);
-    case "last30d":
-      return build("last30d", isoDay(parseDay(yesterday) - 29 * DAY), yesterday, today);
-    case "thisMonth":
-      return build("thisMonth", monthStart(thisMonth), today, today);
-    case "lastMonth": {
-      const last = addMonths(thisMonth, -1);
-      return build("lastMonth", monthStart(last), monthEnd(last), today);
-    }
-    default: {
-      if (input2 > thisMonth) throw new ToolError("period_invalid", `${input2} is in the future.`, "Use a past month.");
-      return build(input2, monthStart(input2), input2 === thisMonth ? today : monthEnd(input2), today);
-    }
-  }
-}
-function comparisonPeriod(period, compareTo, now) {
-  const today = isoDay(now);
-  if (compareTo === "previousPeriod" && period.wholeMonth && !period.partial) {
-    const previous = addMonths(period.wholeMonth, -1);
-    return build(`${previous} (previous month)`, monthStart(previous), monthEnd(previous), today);
-  }
-  if (compareTo === "previousPeriod") {
-    const length = daysInRange(period.from, period.to).length;
-    const end = parseDay(period.from) - DAY;
-    return build("previous period", isoDay(end - (length - 1) * DAY), isoDay(end), today);
-  }
-  const shift = (day) => {
-    const month = addMonths(monthOf(day), -1);
-    const last = monthEnd(month);
-    const candidate = `${month}-${day.slice(8)}`;
-    return candidate > last ? last : candidate;
-  };
-  return build("same days last month", shift(period.from), shift(period.to), today);
-}
-
-// src/core/money.ts
-var MINUTE2 = 6e4;
-function n(value) {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-function monthTtl(month, now) {
-  const today = isoDay(now);
-  const current = monthOf(today);
-  if (month >= current) return 5 * MINUTE2;
-  if (month === addMonths(current, -1) && Number(today.slice(8)) <= 3) return 5 * MINUTE2;
-  return 60 * MINUTE2;
-}
-function normalizeBreakdown(rows) {
-  const byId = /* @__PURE__ */ new Map();
-  for (const row3 of rows) {
-    const runs = row3.runsStats ?? { TOTAL: 0 };
-    const succeeded = n(runs.SUCCEEDED);
-    const aborted2 = n(runs.ABORTED);
-    const timedOut = n(runs["TIMED-OUT"]);
-    const total = n(runs.TOTAL);
-    const next = {
-      id: row3.actor._id,
-      name: row3.actor.name,
-      title: row3.actor.title ?? null,
-      notice: row3.actor.notice && row3.actor.notice !== "NONE" ? row3.actor.notice : null,
-      revenueUsd: n(row3.earningsStats.totalRevenueUsd),
-      costUsd: n(row3.earningsStats.totalCostUsd),
-      profitUsd: row3.earningsStats.totalProfitUsd != null ? n(row3.earningsStats.totalProfitUsd) : n(row3.earningsStats.totalRevenueUsd) - n(row3.earningsStats.totalCostUsd),
-      runs: total,
-      succeeded,
-      failed: runs.FAILED == null ? Math.max(0, total - succeeded - aborted2 - timedOut) : n(runs.FAILED),
-      timedOut,
-      aborted: aborted2,
-      results: n(runs.RESULTS),
-      chargedResults: row3.chargedResults ?? null,
-      payingUsers: row3.usersStats ? n(row3.usersStats.payingUsers) : null,
-      freeUsers: row3.usersStats ? n(row3.usersStats.freeUsers) : null,
-      pricing: readPricing(row3.currentPricingInfo)
-    };
-    const seen = byId.get(next.id);
-    if (!seen) {
-      byId.set(next.id, next);
-      continue;
-    }
-    for (const key of ["revenueUsd", "costUsd", "runs", "succeeded", "failed", "timedOut", "aborted", "results"]) {
-      seen[key] = Math.max(seen[key], next[key]);
-    }
-    seen.profitUsd = seen.revenueUsd - seen.costUsd;
-  }
-  return [...byId.values()];
-}
-function sumMoney(rows) {
-  const total = { revenueUsd: 0, costUsd: 0, profitUsd: 0 };
-  for (const row3 of rows) {
-    total.revenueUsd += row3.revenueUsd;
-    total.costUsd += row3.costUsd;
-    total.profitUsd += row3.profitUsd;
-  }
-  return total;
-}
-function pick2(stats, audience) {
-  const side = audience === "paying" ? stats.payingUsersUsd : stats.allUsersUsd;
-  return { revenueUsd: side.revenueUsd, costUsd: side.costUsd, profitUsd: side.profitUsd };
-}
-function moneyForPeriod(period, monthly, audience) {
-  if (period.wholeMonth) {
-    const data = monthly.get(period.wholeMonth);
-    if (!data) throw new Error(`missing month ${period.wholeMonth}`);
-    return { money: pick2(data.totalProfitMarginStats, audience), daysWithData: Object.keys(data.dailyProfitMarginStats).length };
-  }
-  const days = new Set(daysInRange(period.from, period.to));
-  const parts = [];
-  for (const data of monthly.values()) {
-    for (const [day, stats] of Object.entries(data.dailyProfitMarginStats)) {
-      if (days.has(day.slice(0, 10))) parts.push(pick2(stats, audience));
-    }
-  }
-  return { money: sumMoney(parts), daysWithData: parts.length };
-}
-function daysElapsed(month, now) {
-  const today = isoDay(now);
-  if (monthOf(today) > month) return Number(monthEnd(month).slice(8));
-  return Number(today.slice(8));
-}
-
-// src/core/console-data.ts
-function breakdown(ctx, api, month) {
-  return ctx.cache.get(`breakdown:${month}`, monthTtl(month, ctx.now()), async () => normalizeBreakdown((await api.actorBreakdown(month)).monetizationPerActor));
-}
-function profitMargin(ctx, api, month, actorIds) {
-  const key = `pm:${month}:${actorIds?.join(",") ?? "*"}`;
-  return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.profitMargin(month, actorIds));
-}
-async function profitMargins(ctx, api, months, actorIds) {
-  const entries = await Promise.all(months.map(async (month) => [month, await profitMargin(ctx, api, month, actorIds)]));
-  return new Map(entries);
-}
-function marketing(ctx, api, month, actorIds, portion) {
-  const key = `mk:${month}:${actorIds?.join(",") ?? "*"}:${portion ?? "all"}`;
-  return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
-}
-var QUALITY_TTL = 5 * 6e4;
-function qualityScores(ctx, api, actorId) {
-  return ctx.cache.get(`qs:${actorId}`, QUALITY_TTL, () => api.qualityScores(actorId));
-}
-function qualityImprovements(ctx, api, actorId) {
-  return ctx.cache.get(`qi:${actorId}`, QUALITY_TTL, () => api.qualityImprovements(actorId));
-}
-function qualityBusinessValue(ctx, api, actorId) {
-  return ctx.cache.get(`qbv:${actorId}`, QUALITY_TTL, () => api.qualityBusinessValue(actorId));
-}
-
 // src/core/funnel.ts
 function funnel(data) {
   const viewers = data.numUniqueViewingUsers;
@@ -38041,6 +38361,7 @@ async function scanActors(actors, load) {
   const results = /* @__PURE__ */ new Map();
   const failed = [];
   let firstError;
+  let done = 0;
   await Promise.all(
     actors.map(async (actor) => {
       try {
@@ -38050,6 +38371,8 @@ async function scanActors(actors, load) {
         firstError ??= error62;
         failed.push(actor);
       }
+      done++;
+      reportProgress(done, actors.length, `${done} of ${actors.length} actors`);
     })
   );
   if (actors.length && !results.size) throw firstError;
@@ -38404,9 +38727,12 @@ async function rangeView(ctx, args, period, only) {
     ids = [...revenue.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id]) => id);
     label = `your top ${ids.length} earners in ${period.months.join(", ")}`;
   }
+  let done = 0;
   const rows = await Promise.all(
     ids.map(async (id) => {
       const { money: money2 } = moneyForPeriod(period, await profitMargins(ctx, api, period.months, [id]), "paying");
+      done++;
+      reportProgress(done, ids.length, `${done} of ${ids.length} actors`);
       return { name: names.get(id) ?? id, revenueUsd: round(money2.revenueUsd), costUsd: round(money2.costUsd), profitUsd: round(money2.profitUsd) };
     })
   );
@@ -38762,7 +39088,7 @@ async function moneySection(ctx, actorId) {
   const now = ctx.now();
   const current = monthOf(isoDay(now));
   const months = [current, addMonths(current, -1), addMonths(current, -2)];
-  const all = await Promise.all(months.map((month2) => breakdown(ctx, api, month2)));
+  const all = await Promise.all(months.map((month2, i) => i === 0 ? breakdown(ctx, api, month2) : breakdownFor(ctx, api, month2, [actorId])));
   const mine = all.map((rows) => rows.find((row3) => row3.id === actorId) ?? null);
   const latest = mine[0];
   const t = thresholds(all[0], daysElapsed(current, now));
@@ -38801,9 +39127,10 @@ async function actorReport(ctx, args) {
     });
   }
   const summary = found.actor;
-  const [detail, localPaths] = await Promise.all([
+  const [detail, localPaths, money2] = await Promise.all([
     ctx.cache.get(`actor:${summary.id}`, 5 * 6e4, () => wrapApi(() => ctx.api().actor(summary.id))),
-    ctx.localActorPaths()
+    ctx.localActorPaths(),
+    moneySection(ctx, summary.id)
   ]);
   const health = detail.stats?.publicActorRunStats30Days ? runHealth(detail.stats.publicActorRunStats30Days) : summary.runs30d;
   const notice = detail.notice ?? summary.notice;
@@ -38811,7 +39138,6 @@ async function actorReport(ctx, args) {
   const pricing = readPricing(currentPricingInfo(detail.pricingInfos, ctx.now())) ?? summary.pricing;
   const latest = detail.taggedBuilds?.latest;
   const localPath = localPaths.get(summary.name) ?? null;
-  const money2 = await moneySection(ctx, summary.id);
   flags.push(...money2.flags.filter((flag) => !flags.some((seen) => seen.flag === flag.flag)));
   const notes = [money2.note];
   if (!summary.isPublic) notes.push("Private actor: users and run results are not in public stats, so they are null.");
@@ -39025,6 +39351,7 @@ async function dailyBrief(ctx) {
   const today = isoDay(now);
   const month = monthOf(today);
   const catalog = await ctx.catalog();
+  reportProgress(1, 3, "Actors loaded");
   const { api, reason: reason2 } = await tryConsole(ctx);
   if (!api) {
     const items2 = pickItems(healthItems(catalog, null));
@@ -39043,6 +39370,7 @@ async function dailyBrief(ctx) {
   const mtdCompare = mtd ? comparisonPeriod(mtd, "sameDaysLastMonth", now) : null;
   const months = [.../* @__PURE__ */ new Set([...yesterday.months, ...mtd?.months ?? [], ...mtdCompare?.months ?? []])];
   const margins = await profitMargins(ctx, api, months);
+  reportProgress(2, 3, "Account money loaded; loading per-actor money");
   const y = moneyForPeriod(yesterday, margins, "paying").money;
   const m = mtd ? moneyForPeriod(mtd, margins, "paying").money : null;
   const mc = mtdCompare ? moneyForPeriod(mtdCompare, margins, "paying").money : null;
@@ -39233,16 +39561,16 @@ async function moneyOf(ctx, period, audience) {
 async function revenueSummary(ctx, args) {
   const now = ctx.now();
   const period = resolvePeriod(args.period, now);
-  const current = await moneyOf(ctx, period, args.audience);
+  const other = args.compareTo ? comparisonPeriod(period, args.compareTo, now) : null;
+  const [current, previousMoney] = await Promise.all([moneyOf(ctx, period, args.audience), other ? moneyOf(ctx, other, args.audience) : null]);
   const notes = [`Money as the Apify Console shows it (${args.audience === "paying" ? "paying users only" : "paying and free-plan users"}).`];
   if (period.partial) notes.push("The period includes today, so it is incomplete; late usage can still land.");
   const expectedDays = daysInRange(period.from, period.to).length;
   if (current.daysWithData < expectedDays && !period.wholeMonth) notes.push(`Daily data covers ${current.daysWithData} of ${expectedDays} days.`);
   let comparison;
   let compareLine = "";
-  if (args.compareTo) {
-    const other = comparisonPeriod(period, args.compareTo, now);
-    const previous = await moneyOf(ctx, other, args.audience);
+  if (other && previousMoney) {
+    const previous = previousMoney;
     comparison = { period: { label: other.label, from: other.from, to: other.to }, totals: shape(previous.money), change: delta(current.money, previous.money) };
     const change2 = delta(current.money, previous.money);
     compareLine = ` vs $${round(previous.money.revenueUsd)} (${other.from}..${other.to}): ${change2.revenuePct == null ? "n/a" : `${change2.revenuePct > 0 ? "+" : ""}${change2.revenuePct}%`} revenue.`;
@@ -39442,31 +39770,39 @@ async function storeRankTool(ctx, args) {
 }
 
 // src/server.ts
-var VERSION = true ? "0.4.0" : "0.0.0-dev";
+var VERSION2 = true ? "0.5.0" : "0.0.0-dev";
 var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 async function logUsage(ctx, tool) {
   if (!ctx.config.usageLog) return;
   try {
-    await mkdir5(ctx.config.home, { recursive: true, mode: 448 });
-    await appendFile(join9(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
+    await mkdir6(ctx.config.home, { recursive: true, mode: 448 });
+    await appendFile(join10(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
 `, { mode: 384 });
   } catch {
   }
 }
-function guarded(ctx, tool, run) {
-  return (async () => {
+function guarded(ctx, tool, run, extra) {
+  return withProgress(extra, async () => {
     await logUsage(ctx, tool);
+    const started = Date.now();
     try {
-      return await run();
+      const { result, used: used2 } = await withDiskUse(run);
+      const note = diskNote(used2);
+      const notes = result.structuredContent?.notes;
+      if (note && Array.isArray(notes)) notes.push(note);
+      return result;
     } catch (error62) {
       if (error62 instanceof ToolError) return fail(error62);
       return fail(new ToolError("public_api_error", error62 instanceof Error ? error62.message : String(error62), "Try again in a minute."));
+    } finally {
+      logTiming(`tool ${tool} ${Date.now() - started}ms`);
+      ctx.afterTool();
     }
-  })();
+  });
 }
 function createServer(ctx) {
   const server = new McpServer(
-    { name: "apify-insights", version: VERSION },
+    { name: "apify-insights", version: VERSION2 },
     {
       instructions: 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. "How am I doing" \u2192 daily_brief. "Is anything broken" \u2192 run_health. "Which actors lose money / should I reprice" \u2192 actor_profitability(view: losers) then actor_report. "How many viewed, ran or paid", referrers, countries \u2192 growth. "Which actors are leaking, rising or fading, and what to do" \u2192 acquisition_score. "What should I fix for quality" \u2192 actor_quality. Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.'
     }
@@ -39478,7 +39814,7 @@ function createServer(ctx) {
       description: "Whether the Apify API token works (and for which account) and the state of the Console session used for money data. Call this when another tool returns an auth error.",
       annotations: READ_ONLY
     },
-    () => guarded(ctx, "auth_status", () => authStatus(ctx))
+    (extra) => guarded(ctx, "auth_status", () => authStatus(ctx), extra)
   );
   server.registerTool(
     "daily_brief",
@@ -39487,7 +39823,7 @@ function createServer(ctx) {
       description: "Yesterday and month-to-date money (paying users) vs the same days last month, plus up to three actors to look at, each with the rule that flagged it and the next call to make. Falls back to health only without a Console session.",
       annotations: READ_ONLY
     },
-    () => guarded(ctx, "daily_brief", () => dailyBrief(ctx))
+    (extra) => guarded(ctx, "daily_brief", () => dailyBrief(ctx), extra)
   );
   server.registerTool(
     "revenue_summary",
@@ -39497,7 +39833,7 @@ function createServer(ctx) {
       inputSchema: revenueSummaryInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "revenue_summary", () => revenueSummary(ctx, args))
+    (args, extra) => guarded(ctx, "revenue_summary", () => revenueSummary(ctx, args), extra)
   );
   server.registerTool(
     "actor_profitability",
@@ -39507,7 +39843,7 @@ function createServer(ctx) {
       inputSchema: actorProfitabilityInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "actor_profitability", () => actorProfitability(ctx, args))
+    (args, extra) => guarded(ctx, "actor_profitability", () => actorProfitability(ctx, args), extra)
   );
   server.registerTool(
     "run_health",
@@ -39517,7 +39853,7 @@ function createServer(ctx) {
       inputSchema: runHealthInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "run_health", () => runHealthTool(ctx, args))
+    (args, extra) => guarded(ctx, "run_health", () => runHealthTool(ctx, args), extra)
   );
   server.registerTool(
     "actor_report",
@@ -39527,7 +39863,7 @@ function createServer(ctx) {
       inputSchema: actorReportInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "actor_report", () => actorReport(ctx, args))
+    (args, extra) => guarded(ctx, "actor_report", () => actorReport(ctx, args), extra)
   );
   server.registerTool(
     "list_actors",
@@ -39537,7 +39873,7 @@ function createServer(ctx) {
       inputSchema: listActorsInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "list_actors", () => listActors(ctx, args))
+    (args, extra) => guarded(ctx, "list_actors", () => listActors(ctx, args), extra)
   );
   server.registerTool(
     "growth",
@@ -39547,7 +39883,7 @@ function createServer(ctx) {
       inputSchema: growthInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "growth", () => growth(ctx, args))
+    (args, extra) => guarded(ctx, "growth", () => growth(ctx, args), extra)
   );
   server.registerTool(
     "acquisition_score",
@@ -39557,7 +39893,7 @@ function createServer(ctx) {
       inputSchema: acquisitionScoreInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "acquisition_score", () => acquisitionScore(ctx, args))
+    (args, extra) => guarded(ctx, "acquisition_score", () => acquisitionScore(ctx, args), extra)
   );
   server.registerTool(
     "actor_quality",
@@ -39567,7 +39903,7 @@ function createServer(ctx) {
       inputSchema: actorQualityInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "actor_quality", () => actorQuality(ctx, args))
+    (args, extra) => guarded(ctx, "actor_quality", () => actorQuality(ctx, args), extra)
   );
   server.registerTool(
     "store_rank",
@@ -39577,7 +39913,7 @@ function createServer(ctx) {
       inputSchema: storeRankInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "store_rank", () => storeRankTool(ctx, args))
+    (args, extra) => guarded(ctx, "store_rank", () => storeRankTool(ctx, args), extra)
   );
   server.registerTool(
     "competitor_benchmark",
@@ -39587,7 +39923,7 @@ function createServer(ctx) {
       inputSchema: competitorBenchmarkInput,
       annotations: READ_ONLY
     },
-    (args) => guarded(ctx, "competitor_benchmark", () => competitorBenchmarkTool(ctx, args))
+    (args, extra) => guarded(ctx, "competitor_benchmark", () => competitorBenchmarkTool(ctx, args), extra)
   );
   server.registerResource(
     "glossary",
@@ -39633,9 +39969,12 @@ function createServer(ctx) {
 async function main() {
   const code = await runCli(process.argv.slice(2));
   if (code !== null) process.exit(code);
+  installTiming();
   const ctx = await createDefaultContext(loadConfig());
   const server = createServer(ctx);
   await server.connect(new StdioServerTransport());
+  if (ctx.tokenSource) void ctx.account().then(() => tuneKeepAlive(), () => {
+  });
   console.error(`apify-insights-mcp ready (API token: ${ctx.tokenSource ?? "missing"})`);
 }
 main().catch((error62) => {

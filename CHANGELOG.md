@@ -4,6 +4,31 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-11-08
+
+### Added
+
+- Local cache of finished months' money under `~/.apify-insights/cache/`, used for up to 24 hours so a new client session does not wait 3 to 8 s per month again. Only months that ended more than 3 days ago are saved. Answers that used it say which months and when they were fetched. Files hold numbers only and are readable only by you. `APIFY_INSIGHTS_CACHE=0` turns it off.
+- `cache clear` command that deletes the local cache.
+- After the first money question, the server loads this and last month in the background once per session. `APIFY_INSIGHTS_PREFETCH=0` turns it off.
+- Progress messages during long calls (`daily_brief`, portfolio scans, day ranges, waiting for the Console session) for clients that ask for them, so they keep waiting instead of timing out.
+- `APIFY_INSIGHTS_DEBUG=timing` writes one line per request to stderr (status, milliseconds, size, path with actor IDs masked), never a token.
+- `scripts/bench.mjs` for timing tool calls against your own account.
+
+### Changed
+
+- Money tools use the Console session they already have and only wait for a new one when the Console rejects it. Before, once the saved session was 2 hours old every money call waited for the bridge to deliver a new one, up to 65 s, even when the old one still worked.
+- `actor_report` loads its two earlier months for that one actor only (about 11 KB instead of about 770 KB each), and loads its actor details, local source folder and money at the same time.
+- `revenue_summary` with a comparison loads both periods at the same time; `actor_profitability` over a day range loads its months at the same time.
+- The actor list loads your account and your actors at the same time before the Store lookup.
+- On Node 20, idle connections stay open for 60 s instead of 4 s, so calls a few seconds apart reuse the connection. Newer Node versions are unchanged.
+
+### Fixed
+
+- A connection dropped by the server mid-request (`UND_ERR_SOCKET`, `ECONNRESET` and similar) is retried instead of failing the tool.
+- A Console 429 waits for `Retry-After` (up to 30 s) and pauses every queued Console request, instead of retrying at once.
+- Several requests rejected at the same time share one session refresh.
+
 ## [0.4.0] - 2026-11-08
 
 ### Added
@@ -84,6 +109,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Actor catalog, resolver, cache, response envelope and local source lookup (`APIFY_INSIGHTS_ACTOR_DIRS`).
 - Unit and protocol tests on made-up data, and a live smoke test over stdio (`scripts/smoke.mjs`).
 
+[0.5.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.0...v0.2.1

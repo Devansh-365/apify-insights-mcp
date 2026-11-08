@@ -1,4 +1,5 @@
 import { ToolError } from './envelope.js';
+import { reportProgress } from './progress.js';
 
 // Portfolio scans make one or more Console requests per actor. One transient failure should not sink the
 // whole answer, so a failed actor is left out and named in a note, never shown with zeros. A session
@@ -19,6 +20,7 @@ export async function scanActors<A extends { id: string }, T>(actors: A[], load:
     const results = new Map<string, T>();
     const failed: A[] = [];
     let firstError: unknown;
+    let done = 0;
     await Promise.all(
         actors.map(async (actor) => {
             try {
@@ -28,6 +30,8 @@ export async function scanActors<A extends { id: string }, T>(actors: A[], load:
                 firstError ??= error;
                 failed.push(actor);
             }
+            done++;
+            reportProgress(done, actors.length, `${done} of ${actors.length} actors`);
         }),
     );
     // Nothing loaded: an empty answer would read as "no data", so report why instead.

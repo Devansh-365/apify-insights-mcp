@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { ActorDetail, ApifyApi, MyActor, StoreActor, StoreSearchItem } from '../src/clients/apify-api.js';
-import type { BreakdownRow, ConsoleApi, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores } from '../src/clients/console.js';
+import type { BreakdownRow, ConsoleApi, ConsoleToken, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores, TokenProvider } from '../src/clients/console.js';
 import type { Config } from '../src/config.js';
 import { createContext, type ContextOptions } from '../src/context.js';
 import { createServer } from '../src/server.js';
@@ -66,6 +66,27 @@ export function fakeApi(
         async storeSearch(keyword, limit) {
             calls.push(`storeSearch:${keyword}`);
             return (storeSearchData.get(keyword) ?? []).slice(0, limit);
+        },
+    };
+}
+
+/** A token provider for client tests: `current` returns `value`; `refresh` returns the next of `next` (or throws). */
+export function fakeTokens(value: string, next: string[] = []): TokenProvider & { refreshes: ConsoleToken[] } {
+    const refreshes: ConsoleToken[] = [];
+    let at = Date.parse('2026-11-08T00:00:00.000Z');
+    let current: ConsoleToken = { value, receivedAt: new Date(at).toISOString() };
+    return {
+        refreshes,
+        async current() {
+            return current;
+        },
+        async refresh(rejected) {
+            refreshes.push(rejected);
+            const value = next.shift();
+            if (!value) throw Object.assign(new Error('no newer token'), { code: 'warming_up' });
+            at += 60_000;
+            current = { value, receivedAt: new Date(at).toISOString() };
+            return current;
         },
     };
 }
@@ -148,9 +169,10 @@ export function fakeConsole(
             for (const day of list) daily[day] = both(revenue / list.length, cost / list.length);
             return { totalProfitMarginStats: both(revenue, cost), dailyProfitMarginStats: daily };
         },
-        async actorBreakdown(month) {
-            calls.push(`breakdown:${month}`);
-            return { monetizationPerActor: Object.entries(months[month] ?? {}).map(([name, m]) => breakdownRow(name, m)) };
+        async actorBreakdown(month, actorIds) {
+            calls.push(actorIds ? `breakdown:${month}:${actorIds.join(',')}` : `breakdown:${month}`);
+            const rows = Object.entries(months[month] ?? {}).filter(([name]) => !actorIds || actorIds.includes(`id-${name}`));
+            return { monetizationPerActor: rows.map(([name, m]) => breakdownRow(name, m)) };
         },
         async runStatistics() {
             return { dailyStats: {} };

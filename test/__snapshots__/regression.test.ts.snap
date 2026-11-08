@@ -1,0 +1,1217 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tool output stays the same (AC1) > acquisition_score {"actor":"healthy"} 1`] = `
+{
+  "data": {
+    "actor": {
+      "name": "healthy",
+      "ref": "acme/healthy",
+    },
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "bucket": {
+      "action": "Double down",
+      "key": "converting",
+      "label": "Converting",
+    },
+    "funnel": {
+      "consolePageViews": 300,
+      "storePageViews": 900,
+      "usersWithRun": 120,
+      "viewToRunPct": 20,
+      "viewingUsers": 600,
+    },
+    "notes": [
+      "For referrers, countries and paying users, call growth with this actor and month.",
+      "Thresholds and bucket sizes are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "thisMonth",
+      "partial": true,
+      "to": "2026-11-08",
+    },
+    "previous": {
+      "usersWithRun": 120,
+      "viewingUsers": 600,
+    },
+    "reason": "20% of viewers start it (120 of 600), top quarter of your Actors",
+    "source": [
+      "console (unofficial)",
+    ],
+    "thresholds": {
+      "conversionHighPct": 20,
+      "conversionLowPct": 20,
+      "leakFloor": 600,
+      "viewerFloor": 600,
+    },
+    "viewerChangePct": 0,
+  },
+  "text": "healthy (2026-11 (in progress)): Converting, double down. 20% of viewers start it (120 of 600), top quarter of your Actors.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"thisMonth","from":"2026-11-01","to":"2026-11-08","partial":true},"actor":{"name":"healthy","ref":"acme/healthy"},"bucket":{"key":"converting","label":"Converting","action":"Double down"},"reason":"20% of viewers start it (120 of 600), top quarter of your Actors","funnel":{"storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20},"previous":{"viewingUsers":600,"usersWithRun":120},"viewerChangePct":0,"thresholds":{"viewerFloor":600,"leakFloor":600,"conversionLowPct":20,"conversionHighPct":20},"notes":["For referrers, countries and paying users, call growth with this actor and month.","Thresholds and bucket sizes are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > acquisition_score {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "buckets": [
+      {
+        "action": "Fix the listing",
+        "actors": [],
+        "count": 0,
+        "key": "leaking",
+        "label": "Leaking",
+        "viewingUsers": 0,
+      },
+      {
+        "action": "Market it more",
+        "actors": [],
+        "count": 0,
+        "key": "rising",
+        "label": "Rising",
+        "viewingUsers": 0,
+      },
+      {
+        "action": "Find out why",
+        "actors": [],
+        "count": 0,
+        "key": "fading",
+        "label": "Fading",
+        "viewingUsers": 0,
+      },
+      {
+        "action": "Double down",
+        "actors": [
+          {
+            "name": "broken",
+            "reason": "20% of viewers start it (120 of 600), top quarter of your Actors",
+            "usersWithRun": 120,
+            "viewToRunPct": 20,
+            "viewerChangePct": 0,
+            "viewingUsers": 600,
+          },
+          {
+            "name": "healthy",
+            "reason": "20% of viewers start it (120 of 600), top quarter of your Actors",
+            "usersWithRun": 120,
+            "viewToRunPct": 20,
+            "viewerChangePct": 0,
+            "viewingUsers": 600,
+          },
+          {
+            "name": "steady",
+            "reason": "20% of viewers start it (120 of 600), top quarter of your Actors",
+            "usersWithRun": 120,
+            "viewToRunPct": 20,
+            "viewerChangePct": 0,
+            "viewingUsers": 600,
+          },
+        ],
+        "count": 3,
+        "key": "converting",
+        "label": "Converting",
+        "viewingUsers": 1800,
+      },
+      {
+        "action": "Nothing to do",
+        "actors": [],
+        "count": 0,
+        "key": "steady",
+        "label": "Steady",
+        "viewingUsers": 0,
+      },
+      {
+        "action": "Too little traffic to judge",
+        "actors": [],
+        "count": 0,
+        "key": "quiet",
+        "label": "Quiet",
+        "viewingUsers": 0,
+      },
+    ],
+    "notes": [
+      "Thresholds and bucket sizes are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.",
+      "For raw counts, paying users, referrers and countries, call growth.",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "thisMonth",
+      "partial": true,
+      "to": "2026-11-08",
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "thresholds": {
+      "conversionHighPct": 20,
+      "conversionLowPct": 20,
+      "leakFloor": 600,
+      "viewerFloor": 600,
+    },
+    "totals": {
+      "scanned": 3,
+      "viewingUsers": 1800,
+    },
+  },
+  "text": "2026-11 (in progress): 0 leaking, 0 rising, 0 fading, 3 converting, 0 steady, 0 quiet among your top 3 actors (1,800 viewers).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"thisMonth","from":"2026-11-01","to":"2026-11-08","partial":true},"thresholds":{"viewerFloor":600,"leakFloor":600,"conversionLowPct":20,"conversionHighPct":20},"totals":{"scanned":3,"viewingUsers":1800},"buckets":[{"key":"leaking","label":"Leaking","action":"Fix the listing","count":0,"viewingUsers":0,"actors":[]},{"key":"rising","label":"Rising","action":"Market it more","count":0,"viewingUsers":0,"actors":[]},{"key":"fading","label":"Fading","action":"Find out why","count":0,"viewingUsers":0,"actors":[]},{"key":"converting","label":"Converting","action":"Double down","count":3,"viewingUsers":1800,"actors":[{"name":"broken","viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"viewerChangePct":0,"reason":"20% of viewers start it (120 of 600), top quarter of your Actors"},{"name":"healthy","viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"viewerChangePct":0,"reason":"20% of viewers start it (120 of 600), top quarter of your Actors"},{"name":"steady","viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"viewerChangePct":0,"reason":"20% of viewers start it (120 of 600), top quarter of your Actors"}]},{"key":"steady","label":"Steady","action":"Nothing to do","count":0,"viewingUsers":0,"actors":[]},{"key":"quiet","label":"Quiet","action":"Too little traffic to judge","count":0,"viewingUsers":0,"actors":[]}],"notes":["Thresholds and bucket sizes are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.","For raw counts, paying users, referrers and countries, call growth."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_profitability {"period":"last7d","actors":["healthy","broken"]} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "currency": "USD",
+    "notes": [
+      "granularity_unavailable: per-actor money for day ranges covers only the actors you named. For every actor, use a calendar month.",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "last7d",
+      "partial": false,
+      "to": "2026-11-07",
+    },
+    "rows": [
+      {
+        "costUsd": 17.5,
+        "name": "healthy",
+        "profitUsd": 52.5,
+        "revenueUsd": 70,
+      },
+      {
+        "costUsd": 10.5,
+        "name": "broken",
+        "profitUsd": -8.75,
+        "revenueUsd": 1.75,
+      },
+    ],
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "actorsCovered": 2,
+    },
+  },
+  "text": "2026-11-01..2026-11-07, the actors you named: healthy $70, broken $1.75.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"last7d","from":"2026-11-01","to":"2026-11-07","partial":false},"audience":"paying","currency":"USD","totals":{"actorsCovered":2},"rows":[{"name":"healthy","revenueUsd":70,"costUsd":17.5,"profitUsd":52.5},{"name":"broken","revenueUsd":1.75,"costUsd":10.5,"profitUsd":-8.75}],"notes":["granularity_unavailable: per-actor money for day ranges covers only the actors you named. For every actor, use a calendar month."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_profitability {"period":"lastMonth","view":"losers"} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "currency": "USD",
+    "notes": [
+      "Per-actor money is paying-users money as the Apify Console shows it; it adds up to revenue_summary(audience: paying).",
+      "movers compare revenue per day with the month before (×30 = change per month), so a partial month compares fairly.",
+      "1 actors have no money row (private actors are not in Console analytics).",
+    ],
+    "period": {
+      "from": "2026-10-01",
+      "label": "lastMonth",
+      "partial": false,
+      "to": "2026-10-31",
+    },
+    "rows": [],
+    "rules": {},
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "actorsWithMoney": 3,
+      "costUsd": 63,
+      "lossFloorUsd": 0.44,
+      "matching": 0,
+      "materialityUsd": 1.77,
+      "profitUsd": 183,
+      "revenueUsd": 246,
+    },
+  },
+  "text": "2026-10: 0 actors losing money. Portfolio: revenue $246, profit $183 (paying users).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"lastMonth","from":"2026-10-01","to":"2026-10-31","partial":false},"audience":"paying","currency":"USD","totals":{"revenueUsd":246,"costUsd":63,"profitUsd":183,"actorsWithMoney":3,"matching":0,"materialityUsd":1.77,"lossFloorUsd":0.44},"rows":[],"rules":{},"notes":["Per-actor money is paying-users money as the Apify Console shows it; it adds up to revenue_summary(audience: paying).","movers compare revenue per day with the month before (×30 = change per month), so a partial month compares fairly.","1 actors have no money row (private actors are not in Console analytics)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_profitability {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "currency": "USD",
+    "notes": [
+      "Per-actor money is paying-users money as the Apify Console shows it; it adds up to revenue_summary(audience: paying).",
+      "movers compare revenue per day with the month before (×30 = change per month), so a partial month compares fairly.",
+      "2026-11 is in progress (8 days so far).",
+      "1 actors have no money row (private actors are not in Console analytics).",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "thisMonth",
+      "partial": true,
+      "to": "2026-11-08",
+    },
+    "rows": [
+      {
+        "costPer1kUsd": 0.2,
+        "costUsd": 20,
+        "failureRatePct": 0,
+        "flags": [
+          "growing",
+        ],
+        "freeUsers": 30,
+        "marginPct": 75,
+        "name": "healthy",
+        "payingUsers": 10,
+        "priceUsd": 0.002,
+        "profitUsd": 60,
+        "revenuePer1kUsd": 2,
+        "revenueUsd": 80,
+        "runs": 500,
+      },
+      {
+        "costPer1kUsd": 0.25,
+        "costUsd": 5,
+        "failureRatePct": 0,
+        "flags": [
+          "growing",
+        ],
+        "freeUsers": 0,
+        "marginPct": 75,
+        "name": "steady",
+        "payingUsers": 4,
+        "priceUsd": 0.002,
+        "profitUsd": 15,
+        "revenuePer1kUsd": 2,
+        "revenueUsd": 20,
+        "runs": 200,
+      },
+      {
+        "breakEvenPriceUsd": 0.012,
+        "costPer1kUsd": 2.4,
+        "costUsd": 12,
+        "failureRatePct": 20,
+        "flags": [
+          "losing",
+          "below_cost",
+          "failing",
+          "declining",
+        ],
+        "freeUsers": 0,
+        "marginPct": -500,
+        "name": "broken",
+        "payingUsers": 3,
+        "priceUsd": 0.002,
+        "profitUsd": -10,
+        "revenuePer1kUsd": 2,
+        "revenueUsd": 2,
+        "runs": 100,
+      },
+    ],
+    "rules": {
+      "below_cost": "Cost per 1,000 results is above revenue per 1,000 charged results.",
+      "declining": "Revenue per day down 25%+ on the month before, losing $2.44+/month, or stopped earning. Needs 7+ days of the month.",
+      "failing": "At least 3 failed or timed-out runs and a 5%+ failure rate (aborts excluded), on an actor with 2+ paying users or $1.22+ revenue.",
+      "growing": "Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.",
+      "losing": "Loses at least $0.61 in the period (cost above paying-users revenue).",
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "actorsWithMoney": 3,
+      "costUsd": 37,
+      "lossFloorUsd": 0.61,
+      "matching": 3,
+      "materialityUsd": 2.44,
+      "profitUsd": 65,
+      "revenueUsd": 102,
+    },
+  },
+  "text": "2026-11: 3 actors by revenue. Top: healthy ($60 profit), steady ($15 profit), broken ($-10 profit). Portfolio: revenue $102, profit $65 (paying users).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"thisMonth","from":"2026-11-01","to":"2026-11-08","partial":true},"audience":"paying","currency":"USD","totals":{"revenueUsd":102,"costUsd":37,"profitUsd":65,"actorsWithMoney":3,"matching":3,"materialityUsd":2.44,"lossFloorUsd":0.61},"rows":[{"name":"healthy","revenueUsd":80,"costUsd":20,"profitUsd":60,"marginPct":75,"runs":500,"failureRatePct":0,"payingUsers":10,"freeUsers":30,"costPer1kUsd":0.2,"revenuePer1kUsd":2,"priceUsd":0.002,"flags":["growing"]},{"name":"steady","revenueUsd":20,"costUsd":5,"profitUsd":15,"marginPct":75,"runs":200,"failureRatePct":0,"payingUsers":4,"freeUsers":0,"costPer1kUsd":0.25,"revenuePer1kUsd":2,"priceUsd":0.002,"flags":["growing"]},{"name":"broken","revenueUsd":2,"costUsd":12,"profitUsd":-10,"marginPct":-500,"runs":100,"failureRatePct":20,"payingUsers":3,"freeUsers":0,"costPer1kUsd":2.4,"revenuePer1kUsd":2,"priceUsd":0.002,"breakEvenPriceUsd":0.012,"flags":["losing","below_cost","failing","declining"]}],"rules":{"losing":"Loses at least $0.61 in the period (cost above paying-users revenue).","below_cost":"Cost per 1,000 results is above revenue per 1,000 charged results.","failing":"At least 3 failed or timed-out runs and a 5%+ failure rate (aborts excluded), on an actor with 2+ paying users or $1.22+ revenue.","declining":"Revenue per day down 25%+ on the month before, losing $2.44+/month, or stopped earning. Needs 7+ days of the month.","growing":"Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month."},"notes":["Per-actor money is paying-users money as the Apify Console shows it; it adds up to revenue_summary(audience: paying).","movers compare revenue per day with the month before (×30 = change per month), so a partial month compares fairly.","2026-11 is in progress (8 days so far).","1 actors have no money row (private actors are not in Console analytics)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_quality {"actor":"broken"} 1`] = `
+{
+  "data": {
+    "actor": {
+      "name": "broken",
+      "ref": "acme/broken",
+    },
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "improvements": [
+      {
+        "description": "Raise the run success rate.",
+        "group": "ops",
+        "groupLabel": "Operations",
+        "id": "RELIABILITY",
+        "impact": "high",
+        "title": "Fix Actor health issues",
+      },
+    ],
+    "notes": [
+      "Impact levels here rank this actor’s own suggestions by work type and traffic. Call actor_quality without \`actor\` to rank suggestions across your actors.",
+    ],
+    "pending": null,
+    "praises": [
+      "Has input schema",
+    ],
+    "score": {
+      "percentilePct": 90,
+      "qualityPct": 80,
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "subScores": {
+      "hasInputSchema": 1,
+      "hasOutputSchema": 1,
+      "hasReadme": 1,
+    },
+  },
+  "text": "broken: quality 80% (percentile 90). Praises: Has input schema. 1 suggestion: RELIABILITY (Operations, high).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"actor":{"name":"broken","ref":"acme/broken"},"score":{"qualityPct":80,"percentilePct":90},"subScores":{"hasInputSchema":1,"hasOutputSchema":1,"hasReadme":1},"pending":null,"praises":["Has input schema"],"improvements":[{"id":"RELIABILITY","title":"Fix Actor health issues","description":"Raise the run success rate.","group":"ops","groupLabel":"Operations","impact":"high"}],"notes":["Impact levels here rank this actor’s own suggestions by work type and traffic. Call actor_quality without \`actor\` to rank suggestions across your actors."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_quality {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "issues": [
+      {
+        "actorCount": 3,
+        "actors": [
+          {
+            "name": "healthy",
+            "qualityPct": 80,
+          },
+          {
+            "name": "steady",
+            "qualityPct": 80,
+          },
+          {
+            "name": "broken",
+            "qualityPct": 80,
+          },
+        ],
+        "description": "Raise the run success rate.",
+        "group": "ops",
+        "groupLabel": "Operations",
+        "id": "RELIABILITY",
+        "impact": "high",
+        "title": "Fix Actor health issues",
+      },
+    ],
+    "notes": [
+      "Impact levels are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.",
+      "Impact = work-type weight (security 5, operations 4, schema 3, pricing 2, listing 1) × traffic weight from revenue, runs and users.",
+    ],
+    "scores": {
+      "medianPercentilePct": 90,
+      "medianQualityPct": 80,
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "actorsWithSuggestions": 3,
+      "openSuggestions": 3,
+      "pending": 0,
+      "scanned": 3,
+    },
+  },
+  "text": "3 of 3 scanned actors have quality suggestions (3 in all). Top: RELIABILITY on 3 actors (Operations, high). Median quality: 80%.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"totals":{"scanned":3,"pending":0,"actorsWithSuggestions":3,"openSuggestions":3},"scores":{"medianQualityPct":80,"medianPercentilePct":90},"issues":[{"id":"RELIABILITY","title":"Fix Actor health issues","description":"Raise the run success rate.","group":"ops","groupLabel":"Operations","actorCount":3,"impact":"high","actors":[{"name":"healthy","qualityPct":80},{"name":"steady","qualityPct":80},{"name":"broken","qualityPct":80}]}],"notes":["Impact levels are relative to the top 3 actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.","Impact = work-type weight (security 5, operations 4, schema 3, pricing 2, listing 1) × traffic weight from revenue, runs and users."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_report {"actor":"broken"} 1`] = `
+{
+  "data": {
+    "actor": {
+      "id": "id-broken",
+      "isDeprecated": null,
+      "isPublic": true,
+      "modifiedAt": null,
+      "notice": null,
+      "ref": "acme/broken",
+      "title": "broken title",
+      "url": "https://apify.com/acme/broken",
+    },
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "flags": [
+      {
+        "evidence": {
+          "failed": 15,
+          "failureRatePct": 20,
+          "runs": 100,
+          "timedOut": 5,
+          "window": "last 30 days, users' runs",
+        },
+        "flag": "failing",
+        "rule": "At least 3 failed or timed-out runs and a 5%+ failure rate (aborted runs excluded)",
+      },
+      {
+        "evidence": {
+          "costUsd": 12,
+          "profitUsd": -10,
+          "revenueUsd": 2,
+        },
+        "flag": "losing",
+        "rule": "Loses at least $0.61 in the period (cost above paying-users revenue).",
+      },
+      {
+        "evidence": {
+          "costPer1kResultsUsd": 2.4,
+          "revenuePer1kChargedUsd": 2,
+        },
+        "flag": "below_cost",
+        "rule": "Cost per 1,000 results is above revenue per 1,000 charged results.",
+      },
+      {
+        "evidence": {
+          "monthlyChangeUsd": -22.5,
+          "previousRevenuePerDayUsd": 1,
+          "revenuePerDayUsd": 0.25,
+        },
+        "flag": "declining",
+        "rule": "Revenue per day down 25%+ on the month before, losing $2.44+/month, or stopped earning. Needs 7+ days of the month.",
+      },
+    ],
+    "latestBuild": null,
+    "localPath": null,
+    "money": {
+      "audience": "paying",
+      "months": [
+        {
+          "breakEvenPriceUsd": 0.012,
+          "chargedResults": 1000,
+          "costPer1kResultsUsd": 2.4,
+          "costUsd": 12,
+          "failureRatePct": 20,
+          "freeUsers": 0,
+          "month": "2026-11",
+          "payingUsers": 3,
+          "priceMultiplierToBreakEven": 6,
+          "profitUsd": -10,
+          "results": 5000,
+          "revenuePer1kChargedUsd": 2,
+          "revenueUsd": 2,
+          "runs": 100,
+        },
+        {
+          "breakEvenPriceUsd": 0.000516,
+          "chargedResults": 15000,
+          "costPer1kResultsUsd": 0.2667,
+          "costUsd": 8,
+          "failureRatePct": 0,
+          "freeUsers": 0,
+          "month": "2026-10",
+          "payingUsers": 4,
+          "priceMultiplierToBreakEven": 0.258,
+          "profitUsd": 23,
+          "results": 30000,
+          "revenuePer1kChargedUsd": 2.0667,
+          "revenueUsd": 31,
+          "runs": 300,
+        },
+        {
+          "breakEvenPriceUsd": 0.00056,
+          "chargedResults": 12500,
+          "costPer1kResultsUsd": 0.28,
+          "costUsd": 7,
+          "failureRatePct": 0,
+          "freeUsers": 0,
+          "month": "2026-09",
+          "payingUsers": 3,
+          "priceMultiplierToBreakEven": 0.28,
+          "profitUsd": 18,
+          "results": 25000,
+          "revenuePer1kChargedUsd": 2,
+          "revenueUsd": 25,
+          "runs": 250,
+        },
+      ],
+      "partialMonth": "2026-11",
+    },
+    "notes": [
+      "Money is paying-users money as the Apify Console shows it; 2026-11 is in progress.",
+    ],
+    "pricing": {
+      "model": "PRICE_PER_DATASET_ITEM",
+      "priceUsd": 0.002,
+      "unit": "result",
+    },
+    "reviews": {
+      "count": null,
+      "rating": null,
+    },
+    "runOptions": {
+      "build": null,
+      "memoryMbytes": null,
+      "timeoutSecs": null,
+    },
+    "runs": {
+      "last30dUsersRuns": {
+        "aborted": 0,
+        "failed": 15,
+        "failureRate": 0.2,
+        "failures": 20,
+        "runs": 100,
+        "succeeded": 80,
+        "timedOut": 5,
+      },
+      "lastRunStartedAt": "2026-11-07T10:00:00.000Z",
+      "totalRuns": 1000,
+    },
+    "source": [
+      "apify-api",
+    ],
+    "users": {
+      "total": 36,
+      "users30d": 12,
+      "users7d": 4,
+      "users90d": 24,
+    },
+  },
+  "text": "acme/broken — broken title.
+Users: 4 (7d), 12 (30d), 24 (90d).
+Users' runs, 30d: 100, failure rate 20%.
+Price: $0.002 per result (PRICE_PER_DATASET_ITEM).
+2026-11 so far (paying users): revenue $2, cost $12, profit $-10.
+Flags: failing, losing, below_cost, declining.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api"],"actor":{"id":"id-broken","ref":"acme/broken","title":"broken title","url":"https://apify.com/acme/broken","isPublic":true,"isDeprecated":null,"notice":null,"modifiedAt":null},"users":{"users7d":4,"users30d":12,"users90d":24,"total":36},"runs":{"totalRuns":1000,"lastRunStartedAt":"2026-11-07T10:00:00.000Z","last30dUsersRuns":{"runs":100,"succeeded":80,"failed":15,"timedOut":5,"aborted":0,"failures":20,"failureRate":0.2}},"pricing":{"model":"PRICE_PER_DATASET_ITEM","unit":"result","priceUsd":0.002},"runOptions":{"memoryMbytes":null,"timeoutSecs":null,"build":null},"latestBuild":null,"reviews":{"count":null,"rating":null},"flags":[{"flag":"failing","rule":"At least 3 failed or timed-out runs and a 5%+ failure rate (aborted runs excluded)","evidence":{"window":"last 30 days, users' runs","runs":100,"failed":15,"timedOut":5,"failureRatePct":20}},{"flag":"losing","rule":"Loses at least $0.61 in the period (cost above paying-users revenue).","evidence":{"profitUsd":-10,"revenueUsd":2,"costUsd":12}},{"flag":"below_cost","rule":"Cost per 1,000 results is above revenue per 1,000 charged results.","evidence":{"costPer1kResultsUsd":2.4,"revenuePer1kChargedUsd":2}},{"flag":"declining","rule":"Revenue per day down 25%+ on the month before, losing $2.44+/month, or stopped earning. Needs 7+ days of the month.","evidence":{"revenuePerDayUsd":0.25,"previousRevenuePerDayUsd":1,"monthlyChangeUsd":-22.5}}],"localPath":null,"money":{"audience":"paying","months":[{"month":"2026-11","revenueUsd":2,"costUsd":12,"profitUsd":-10,"runs":100,"failureRatePct":20,"payingUsers":3,"freeUsers":0,"results":5000,"chargedResults":1000,"costPer1kResultsUsd":2.4,"revenuePer1kChargedUsd":2,"breakEvenPriceUsd":0.012,"priceMultiplierToBreakEven":6},{"month":"2026-10","revenueUsd":31,"costUsd":8,"profitUsd":23,"runs":300,"failureRatePct":0,"payingUsers":4,"freeUsers":0,"results":30000,"chargedResults":15000,"costPer1kResultsUsd":0.2667,"revenuePer1kChargedUsd":2.0667,"breakEvenPriceUsd":0.000516,"priceMultiplierToBreakEven":0.258},{"month":"2026-09","revenueUsd":25,"costUsd":7,"profitUsd":18,"runs":250,"failureRatePct":0,"payingUsers":3,"freeUsers":0,"results":25000,"chargedResults":12500,"costPer1kResultsUsd":0.28,"revenuePer1kChargedUsd":2,"breakEvenPriceUsd":0.00056,"priceMultiplierToBreakEven":0.28}],"partialMonth":"2026-11"},"notes":["Money is paying-users money as the Apify Console shows it; 2026-11 is in progress."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > actor_report {"actor":"healthy"} 1`] = `
+{
+  "data": {
+    "actor": {
+      "id": "id-healthy",
+      "isDeprecated": null,
+      "isPublic": true,
+      "modifiedAt": null,
+      "notice": null,
+      "ref": "acme/healthy",
+      "title": "healthy title",
+      "url": "https://apify.com/acme/healthy",
+    },
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "flags": [
+      {
+        "evidence": {
+          "monthlyChangeUsd": 150,
+          "previousRevenuePerDayUsd": 5,
+          "revenuePerDayUsd": 10,
+        },
+        "flag": "growing",
+        "rule": "Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.",
+      },
+    ],
+    "latestBuild": null,
+    "localPath": null,
+    "money": {
+      "audience": "paying",
+      "months": [
+        {
+          "breakEvenPriceUsd": 0.0005,
+          "chargedResults": 40000,
+          "costPer1kResultsUsd": 0.2,
+          "costUsd": 20,
+          "failureRatePct": 0,
+          "freeUsers": 30,
+          "month": "2026-11",
+          "payingUsers": 10,
+          "priceMultiplierToBreakEven": 0.25,
+          "profitUsd": 60,
+          "results": 100000,
+          "revenuePer1kChargedUsd": 2,
+          "revenueUsd": 80,
+          "runs": 500,
+        },
+        {
+          "breakEvenPriceUsd": 0.000516,
+          "chargedResults": 75000,
+          "costPer1kResultsUsd": 0.2667,
+          "costUsd": 40,
+          "failureRatePct": 0,
+          "freeUsers": 0,
+          "month": "2026-10",
+          "payingUsers": 12,
+          "priceMultiplierToBreakEven": 0.258,
+          "profitUsd": 115,
+          "results": 150000,
+          "revenuePer1kChargedUsd": 2.0667,
+          "revenueUsd": 155,
+          "runs": 1500,
+        },
+        {
+          "breakEvenPriceUsd": 0.0005,
+          "chargedResults": 60000,
+          "costPer1kResultsUsd": 0.25,
+          "costUsd": 30,
+          "failureRatePct": 0,
+          "freeUsers": 0,
+          "month": "2026-09",
+          "payingUsers": 11,
+          "priceMultiplierToBreakEven": 0.25,
+          "profitUsd": 90,
+          "results": 120000,
+          "revenuePer1kChargedUsd": 2,
+          "revenueUsd": 120,
+          "runs": 1200,
+        },
+      ],
+      "partialMonth": "2026-11",
+    },
+    "notes": [
+      "Money is paying-users money as the Apify Console shows it; 2026-11 is in progress.",
+    ],
+    "pricing": {
+      "model": "PRICE_PER_DATASET_ITEM",
+      "priceUsd": 0.002,
+      "unit": "result",
+    },
+    "reviews": {
+      "count": null,
+      "rating": null,
+    },
+    "runOptions": {
+      "build": null,
+      "memoryMbytes": null,
+      "timeoutSecs": null,
+    },
+    "runs": {
+      "last30dUsersRuns": {
+        "aborted": 0,
+        "failed": 1,
+        "failureRate": 0.002,
+        "failures": 1,
+        "runs": 500,
+        "succeeded": 499,
+        "timedOut": 0,
+      },
+      "lastRunStartedAt": "2026-11-07T10:00:00.000Z",
+      "totalRuns": 1000,
+    },
+    "source": [
+      "apify-api",
+    ],
+    "users": {
+      "total": 120,
+      "users30d": 40,
+      "users7d": 13,
+      "users90d": 80,
+    },
+  },
+  "text": "acme/healthy — healthy title.
+Users: 13 (7d), 40 (30d), 80 (90d).
+Users' runs, 30d: 500, failure rate 0.2%.
+Price: $0.002 per result (PRICE_PER_DATASET_ITEM).
+2026-11 so far (paying users): revenue $80, cost $20, profit $60.
+Flags: growing.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api"],"actor":{"id":"id-healthy","ref":"acme/healthy","title":"healthy title","url":"https://apify.com/acme/healthy","isPublic":true,"isDeprecated":null,"notice":null,"modifiedAt":null},"users":{"users7d":13,"users30d":40,"users90d":80,"total":120},"runs":{"totalRuns":1000,"lastRunStartedAt":"2026-11-07T10:00:00.000Z","last30dUsersRuns":{"runs":500,"succeeded":499,"failed":1,"timedOut":0,"aborted":0,"failures":1,"failureRate":0.002}},"pricing":{"model":"PRICE_PER_DATASET_ITEM","unit":"result","priceUsd":0.002},"runOptions":{"memoryMbytes":null,"timeoutSecs":null,"build":null},"latestBuild":null,"reviews":{"count":null,"rating":null},"flags":[{"flag":"growing","rule":"Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.","evidence":{"revenuePerDayUsd":10,"previousRevenuePerDayUsd":5,"monthlyChangeUsd":150}}],"localPath":null,"money":{"audience":"paying","months":[{"month":"2026-11","revenueUsd":80,"costUsd":20,"profitUsd":60,"runs":500,"failureRatePct":0,"payingUsers":10,"freeUsers":30,"results":100000,"chargedResults":40000,"costPer1kResultsUsd":0.2,"revenuePer1kChargedUsd":2,"breakEvenPriceUsd":0.0005,"priceMultiplierToBreakEven":0.25},{"month":"2026-10","revenueUsd":155,"costUsd":40,"profitUsd":115,"runs":1500,"failureRatePct":0,"payingUsers":12,"freeUsers":0,"results":150000,"chargedResults":75000,"costPer1kResultsUsd":0.2667,"revenuePer1kChargedUsd":2.0667,"breakEvenPriceUsd":0.000516,"priceMultiplierToBreakEven":0.258},{"month":"2026-09","revenueUsd":120,"costUsd":30,"profitUsd":90,"runs":1200,"failureRatePct":0,"payingUsers":11,"freeUsers":0,"results":120000,"chargedResults":60000,"costPer1kResultsUsd":0.25,"revenuePer1kChargedUsd":2,"breakEvenPriceUsd":0.0005,"priceMultiplierToBreakEven":0.25}],"partialMonth":"2026-11"},"notes":["Money is paying-users money as the Apify Console shows it; 2026-11 is in progress."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > daily_brief {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "counts": {
+      "declining": 1,
+      "failing": 1,
+      "losing": 1,
+    },
+    "currency": "USD",
+    "growing": [
+      {
+        "actor": "healthy",
+        "evidence": {
+          "monthlyChangeUsd": 150,
+          "previousRevenuePerDayUsd": 5,
+          "revenuePerDayUsd": 10,
+        },
+        "flag": "growing",
+        "next": "actor_report("healthy")",
+        "why": "Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.",
+      },
+      {
+        "actor": "steady",
+        "evidence": {
+          "monthlyChangeUsd": 16.94,
+          "previousRevenuePerDayUsd": 1.935,
+          "revenuePerDayUsd": 2.5,
+        },
+        "flag": "growing",
+        "next": "actor_report("steady")",
+        "why": "Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.",
+      },
+    ],
+    "items": [
+      {
+        "actor": "broken",
+        "evidence": {
+          "costUsd": 12,
+          "profitUsd": -10,
+          "revenueUsd": 2,
+        },
+        "flag": "losing",
+        "next": "actor_report("broken")",
+        "why": "Loses at least $0.61 in the period (cost above paying-users revenue).",
+      },
+    ],
+    "money": {
+      "monthToDate": {
+        "costUsd": 32.38,
+        "from": "2026-11-01",
+        "profitUsd": 56.88,
+        "revenueUsd": 89.25,
+        "to": "2026-11-07",
+      },
+      "sameDaysLastMonth": {
+        "from": "2026-10-01",
+        "profitUsd": 41.32,
+        "revenueUsd": 55.55,
+        "to": "2026-10-07",
+      },
+      "yesterday": {
+        "costUsd": 4.63,
+        "day": "2026-11-07",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+    },
+    "notes": [
+      "Items are ordered: Apify notice (hidden from search) > paying users but $0 charged > losing money > failing > declining; one item per actor, at most three.",
+      "Per-actor rules use this month so far against the month before (revenue per day, so a partial month compares fairly).",
+    ],
+    "source": [
+      "apify-api",
+      "console (unofficial)",
+    ],
+  },
+  "text": "Morning check 2026-11-08 (paying users)
+Yesterday: $12.75 revenue, $8.13 profit.
+Month to date (2026-11-01..2026-11-07): $89.25 revenue, $56.88 profit; +60.7% revenue vs the same days last month ($55.55).
+Look at:
+1. broken: losing. Next: actor_report("broken")
+Growing: healthy (+$150/month pace), steady (+$16.94/month pace).
+All flags: failing 1, losing 1, declining 1.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api","console (unofficial)"],"audience":"paying","currency":"USD","money":{"yesterday":{"day":"2026-11-07","revenueUsd":12.75,"costUsd":4.63,"profitUsd":8.13},"monthToDate":{"from":"2026-11-01","to":"2026-11-07","revenueUsd":89.25,"costUsd":32.38,"profitUsd":56.88},"sameDaysLastMonth":{"from":"2026-10-01","to":"2026-10-07","revenueUsd":55.55,"profitUsd":41.32}},"items":[{"actor":"broken","flag":"losing","why":"Loses at least $0.61 in the period (cost above paying-users revenue).","evidence":{"profitUsd":-10,"revenueUsd":2,"costUsd":12},"next":"actor_report(\\"broken\\")"}],"growing":[{"actor":"healthy","flag":"growing","why":"Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.","evidence":{"revenuePerDayUsd":10,"previousRevenuePerDayUsd":5,"monthlyChangeUsd":150},"next":"actor_report(\\"healthy\\")"},{"actor":"steady","flag":"growing","why":"Revenue per day up 25%+ on the month before, adding $2.44+/month. Needs 7+ days of the month.","evidence":{"revenuePerDayUsd":2.5,"previousRevenuePerDayUsd":1.935,"monthlyChangeUsd":16.94},"next":"actor_report(\\"steady\\")"}],"counts":{"failing":1,"losing":1,"declining":1},"notes":["Items are ordered: Apify notice (hidden from search) > paying users but $0 charged > losing money > failing > declining; one item per actor, at most three.","Per-actor rules use this month so far against the month before (revenue per day, so a partial month compares fairly)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > growth {"actor":"steady"} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "notes": [
+      "Views and users come from Console analytics (unique counts per month). payingUsers/freeUsers are users with a run that month.",
+      "Paying users are not a subset of viewers: users can run an actor without viewing its page that month (API, schedules).",
+    ],
+    "period": {
+      "from": "2026-10-01",
+      "label": "lastMonth",
+      "partial": false,
+      "to": "2026-10-31",
+    },
+    "rows": [
+      {
+        "consolePageViews": 300,
+        "freeUsers": 0,
+        "name": "steady",
+        "payingUsers": 5,
+        "storePageViews": 900,
+        "topCountries": [],
+        "topReferrers": [],
+        "usersWithRun": 120,
+        "viewToRunPct": 20,
+        "viewingUsers": 600,
+      },
+    ],
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "consolePageViews": 300,
+      "storePageViews": 900,
+      "usersWithRun": 120,
+      "viewToRunPct": 20,
+      "viewingUsers": 600,
+    },
+  },
+  "text": "2026-10: 600 users viewed your actors, 120 ran one (20%).
+steady: 600 viewers → 120 with a run (20%), 5 paying.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"lastMonth","from":"2026-10-01","to":"2026-10-31","partial":false},"totals":{"storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20},"rows":[{"name":"steady","storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"payingUsers":5,"freeUsers":0,"topReferrers":[],"topCountries":[]}],"notes":["Views and users come from Console analytics (unique counts per month). payingUsers/freeUsers are users with a run that month.","Paying users are not a subset of viewers: users can run an actor without viewing its page that month (API, schedules)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > growth {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "notes": [
+      "Views and users come from Console analytics (unique counts per month). payingUsers/freeUsers are users with a run that month.",
+      "Paying users are not a subset of viewers: users can run an actor without viewing its page that month (API, schedules).",
+    ],
+    "period": {
+      "from": "2026-10-01",
+      "label": "lastMonth",
+      "partial": false,
+      "to": "2026-10-31",
+    },
+    "rows": [
+      {
+        "consolePageViews": 300,
+        "freeUsers": 0,
+        "name": "healthy",
+        "payingUsers": 12,
+        "storePageViews": 900,
+        "usersWithRun": 120,
+        "viewToRunPct": 20,
+        "viewingUsers": 600,
+      },
+      {
+        "consolePageViews": 300,
+        "freeUsers": 0,
+        "name": "steady",
+        "payingUsers": 5,
+        "storePageViews": 900,
+        "usersWithRun": 120,
+        "viewToRunPct": 20,
+        "viewingUsers": 600,
+      },
+      {
+        "consolePageViews": 300,
+        "freeUsers": 0,
+        "name": "broken",
+        "payingUsers": 4,
+        "storePageViews": 900,
+        "usersWithRun": 120,
+        "viewToRunPct": 20,
+        "viewingUsers": 600,
+      },
+    ],
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "consolePageViews": 300,
+      "storePageViews": 900,
+      "usersWithRun": 120,
+      "viewToRunPct": 20,
+      "viewingUsers": 600,
+    },
+  },
+  "text": "2026-10: 600 users viewed your actors, 120 ran one (20%).
+healthy: 600 viewers → 120 with a run (20%), 12 paying.
+steady: 600 viewers → 120 with a run (20%), 5 paying.
+broken: 600 viewers → 120 with a run (20%), 4 paying.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"lastMonth","from":"2026-10-01","to":"2026-10-31","partial":false},"totals":{"storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20},"rows":[{"name":"healthy","storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"payingUsers":12,"freeUsers":0},{"name":"steady","storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"payingUsers":5,"freeUsers":0},{"name":"broken","storePageViews":900,"consolePageViews":300,"viewingUsers":600,"usersWithRun":120,"viewToRunPct":20,"payingUsers":4,"freeUsers":0}],"notes":["Views and users come from Console analytics (unique counts per month). payingUsers/freeUsers are users with a run that month.","Paying users are not a subset of viewers: users can run an actor without viewing its page that month (API, schedules)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > list_actors {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "notes": [
+      "users7d/30d and runs30d come from public Store stats and are null for private actors. users90d and more: actor_report.",
+      "runs30d and failureRate30dPct count your users' runs only (failed + timed-out; aborted excluded).",
+    ],
+    "rows": [
+      {
+        "failureRate30dPct": 0.2,
+        "lastRun": "2026-11-07",
+        "name": "healthy",
+        "runs30d": 500,
+        "users30d": 40,
+        "users7d": 13,
+      },
+      {
+        "failureRate30dPct": 1,
+        "lastRun": "2026-11-07",
+        "name": "steady",
+        "runs30d": 200,
+        "users30d": 20,
+        "users7d": 7,
+      },
+      {
+        "failureRate30dPct": 20,
+        "lastRun": "2026-11-07",
+        "name": "broken",
+        "runs30d": 100,
+        "users30d": 12,
+        "users7d": 4,
+      },
+      {
+        "failureRate30dPct": null,
+        "lastRun": "2026-11-01",
+        "name": "private-one",
+        "private": true,
+        "runs30d": null,
+        "users30d": null,
+        "users7d": null,
+      },
+    ],
+    "source": [
+      "apify-api",
+    ],
+    "totals": {
+      "actors": 4,
+      "matching": 4,
+      "private": 1,
+      "public": 3,
+      "username": "acme",
+      "withNotice": 0,
+    },
+  },
+  "text": "4 of 4 actors match (3 public, 1 private, 0 with a notice).
+Top by users30d: healthy (40 users/30d), steady (20 users/30d), broken (12 users/30d).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api"],"totals":{"username":"acme","actors":4,"public":3,"private":1,"withNotice":0,"matching":4},"rows":[{"name":"healthy","users7d":13,"users30d":40,"runs30d":500,"failureRate30dPct":0.2,"lastRun":"2026-11-07"},{"name":"steady","users7d":7,"users30d":20,"runs30d":200,"failureRate30dPct":1,"lastRun":"2026-11-07"},{"name":"broken","users7d":4,"users30d":12,"runs30d":100,"failureRate30dPct":20,"lastRun":"2026-11-07"},{"name":"private-one","private":true,"users7d":null,"users30d":null,"runs30d":null,"failureRate30dPct":null,"lastRun":"2026-11-01"}],"notes":["users7d/30d and runs30d come from public Store stats and are null for private actors. users90d and more: actor_report.","runs30d and failureRate30dPct count your users' runs only (failed + timed-out; aborted excluded)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > revenue_summary {"period":"last7d","compareTo":"sameDaysLastMonth","includeDaily":true} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "comparison": {
+      "change": {
+        "profitPct": 37.6,
+        "profitUsd": 15.55,
+        "revenuePct": 60.7,
+        "revenueUsd": 33.7,
+      },
+      "period": {
+        "from": "2026-10-01",
+        "label": "same days last month",
+        "to": "2026-10-07",
+      },
+      "totals": {
+        "costUsd": 14.23,
+        "marginPct": 74.4,
+        "profitUsd": 41.32,
+        "revenueUsd": 55.55,
+      },
+    },
+    "currency": "USD",
+    "daily": [
+      {
+        "day": "2026-11-01",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-02",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-03",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-04",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-05",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-06",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+      {
+        "day": "2026-11-07",
+        "profitUsd": 8.13,
+        "revenueUsd": 12.75,
+      },
+    ],
+    "notes": [
+      "Money as the Apify Console shows it (paying users only).",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "last7d",
+      "partial": false,
+      "to": "2026-11-07",
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "costUsd": 32.38,
+      "marginPct": 63.7,
+      "profitUsd": 56.88,
+      "revenueUsd": 89.25,
+    },
+  },
+  "text": "last7d (2026-11-01..2026-11-07): revenue $89.25, cost $32.38, profit $56.88 (63.7% margin), paying users. vs $55.55 (2026-10-01..2026-10-07): +60.7% revenue.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"last7d","from":"2026-11-01","to":"2026-11-07","partial":false},"audience":"paying","currency":"USD","totals":{"revenueUsd":89.25,"costUsd":32.38,"profitUsd":56.88,"marginPct":63.7},"comparison":{"period":{"label":"same days last month","from":"2026-10-01","to":"2026-10-07"},"totals":{"revenueUsd":55.55,"costUsd":14.23,"profitUsd":41.32,"marginPct":74.4},"change":{"revenueUsd":33.7,"profitUsd":15.55,"revenuePct":60.7,"profitPct":37.6}},"daily":[{"day":"2026-11-01","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-02","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-03","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-04","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-05","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-06","revenueUsd":12.75,"profitUsd":8.13},{"day":"2026-11-07","revenueUsd":12.75,"profitUsd":8.13}],"notes":["Money as the Apify Console shows it (paying users only)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > revenue_summary {"period":"lastMonth","compareTo":"previousPeriod"} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "comparison": {
+      "change": {
+        "profitPct": 25.3,
+        "profitUsd": 37,
+        "revenuePct": 26.2,
+        "revenueUsd": 51,
+      },
+      "period": {
+        "from": "2026-09-01",
+        "label": "2026-09 (previous month)",
+        "to": "2026-09-30",
+      },
+      "totals": {
+        "costUsd": 49,
+        "marginPct": 74.9,
+        "profitUsd": 146,
+        "revenueUsd": 195,
+      },
+    },
+    "currency": "USD",
+    "notes": [
+      "Money as the Apify Console shows it (paying users only).",
+    ],
+    "period": {
+      "from": "2026-10-01",
+      "label": "lastMonth",
+      "partial": false,
+      "to": "2026-10-31",
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "costUsd": 63,
+      "marginPct": 74.4,
+      "profitUsd": 183,
+      "revenueUsd": 246,
+    },
+  },
+  "text": "lastMonth (2026-10-01..2026-10-31): revenue $246, cost $63, profit $183 (74.4% margin), paying users. vs $195 (2026-09-01..2026-09-30): +26.2% revenue.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"lastMonth","from":"2026-10-01","to":"2026-10-31","partial":false},"audience":"paying","currency":"USD","totals":{"revenueUsd":246,"costUsd":63,"profitUsd":183,"marginPct":74.4},"comparison":{"period":{"label":"2026-09 (previous month)","from":"2026-09-01","to":"2026-09-30"},"totals":{"revenueUsd":195,"costUsd":49,"profitUsd":146,"marginPct":74.9},"change":{"revenueUsd":51,"profitUsd":37,"revenuePct":26.2,"profitPct":25.3}},"notes":["Money as the Apify Console shows it (paying users only)."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > revenue_summary {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "audience": "paying",
+    "currency": "USD",
+    "notes": [
+      "Money as the Apify Console shows it (paying users only).",
+      "The period includes today, so it is incomplete; late usage can still land.",
+    ],
+    "period": {
+      "from": "2026-11-01",
+      "label": "thisMonth",
+      "partial": true,
+      "to": "2026-11-08",
+    },
+    "source": [
+      "console (unofficial)",
+    ],
+    "totals": {
+      "costUsd": 37,
+      "marginPct": 63.7,
+      "profitUsd": 65,
+      "revenueUsd": 102,
+    },
+  },
+  "text": "thisMonth (2026-11-01..2026-11-08, partial): revenue $102, cost $37, profit $65 (63.7% margin), paying users.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["console (unofficial)"],"period":{"label":"thisMonth","from":"2026-11-01","to":"2026-11-08","partial":true},"audience":"paying","currency":"USD","totals":{"revenueUsd":102,"costUsd":37,"profitUsd":65,"marginPct":63.7},"notes":["Money as the Apify Console shows it (paying users only).","The period includes today, so it is incomplete; late usage can still land."]}",
+}
+`;
+
+exports[`tool output stays the same (AC1) > run_health {} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "notes": [
+      "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
+      "Private actors have no public run stats and are not checked here.",
+      "Money columns are 2026-11 so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate.",
+    ],
+    "period": {
+      "label": "last30d",
+    },
+    "rows": [
+      {
+        "aborted": 0,
+        "failed": 15,
+        "failureRatePct": 20,
+        "flags": [
+          "failing",
+        ],
+        "lastRun": "2026-11-07",
+        "payingUsersThisMonth": 3,
+        "ref": "acme/broken",
+        "revenueAtRiskUsd": 0.4,
+        "revenueThisMonthUsd": 2,
+        "runs30d": 100,
+        "timedOut": 5,
+        "users30d": 12,
+      },
+    ],
+    "rules": {
+      "failing": "At least 3 failed or timed-out runs and a 5%+ failure rate in users' runs over 30 days (aborted runs excluded).",
+      "flagged": "Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.",
+      "no_revenue": "10+ runs and 1+ paying user but $0 revenue on a pay-per-event or pay-per-result actor: possibly an event that is never charged.",
+    },
+    "source": [
+      "apify-api",
+    ],
+    "totals": {
+      "checked": 3,
+      "failing": 1,
+      "flagged": 0,
+      "notCheckedPrivate": 1,
+      "problems": 1,
+    },
+  },
+  "text": "1 of 3 public actors need attention: 0 with an Apify notice, 1 failing. Worst: acme/broken (failing, 20% failed).
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api"],"period":{"label":"last30d"},"totals":{"checked":3,"notCheckedPrivate":1,"problems":1,"flagged":0,"failing":1},"rows":[{"ref":"acme/broken","flags":["failing"],"users30d":12,"runs30d":100,"failed":15,"timedOut":5,"aborted":0,"failureRatePct":20,"lastRun":"2026-11-07","payingUsersThisMonth":3,"revenueThisMonthUsd":2,"revenueAtRiskUsd":0.4}],"rules":{"flagged":"Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.","failing":"At least 3 failed or timed-out runs and a 5%+ failure rate in users' runs over 30 days (aborted runs excluded).","no_revenue":"10+ runs and 1+ paying user but $0 revenue on a pay-per-event or pay-per-result actor: possibly an event that is never charged."},"notes":["Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.","Private actors have no public run stats and are not checked here.","Money columns are 2026-11 so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate."]}",
+}
+`;

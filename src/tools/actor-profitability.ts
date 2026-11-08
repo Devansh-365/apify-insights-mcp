@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Context } from '../context.js';
 import { resolveActor } from '../core/actors.js';
 import { breakdown, profitMargins } from '../core/console-data.js';
+import { reportProgress } from '../core/progress.js';
 import { ok, round, ToolError, topN } from '../core/envelope.js';
 import type { Flag } from '../core/flags.js';
 import { daysElapsed, moneyForPeriod, sumMoney, type ActorMoney } from '../core/money.js';
@@ -185,9 +186,12 @@ async function rangeView(ctx: Context, args: Args, period: Period, only: Set<str
         ids = [...revenue.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id]) => id);
         label = `your top ${ids.length} earners in ${period.months.join(', ')}`;
     }
+    let done = 0;
     const rows = await Promise.all(
         ids.map(async (id) => {
             const { money } = moneyForPeriod(period, await profitMargins(ctx, api, period.months, [id]), 'paying');
+            done++;
+            reportProgress(done, ids.length, `${done} of ${ids.length} actors`);
             return { name: names.get(id) ?? id, revenueUsd: round(money.revenueUsd), costUsd: round(money.costUsd), profitUsd: round(money.profitUsd) };
         }),
     );

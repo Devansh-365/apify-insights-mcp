@@ -27,3 +27,4 @@ Prompts: `morning-brief`, `loss-hunt`, `health-check`, `funnel-check`, `quality-
 - **Quality impact**: work-type weight (security 5, operations 4, schema 3, pricing 2, listing 1) times the actor's traffic. Across actors, the top 20% of suggestions are high, the next 30% medium.
 - **Portfolio scans**: an actor whose data fails to load is left out and named in the notes, never shown with zeros.
 - A missing value is `null`, with a note saying why. It never means zero.
+- **Cached money**: a finished month may come from the local cache (up to 24 hours old). The notes then say which months and when they were fetched.
