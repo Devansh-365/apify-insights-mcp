@@ -71,3 +71,7 @@ npm run build
 node scripts/smoke.mjs <actor> <other-creator> <keyword>   # one live call per tool; prints summaries only
 node scripts/trial-report.mjs                              # active days per week from the usage log
 ```
+
+## Author
+
+Devansh Tiwari

@@ -2,6 +2,7 @@
   "name": "apify-insights-mcp",
   "version": "0.2.0",
   "description": "MCP server that answers an Apify creator's questions about their own actors: revenue, profit, health, users, pricing and Store rank.",
+  "author": "Devansh Tiwari",
   "type": "module",
   "bin": {
     "apify-insights-mcp": "dist/index.js"
