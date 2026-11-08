@@ -3,8 +3,9 @@
 </p>
 
 <p align="center">
-  <b>One MCP server for every AI client you use.</b><br>
-  Plain answers about your own Apify actors in Claude, Codex, Cursor, Gemini, Grok and OpenCode.
+  <b>Find the Apify actors that lose money, leak users or need a fix.</b><br>
+  Ask your AI about your own account and get exact numbers back: profit, break-even prices, failing runs, quality fixes and Store rank.<br>
+  <sub>Works in Claude, Codex, Cursor, Gemini, Grok and OpenCode.</sub>
 </p>
 
 <p align="center">
@@ -22,6 +23,8 @@
 | *"Which actors lose money?"* | Each one with the price where it would break even |
 | *"Is anything broken?"* | Actors that fail, that Apify flagged, or that charge nothing |
 | *"Tell me about maps-scraper"* | Users, runs, price, builds, reviews and 3 months of money |
+| *"Which actors are leaking users?"* | Each actor marked Leaking, Rising, Fading or Converting, with the reason and what to do |
+| *"What should I fix for quality?"* | Apify's quality suggestions across your actors, ranked by impact |
 | *"Where do I rank for tiktok scraper?"* | Your Store search position and who ranks above you |
 | *"Compare me with another creator"* | Your public portfolio next to theirs |
 

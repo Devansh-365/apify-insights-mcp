@@ -5,7 +5,9 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Context } from './context.js';
 import { fail, ToolError } from './core/envelope.js';
 import { GLOSSARY } from './glossary.js';
+import { acquisitionScore, acquisitionScoreInput } from './tools/acquisition-score.js';
 import { actorProfitability, actorProfitabilityInput } from './tools/actor-profitability.js';
+import { actorQuality, actorQualityInput } from './tools/actor-quality.js';
 import { actorReport, actorReportInput } from './tools/actor-report.js';
 import { authStatus } from './tools/auth-status.js';
 import { competitorBenchmarkInput, competitorBenchmarkTool } from './tools/competitor-benchmark.js';
@@ -52,6 +54,7 @@ export function createServer(ctx: Context): McpServer {
             instructions:
                 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. ' +
                 '"How am I doing" → daily_brief. "Is anything broken" → run_health. "Which actors lose money / should I reprice" → actor_profitability(view: losers) then actor_report. ' +
+                '"How many viewed, ran or paid", referrers, countries → growth. "Which actors are leaking, rising or fading, and what to do" → acquisition_score. "What should I fix for quality" → actor_quality. ' +
                 'Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. ' +
                 'Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.',
         },
@@ -143,11 +146,39 @@ export function createServer(ctx: Context): McpServer {
         'growth',
         {
             title: 'Views to runs to paying users',
-            description: 'For a calendar month: how many users viewed your actors, ran them and paid, per actor (most paying users, most used, or worst view-to-run conversion). One actor adds top referrers and countries.',
+            description:
+                'For a calendar month: how many users viewed your actors, ran them and paid, per actor (most paying users, most used, or worst view-to-run conversion). One actor adds top referrers and countries. ' +
+                'For which actors need attention and what to do, use acquisition_score.',
             inputSchema: growthInput,
             annotations: READ_ONLY,
         },
         (args) => guarded(ctx, 'growth', () => growth(ctx, args)),
+    );
+
+    server.registerTool(
+        'acquisition_score',
+        {
+            title: 'Acquisition triage',
+            description:
+                'Which actors need attention for acquisition, and what to do: each of your top actors (by 30-day users) is Leaking, Rising, Fading, Converting, Steady or Quiet, judged against the same point last month and against your other actors, with the reason. ' +
+                'Rising and Fading are not judged before day 8 of the month. Pass `actor` for one actor. Same numbers and field names as growth; for raw counts, paying users, referrers or countries use growth.',
+            inputSchema: acquisitionScoreInput,
+            annotations: READ_ONLY,
+        },
+        (args) => guarded(ctx, 'acquisition_score', () => acquisitionScore(ctx, args)),
+    );
+
+    server.registerTool(
+        'actor_quality',
+        {
+            title: 'Quality scores and suggestions',
+            description:
+                "Apify's quality score for your actors and its improvement suggestions, grouped by work type (security, operations, schema, pricing, listing) and ranked by impact (work-type weight × traffic). " +
+                "Without `actor`: the top issues across your top actors by 30-day users, each with the actors it affects. With `actor`: that actor's score, sub-scores, praises and suggestions.",
+            inputSchema: actorQualityInput,
+            annotations: READ_ONLY,
+        },
+        (args) => guarded(ctx, 'actor_quality', () => actorQuality(ctx, args)),
     );
 
     server.registerTool(
@@ -200,6 +231,18 @@ export function createServer(ctx: Context): McpServer {
         'Health sweep',
         'Which actors are flagged, failing or charging nothing.',
         'Call run_health. List each problem with its flag, rule and numbers, worst first. For the top two call actor_report and say what to fix first. Do not change anything.',
+    );
+    prompt(
+        'funnel-check',
+        'Funnel check',
+        'Which actors are gaining or losing users, and what to do.',
+        'Call acquisition_score. Report each bucket with its count and the actors listed, using the reasons exactly as returned. For the first Leaking actor, call growth with that actor for its referrers and countries, then call actor_report and say what to fix in the listing or input. Do not change anything.',
+    );
+    prompt(
+        'quality-review',
+        'Quality review',
+        'Which quality suggestions to fix first across your actors.',
+        'Call actor_quality. List the top issues with their work type, actor count and impact level. For the top issue, call actor_quality with its first actor and say what to fix first. Do not change anything.',
     );
 
     return server;

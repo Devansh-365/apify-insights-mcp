@@ -1,4 +1,4 @@
-import type { ConsoleApi, Marketing, ProfitMargin } from '../clients/console.js';
+import type { ConsoleApi, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores } from '../clients/console.js';
 import type { Context } from '../context.js';
 import { monthTtl, normalizeBreakdown, type ActorMoney } from './money.js';
 
@@ -20,6 +20,22 @@ export async function profitMargins(ctx: Context, api: ConsoleApi, months: strin
 }
 
 export function marketing(ctx: Context, api: ConsoleApi, month: string, actorIds: string[] | undefined, portion?: number): Promise<Marketing> {
-    const key = `mk:${month}:${actorIds?.join(',') ?? '*'}`;
+    // The portion is part of the key: last month "up to today's point" and last month in full differ.
+    const key = `mk:${month}:${actorIds?.join(',') ?? '*'}:${portion ?? 'all'}`;
     return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
+}
+
+// Quality scores change at most daily, but a fix should show within a session.
+const QUALITY_TTL = 5 * 60_000;
+
+export function qualityScores(ctx: Context, api: ConsoleApi, actorId: string): Promise<QualityScores> {
+    return ctx.cache.get(`qs:${actorId}`, QUALITY_TTL, () => api.qualityScores(actorId));
+}
+
+export function qualityImprovements(ctx: Context, api: ConsoleApi, actorId: string): Promise<QualityImprovements> {
+    return ctx.cache.get(`qi:${actorId}`, QUALITY_TTL, () => api.qualityImprovements(actorId));
+}
+
+export function qualityBusinessValue(ctx: Context, api: ConsoleApi, actorId: string): Promise<QualityBusinessValue> {
+    return ctx.cache.get(`qbv:${actorId}`, QUALITY_TTL, () => api.qualityBusinessValue(actorId));
 }

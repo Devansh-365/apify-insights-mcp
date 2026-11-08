@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { ActorDetail, ApifyApi, MyActor, StoreActor, StoreSearchItem } from '../src/clients/apify-api.js';
-import type { BreakdownRow, ConsoleApi, Marketing, ProfitMargin } from '../src/clients/console.js';
+import type { BreakdownRow, ConsoleApi, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores } from '../src/clients/console.js';
 import type { Config } from '../src/config.js';
 import { createContext, type ContextOptions } from '../src/context.js';
 import { createServer } from '../src/server.js';
@@ -102,6 +102,19 @@ export function breakdownRow(name: string, m: FakeActorMonth): BreakdownRow {
     };
 }
 
+export interface FakeQuality {
+    scores: QualityScores;
+    improvements: QualityImprovements;
+    businessValue: QualityBusinessValue;
+}
+
+/** Fixed made-up quality data, the same for every actor unless a test passes its own. */
+export const DEFAULT_QUALITY: FakeQuality = {
+    scores: { hasInputSchema: 1, hasOutputSchema: 1, hasReadme: 1, actorQuality: 0.8, actorQualityPercentile: 0.9 },
+    improvements: { praises: [{ title: 'Has input schema', description: 'Clear input.', percentile: 0.9 }], improvements: [{ id: 'RELIABILITY', title: 'Fix Actor health issues', description: 'Raise the run success rate.' }] },
+    businessValue: [],
+};
+
 /**
  * A Console backend made of per-actor month figures. Daily money spreads each actor's month evenly over
  * the days that have data (the whole month if it ended, else days 1..today), so day sums equal month
@@ -110,7 +123,8 @@ export function breakdownRow(name: string, m: FakeActorMonth): BreakdownRow {
 export function fakeConsole(
     months: Record<string, Record<string, FakeActorMonth>>,
     now = Date.parse('2026-11-08T03:00:00.000Z'),
-    marketing: (actorIds?: string[]) => Marketing = () => ({ numUniqueWebPageViews: 900, numUniqueConsolePageViews: 300, numUniqueUsersWithRun: 120, numUniqueViewingUsers: 600 }),
+    marketing: (actorIds?: string[], month?: string, portion?: number) => Marketing = () => ({ numUniqueWebPageViews: 900, numUniqueConsolePageViews: 300, numUniqueUsersWithRun: 120, numUniqueViewingUsers: 600 }),
+    quality: (actorId: string) => FakeQuality = () => DEFAULT_QUALITY,
 ): ConsoleApi & { calls: string[] } {
     const calls: string[] = [];
     const today = new Date(now).toISOString().slice(0, 10);
@@ -144,9 +158,21 @@ export function fakeConsole(
         async userCounts() {
             return {};
         },
-        async marketing(month, actorIds) {
+        async marketing(month, actorIds, portion) {
             calls.push(`marketing:${month}:${actorIds?.join(',') ?? '*'}`);
-            return marketing(actorIds);
+            return marketing(actorIds, month, portion);
+        },
+        async qualityScores(actorId) {
+            calls.push(`qualityScores:${actorId}`);
+            return quality(actorId).scores;
+        },
+        async qualityImprovements(actorId) {
+            calls.push(`qualityImprovements:${actorId}`);
+            return quality(actorId).improvements;
+        },
+        async qualityBusinessValue(actorId) {
+            calls.push(`qualityBusinessValue:${actorId}`);
+            return quality(actorId).businessValue;
         },
     };
 }

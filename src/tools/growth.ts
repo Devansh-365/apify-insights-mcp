@@ -1,12 +1,11 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import type { Marketing } from '../clients/console.js';
 import type { Context } from '../context.js';
 import { resolveActor } from '../core/actors.js';
 import { breakdown, marketing } from '../core/console-data.js';
-import { ok, round, ToolError } from '../core/envelope.js';
-import { daysElapsed } from '../core/money.js';
-import { isoDay, monthEnd, monthOf, resolvePeriod } from '../core/period.js';
+import { ok, ToolError } from '../core/envelope.js';
+import { funnel } from '../core/funnel.js';
+import { isoDay, monthOf, resolvePeriod } from '../core/period.js';
 
 export const growthInput = {
     month: z
@@ -23,24 +22,12 @@ export const growthInput = {
 
 type Args = z.infer<z.ZodObject<typeof growthInput>>;
 
-function funnel(data: Marketing) {
-    const viewers = data.numUniqueViewingUsers;
-    return {
-        storePageViews: data.numUniqueWebPageViews,
-        consolePageViews: data.numUniqueConsolePageViews,
-        viewingUsers: viewers,
-        usersWithRun: data.numUniqueUsersWithRun,
-        viewToRunPct: viewers > 0 ? round((data.numUniqueUsersWithRun / viewers) * 100, 1) : null,
-    };
-}
-
 export async function growth(ctx: Context, args: Args): Promise<CallToolResult> {
     const api = await ctx.console();
     const now = ctx.now();
     const period = resolvePeriod(args.month, now);
     const month = period.wholeMonth ?? monthOf(period.from);
     const current = month === monthOf(isoDay(now));
-    const portion = current ? daysElapsed(month, now) / Number(monthEnd(month).slice(8)) : undefined;
     const [catalog, money] = await Promise.all([ctx.catalog(), breakdown(ctx, api, month)]);
     const paying = new Map(money.map((row) => [row.id, row]));
 
@@ -60,8 +47,8 @@ export async function growth(ctx: Context, args: Args): Promise<CallToolResult> 
     }
 
     const [account, ...perActor] = await Promise.all([
-        marketing(ctx, api, month, undefined, portion),
-        ...chosen.map((actor) => marketing(ctx, api, month, [actor.id], portion)),
+        marketing(ctx, api, month, undefined),
+        ...chosen.map((actor) => marketing(ctx, api, month, [actor.id])),
     ]);
     let rows = chosen.map((actor, i) => {
         const data = perActor[i]!;

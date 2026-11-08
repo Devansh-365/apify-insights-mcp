@@ -1,6 +1,6 @@
 ---
 name: setup-apify-insights
-description: Install, connect, update or remove apify-insights-mcp, the read-only MCP server that answers an Apify creator's questions about their own actors (earnings, profit, failing or flagged actors, users, Store rank). Use when the user asks to install or set up apify-insights, connect their Apify account to Claude, Codex, Cursor, Gemini CLI, Grok Build or OpenCode, turn on revenue or money data, fix an apify-insights connection, or update or uninstall it, even if they only say "set up the Apify MCP".
+description: Install, connect, update or remove apify-insights-mcp, the read-only MCP server that answers an Apify creator's questions about their own actors (earnings, profit, failing or flagged actors, users, acquisition, quality scores, Store rank). Use when the user asks to install or set up apify-insights, connect their Apify account to Claude, Codex, Cursor, Gemini CLI, Grok Build or OpenCode, turn on revenue or money data, fix an apify-insights connection, or update or uninstall it, even if they only say "set up the Apify MCP".
 ---
 
 # Set up apify-insights

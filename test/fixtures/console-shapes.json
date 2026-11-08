@@ -171,6 +171,30 @@
       "monetizationPerActor",
       "currentMonthProfitUsd",
       "previousMonthProfitUsd"
-    ]
+    ],
+    "qualityScores": {
+      "hasInputSchema": "number",
+      "hasOutputSchema": "number",
+      "hasReadme": "number",
+      "actorQuality": "number",
+      "actorQualityPercentile": "number"
+    },
+    "qualityImprovements": {
+      "praises": [
+        {
+          "title": "string",
+          "description": "string",
+          "percentile": "number"
+        }
+      ],
+      "improvements": [
+        {
+          "id": "string",
+          "title": "string",
+          "description": "string"
+        }
+      ]
+    },
+    "qualityBusinessValue": []
   }
 }

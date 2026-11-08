@@ -4,6 +4,26 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-08
+
+### Added
+
+- `acquisition_score`: marks each of your top actors as Leaking, Rising, Fading, Converting, Steady or Quiet against the same point last month and your other actors, with the reason and what to do. Pass `actor` for one actor. It uses the same numbers and field names as `growth`, which keeps the raw counts, paying users, referrers and countries.
+- `actor_quality`: Apify's quality score and improvement suggestions, grouped by work type (security, operations, schema, pricing, listing) and ranked by impact (work-type weight × traffic). Across your top actors it lists the top issues with the actors they affect; for one actor it shows the score, sub-scores, praises and suggestions.
+- Prompts `funnel-check` and `quality-review`.
+- Glossary entries for acquisition buckets, thresholds, quality scores, work types and impact.
+- Console support for the read-only `actor-quality/scores`, `praises-and-improvements` and `business-value-improvements` endpoints. Actor IDs in these paths are checked before any request is sent.
+
+### Changed
+
+- The Console client runs up to 6 requests at once (it ran one at a time), and retries add a random delay of up to 0.5 s so parallel requests do not retry together.
+- `growth` and `acquisition_score` share one function for their view and run numbers. `viewToRunPct` is shown uncapped in both and can exceed 100%.
+
+### Fixed
+
+- `growth` for the current month showed views and runs scaled down by the share of the month that had passed (about a quarter of the real numbers on day 8). The Console multiplies counts by `portionOfMonthElapsed`, so the current month is now read without it.
+- Cached store-page numbers now depend on that scaling, so last month scaled for a comparison is never reused as the whole of last month.
+
 ## [0.3.0] - 2026-11-08
 
 ### Added
@@ -64,6 +84,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Actor catalog, resolver, cache, response envelope and local source lookup (`APIFY_INSIGHTS_ACTOR_DIRS`).
 - Unit and protocol tests on made-up data, and a live smoke test over stdio (`scripts/smoke.mjs`).
 
+[0.4.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.1.0...v0.2.0

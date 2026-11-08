@@ -4,7 +4,7 @@
   "display_name": "Apify Insights",
   "version": "0.0.0",
   "description": "Ask Claude about your own Apify actors: revenue, profit, run health, users, pricing and Store rank. Read-only.",
-  "long_description": "Answers an Apify creator's questions about their own actors: what you earned yesterday, which actors lose money and their break-even price, which are broken or flagged by Apify, how many users each has, and where you rank in Store search. It never changes anything in your Apify account. Money tools also need the Apify Insights Bridge; see the README.",
+  "long_description": "Answers an Apify creator's questions about their own actors: what you earned yesterday, which actors lose money and their break-even price, which are broken or flagged by Apify, how many users each has, which actors are leaking or gaining users, what to fix for Apify's quality score, and where you rank in Store search. It never changes anything in your Apify account. Money tools also need the Apify Insights Bridge; see the README.",
   "author": {
     "name": "Devansh Tiwari"
   },

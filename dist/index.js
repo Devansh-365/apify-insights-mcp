@@ -2221,20 +2221,20 @@ var require_resolve = __commonJS({
       return false;
     }
     function countKeys(schema) {
-      let count2 = 0;
+      let count3 = 0;
       for (const key in schema) {
         if (key === "$ref")
           return Infinity;
-        count2++;
+        count3++;
         if (SIMPLE_INLINED.has(key))
           continue;
         if (typeof schema[key] == "object") {
-          (0, util_1.eachItem)(schema[key], (sch) => count2 += countKeys(sch));
+          (0, util_1.eachItem)(schema[key], (sch) => count3 += countKeys(sch));
         }
-        if (count2 === Infinity)
+        if (count3 === Infinity)
           return Infinity;
       }
-      return count2;
+      return count3;
     }
     function getFullPath(resolver, id = "", normalize) {
       if (normalize !== false)
@@ -5772,8 +5772,8 @@ var require_contains = __commonJS({
         cxt.result(valid, () => cxt.reset());
         function validateItemsWithCount() {
           const schValid = gen.name("_valid");
-          const count2 = gen.let("count", 0);
-          validateItems(schValid, () => gen.if(schValid, () => checkLimits(count2)));
+          const count3 = gen.let("count", 0);
+          validateItems(schValid, () => gen.if(schValid, () => checkLimits(count3)));
         }
         function validateItems(_valid, block) {
           gen.forRange("i", 0, len, (i) => {
@@ -5786,16 +5786,16 @@ var require_contains = __commonJS({
             block();
           });
         }
-        function checkLimits(count2) {
-          gen.code((0, codegen_1._)`${count2}++`);
+        function checkLimits(count3) {
+          gen.code((0, codegen_1._)`${count3}++`);
           if (max === void 0) {
-            gen.if((0, codegen_1._)`${count2} >= ${min}`, () => gen.assign(valid, true).break());
+            gen.if((0, codegen_1._)`${count3} >= ${min}`, () => gen.assign(valid, true).break());
           } else {
-            gen.if((0, codegen_1._)`${count2} > ${max}`, () => gen.assign(valid, false).break());
+            gen.if((0, codegen_1._)`${count3} > ${max}`, () => gen.assign(valid, false).break());
             if (min === 1)
               gen.assign(valid, true);
             else
-              gen.if((0, codegen_1._)`${count2} >= ${min}`, () => gen.assign(valid, true));
+              gen.if((0, codegen_1._)`${count3} >= ${min}`, () => gen.assign(valid, true));
           }
         }
       }
@@ -8486,14 +8486,14 @@ function codePointLength(str) {
   const units = str.length;
   if (!highSurrogate.test(str))
     return units;
-  let count2 = units;
+  let count3 = units;
   for (let i = 0; i < units - 1; i++) {
     if ((str.charCodeAt(i) & 64512) === 55296 && (str.charCodeAt(i + 1) & 64512) === 56320) {
-      count2--;
+      count3--;
       i++;
     }
   }
-  return count2;
+  return count3;
 }
 function getLengthableOrigin(input2) {
   if (Array.isArray(input2))
@@ -12876,8 +12876,8 @@ function az_default() {
 }
 
 // node_modules/zod/v4/locales/be.js
-function getBelarusianPlural(count2, one, few, many) {
-  const absCount = Math.abs(count2);
+function getBelarusianPlural(count3, one, few, many) {
+  const absCount = Math.abs(count3);
   const lastDigit = absCount % 10;
   const lastTwoDigits = absCount % 100;
   if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
@@ -15524,8 +15524,8 @@ function hu_default() {
 }
 
 // node_modules/zod/v4/locales/hy.js
-function getArmenianPlural(count2, one, many) {
-  return Math.abs(count2) === 1 ? one : many;
+function getArmenianPlural(count3, one, many) {
+  return Math.abs(count3) === 1 ? one : many;
 }
 function withDefiniteArticle(word) {
   if (!word)
@@ -16612,8 +16612,8 @@ function ko_default() {
 var capitalizeFirstCharacter = (text) => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
-function getUnitTypeFromNumber(number4) {
-  const abs = Math.abs(number4);
+function getUnitTypeFromNumber(number5) {
+  const abs = Math.abs(number5);
   const last = abs % 10;
   const last2 = abs % 100;
   if (last2 >= 11 && last2 <= 19 || last === 0)
@@ -17970,8 +17970,8 @@ var error43 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -18115,8 +18115,8 @@ var error44 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -18263,8 +18263,8 @@ function ro_default() {
 }
 
 // node_modules/zod/v4/locales/ru.js
-function getRussianPlural(count2, one, few, many) {
-  const absCount = Math.abs(count2);
+function getRussianPlural(count3, one, few, many) {
+  const absCount = Math.abs(count3);
   const lastDigit = absCount % 10;
   const lastTwoDigits = absCount % 100;
   if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
@@ -29237,6 +29237,12 @@ var ALLOWED_PATHS = [
   "actor-analytics/user-count-statistics",
   "actor-analytics/monthly-marketing"
 ];
+var ALLOWED_ID_PATHS = [
+  "actor-quality/scores/:id",
+  "actor-quality/praises-and-improvements/:id",
+  "actor-quality/business-value-improvements/:id"
+];
+var ACTOR_ID = /^[A-Za-z0-9]{1,32}$/;
 var num = external_exports.number();
 var money = external_exports.object({ revenueUsd: num, costUsd: num, profitUsd: num, margin: num.nullable().optional() }).passthrough();
 var audiences = external_exports.object({ payingUsersUsd: money, allUsersUsd: money }).passthrough();
@@ -29261,12 +29267,24 @@ var marketingSchema = external_exports.object({
   topReferrers: external_exports.array(external_exports.object({ origin: external_exports.string(), trafficPercent: num }).passthrough()).optional(),
   topCountryCodes: external_exports.array(external_exports.object({ origin: external_exports.string(), trafficPercent: num }).passthrough()).optional()
 }).passthrough();
+var qualityScoresSchema = external_exports.record(external_exports.string(), external_exports.unknown());
+var improvementItem = external_exports.object({ id: external_exports.string(), title: external_exports.string().nullish(), description: external_exports.string().nullish(), descriptionDetail: external_exports.string().nullish(), valueLift: external_exports.number().nullish() }).passthrough();
+var qualityImprovementsSchema = external_exports.object({
+  praises: external_exports.array(external_exports.object({ title: external_exports.string(), description: external_exports.string().nullish(), percentile: external_exports.number().nullish() }).passthrough()).nullish(),
+  improvements: external_exports.array(improvementItem).nullish()
+}).passthrough();
+var qualityBusinessValueSchema = external_exports.union([external_exports.array(improvementItem), external_exports.object({ improvements: external_exports.array(improvementItem).nullish() }).passthrough()]);
 function consoleUrl(path, params) {
   if (!ALLOWED_PATHS.includes(path)) throw new Error(`Console path not allowed: ${path}`);
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) if (value !== void 0) query.set(key, value);
   const qs = query.toString();
   return `${BASE}/${path}${qs ? `?${qs}` : ""}`;
+}
+function consoleIdUrl(template, actorId) {
+  if (!ALLOWED_ID_PATHS.includes(template)) throw new Error(`Console path not allowed: ${template}`);
+  if (!ACTOR_ID.test(actorId)) throw new Error(`Not an actor ID: ${JSON.stringify(actorId)}`);
+  return `${BASE}/${template.replace(":id", actorId)}`;
 }
 function parse3(schema, path, body) {
   const result = schema.safeParse(body);
@@ -29280,11 +29298,27 @@ function parse3(schema, path, body) {
     { endpoint: path, field }
   );
 }
-function createConsoleApi(getToken, fetchImpl = fetch) {
-  let queue = Promise.resolve();
-  async function request(path, params, schema) {
-    const url2 = consoleUrl(path, params);
-    const run = async () => {
+var MAX_CONCURRENT = 6;
+function createConsoleApi(getToken, fetchImpl = fetch, options = {}) {
+  const jitter = options.jitter ?? (() => Math.random() * 500);
+  const retryDelayMs = options.retryDelayMs ?? 1e3;
+  let active = 0;
+  const waiting = [];
+  async function slot() {
+    if (active < MAX_CONCURRENT) {
+      active++;
+      return;
+    }
+    await new Promise((resolve2) => waiting.push(resolve2));
+  }
+  function release() {
+    const next = waiting.shift();
+    if (next) next();
+    else active--;
+  }
+  async function request(label, url2, schema) {
+    await slot();
+    try {
       for (let attempt = 0; ; attempt++) {
         const token = await getToken();
         const response = await fetchImpl(url2, {
@@ -29296,32 +29330,36 @@ function createConsoleApi(getToken, fetchImpl = fetch) {
           throw new ToolError("logged_out", "The Apify Console session was rejected.", "Open console.apify.com in Chrome and make sure you are logged in.");
         }
         if ((response.status === 429 || response.status >= 500) && attempt < 2) {
-          await new Promise((resolve2) => setTimeout(resolve2, 1e3 * 2 ** attempt));
+          await new Promise((resolve2) => setTimeout(resolve2, retryDelayMs * 2 ** attempt + jitter()));
           continue;
         }
         if (!response.ok) {
-          throw new ToolError("endpoint_changed", `Apify Console returned ${response.status} for ${path}.`, "Try again later; public tools still work.", { endpoint: path });
+          throw new ToolError("endpoint_changed", `Apify Console returned ${response.status} for ${label}.`, "Try again later; public tools still work.", { endpoint: label });
         }
-        return parse3(schema, path, await response.json());
+        return parse3(schema, label, await response.json());
       }
-    };
-    const result = queue.then(run, run);
-    queue = result.catch(() => void 0);
-    return result;
+    } finally {
+      release();
+    }
   }
+  const get = (path, params, schema) => request(path, consoleUrl(path, params), schema);
+  const getById = (template, actorId, schema) => request(template, consoleIdUrl(template, actorId), schema);
   const ids = (actorIds) => actorIds?.length ? actorIds.join(",") : void 0;
   const month = (value) => `${value}-01`;
   return {
-    profitMargin: (m, actorIds) => request("actor-analytics/profit-margin", { month: month(m), actorIds: ids(actorIds) }, profitMarginSchema),
-    actorBreakdown: (m) => request("actor-analytics/actor-breakdown", { month: month(m) }, breakdownSchema),
-    runStatistics: (m, actorIds) => request("actor-analytics/run-statistics/monthly/all-users", { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
-    userCounts: (m, actorIds) => request("actor-analytics/user-count-statistics", { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
+    profitMargin: (m, actorIds) => get("actor-analytics/profit-margin", { month: month(m), actorIds: ids(actorIds) }, profitMarginSchema),
+    actorBreakdown: (m) => get("actor-analytics/actor-breakdown", { month: month(m) }, breakdownSchema),
+    runStatistics: (m, actorIds) => get("actor-analytics/run-statistics/monthly/all-users", { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
+    userCounts: (m, actorIds) => get("actor-analytics/user-count-statistics", { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
     // This endpoint wants `actorIds` present (empty = all actors) and a month start date.
-    marketing: (m, actorIds, portion) => request(
+    marketing: (m, actorIds, portion) => get(
       "actor-analytics/monthly-marketing",
       { monthStartAt: month(m), actorIds: ids(actorIds) ?? "", portionOfMonthElapsed: portion == null ? void 0 : String(portion) },
       marketingSchema
-    )
+    ),
+    qualityScores: (actorId) => getById("actor-quality/scores/:id", actorId, qualityScoresSchema),
+    qualityImprovements: (actorId) => getById("actor-quality/praises-and-improvements/:id", actorId, qualityImprovementsSchema),
+    qualityBusinessValue: (actorId) => getById("actor-quality/business-value-improvements/:id", actorId, qualityBusinessValueSchema)
   };
 }
 
@@ -36770,7 +36808,7 @@ var ExperimentalMcpServerTasks = class {
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js
 function toolInputElementCount(value, max) {
-  let count2 = 0;
+  let count3 = 0;
   const stack = [value];
   while (stack.length > 0) {
     const node2 = stack.pop();
@@ -36778,8 +36816,8 @@ function toolInputElementCount(value, max) {
       continue;
     if (Array.isArray(node2)) {
       for (const child of node2) {
-        if (++count2 > max)
-          return count2;
+        if (++count3 > max)
+          return count3;
         if (child !== null && typeof child === "object")
           stack.push(child);
       }
@@ -36787,15 +36825,15 @@ function toolInputElementCount(value, max) {
       for (const key in node2) {
         if (!Object.prototype.hasOwnProperty.call(node2, key))
           continue;
-        if (++count2 > max)
-          return count2;
+        if (++count3 > max)
+          return count3;
         const child = node2[key];
         if (child !== null && typeof child === "object")
           stack.push(child);
       }
     }
   }
-  return count2;
+  return count3;
 }
 function resolveMaxToolInputElements(value) {
   if (value === void 0 || value === Infinity)
@@ -37630,7 +37668,150 @@ Definitions used by every tool in this server. Repeat numbers as they are given;
 - **losing**: profit at or below minus the loss floor. **thin_margin**: revenue at or above materiality at under 30% margin. **below_cost**: cost per 1K results above revenue per 1K. **no_revenue**: 10+ runs and a paying user but $0 revenue on a charging actor (often an event the code never charges).
 - **declining / growing**: revenue per day this month vs last month changed by 25%+ and by at least materiality per month. Needs 7+ days of the month.
 - **Revenue at risk**: revenue \xD7 failure rate.
+- **Viewers, input-page views, users with a run** (growth, acquisition_score): from Console analytics (\`monthly-marketing\`), unique per month. Both tools use the same field names and values: \`viewingUsers\` (viewed the Store page), \`consolePageViews\` (opened the input page), \`usersWithRun\`, and \`viewToRunPct\` = users with a run \xF7 viewers. viewToRunPct can exceed 100% because users can run an actor (API, schedules) without viewing its page that month.
+- **growth vs acquisition_score**: growth gives the raw counts, paying users, referrers and countries. acquisition_score gives each actor's bucket, the reason and what to do.
+- **Acquisition buckets** (acquisition_score), first match wins: **Leaking** (viewers \u2265 leakFloor but under 2 start, or conversion in your bottom quarter: fix the listing), **Rising** (viewers up 30%+ and by 5+ vs the same point last month: market it more), **Fading** (viewers down 25%+ and by 5+: find out why), **Converting** (2+ start and conversion in your top quarter: double down), **Steady** (enough viewers, no strong signal), **Quiet** (too few viewers to judge). Same rules as the Apify Insights Plus extension.
+- **viewerFloor / leakFloor**: thresholds relative to the scanned actors. viewerFloor = max(3, 25th percentile of viewers), leakFloor = max(10, median). Conversion quarters are computed among actors at or above viewerFloor, with conversion capped at 100%. Changing \`top\` changes the scanned set, so it can move an actor between buckets.
+- **Same point last month**: for the current month, last month's counts scaled to the share of this month that has fully passed (Apify's own comparison: on day 20 of a 30-day month, 19/30 of last month). A past month is compared with the whole month before it.
+- **Early month**: before day 8, Rising and Fading are not judged, because the change since the same point last month is too noisy.
+- **Quality score** (actor_quality): Apify's quality score (shown as %) and its percentile among Store actors, with sub-scores when Apify returns them. **pending**: no real score yet, because the actor is not public in the Store (unpublished) or Apify has not scored it (unscored).
+- **Quality work types**: security (weight 5), operations (4), schema (3), pricing (2), listing & docs (1), other (1). Market suggestions (rating, total users, weight 0.5) are not work you can do and are not listed across actors.
+- **Quality impact**: work-type weight \xD7 traffic weight. Traffic weight = max(1, revenue \xD7 100 + runs \xD7 0.1 + paying users \xD7 10 + users \xD7 0.5), each the larger of last month and this month's pace (pace from day 8). Across actors, the top 20% of suggestions by impact are **high**, the next 30% **medium**, the rest **low**; actors with no traffic are always low.
 `;
+
+// src/core/acquisition.ts
+var CHANGE_MIN_DAY = 8;
+var MIN_VIEWERS = 3;
+var MIN_LEAK_VIEWERS = 10;
+var MIN_STARTERS = 2;
+var MIN_VIEWER_SHIFT = 5;
+var RISE_MIN = 0.3;
+var FALL_MIN = -0.25;
+var LOW_CONVERSION = 0.05;
+var FEW_REACH_INPUT = 0.15;
+var BUCKETS = [
+  { key: "leaking", label: "Leaking", action: "Fix the listing" },
+  { key: "rising", label: "Rising", action: "Market it more" },
+  { key: "fading", label: "Fading", action: "Find out why" },
+  { key: "converting", label: "Converting", action: "Double down" },
+  { key: "steady", label: "Steady", action: "Nothing to do" },
+  { key: "quiet", label: "Quiet", action: "Too little traffic to judge" }
+];
+function finite(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+function count2(value) {
+  const result = finite(value);
+  return result == null ? null : Math.max(0, result);
+}
+function formatCount(value) {
+  return Number(value || 0).toLocaleString("en-US");
+}
+function formatRate(value) {
+  const percent = value * 100;
+  if (percent > 0 && percent < 1) return "<1%";
+  return `${percent < 10 ? percent.toFixed(1).replace(/\.0$/, "") : Math.round(percent)}%`;
+}
+function plural2(value, one, many) {
+  return `${formatCount(value)} ${value === 1 ? one : many}`;
+}
+function percentile(values, fraction) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.min(sorted.length - 1, Math.floor(fraction * sorted.length))];
+}
+function compactEntry(data, previous) {
+  return {
+    viewers: count2(data?.numUniqueViewingUsers),
+    inputViewers: count2(data?.numUniqueConsolePageViews),
+    starters: count2(data?.numUniqueUsersWithRun),
+    prevViewers: count2(previous?.numUniqueViewingUsers),
+    prevInputViewers: count2(previous?.numUniqueConsolePageViews),
+    prevStarters: count2(previous?.numUniqueUsersWithRun)
+  };
+}
+function change(current, previous) {
+  if (current == null || previous == null) return null;
+  if (previous === 0) return current === 0 ? 0 : "new";
+  return (current - previous) / previous;
+}
+function conversion(entry) {
+  if (!entry || !entry.viewers || entry.starters == null) return null;
+  return Math.min(1, entry.starters / entry.viewers);
+}
+function isEarlyMonth(month, now) {
+  const date5 = new Date(now);
+  const current = `${date5.getUTCFullYear()}-${String(date5.getUTCMonth() + 1).padStart(2, "0")}`;
+  return month.slice(0, 7) === current && date5.getUTCDate() < CHANGE_MIN_DAY;
+}
+function computeThresholds(entries) {
+  const usable = entries.filter((entry) => entry.viewers != null);
+  const viewed = usable.map((entry) => entry.viewers).filter((value) => value > 0);
+  const viewerFloor = Math.max(MIN_VIEWERS, Math.round(percentile(viewed, 0.25)));
+  const leakFloor = Math.max(MIN_LEAK_VIEWERS, Math.round(percentile(viewed, 0.5)));
+  const rates = usable.filter((entry) => entry.viewers >= viewerFloor).map(conversion).filter((value) => value != null);
+  return { viewerFloor, leakFloor, conversionLow: percentile(rates, 0.25), conversionHigh: percentile(rates, 0.75), sample: rates.length };
+}
+function changeText(value) {
+  return `${value > 0 ? "up" : "down"} ${formatRate(Math.abs(value))}`;
+}
+function assignBucket(entry, thresholds2, { early = false } = {}) {
+  if (!entry || entry.viewers == null) return { key: "quiet", reason: "No acquisition data this month", rate: null, viewerChange: null };
+  const t = thresholds2;
+  const viewers = entry.viewers;
+  const starters = entry.starters ?? 0;
+  const rate = conversion(entry);
+  const viewerChange = change(viewers, entry.prevViewers);
+  const shift = entry.prevViewers == null ? 0 : viewers - entry.prevViewers;
+  const result = (key, reason2) => ({ key, reason: reason2, rate, viewerChange });
+  if (viewers >= t.leakFloor && starters <= viewers && (starters < MIN_STARTERS || (rate ?? 0) < t.conversionLow)) {
+    const reachInput = entry.inputViewers == null ? null : entry.inputViewers / viewers;
+    const where = reachInput != null && reachInput < FEW_REACH_INPUT ? "few reach the input page, so check the README, title, and pricing" : "they reach the input page but don't start, so check input defaults and required fields";
+    return result("leaking", `${formatCount(viewers)} viewers, ${formatCount(starters)} started (${formatRate(rate || 0)}): ${where}`);
+  }
+  if (!early && viewers >= t.viewerFloor && (viewerChange === "new" || viewerChange != null && viewerChange >= RISE_MIN) && shift >= MIN_VIEWER_SHIFT) {
+    const weak = rate != null && rate < LOW_CONVERSION ? `; only ${formatRate(rate)} start it, so fix the listing too` : "";
+    const growth2 = viewerChange === "new" ? `${plural2(viewers, "viewer", "viewers")}, none at this point last month` : `Viewers ${changeText(viewerChange)} (${formatCount(entry.prevViewers)} \u2192 ${formatCount(viewers)})`;
+    return result("rising", `${growth2}${weak}`);
+  }
+  if (!early && Math.max(viewers, entry.prevViewers || 0) >= t.viewerFloor && typeof viewerChange === "number" && viewerChange <= FALL_MIN && -shift >= MIN_VIEWER_SHIFT) {
+    return result("fading", `Viewers ${changeText(viewerChange)} (${formatCount(entry.prevViewers)} \u2192 ${formatCount(viewers)})`);
+  }
+  if (viewers >= t.viewerFloor && starters >= MIN_STARTERS && t.conversionHigh > 0 && rate != null && rate >= t.conversionHigh) {
+    return result("converting", `${formatRate(rate)} of viewers start it (${formatCount(starters)} of ${formatCount(viewers)}), top quarter of your Actors`);
+  }
+  if (viewers >= t.viewerFloor) {
+    return result("steady", `${plural2(viewers, "viewer", "viewers")}, ${formatCount(starters)} started, no strong signal`);
+  }
+  return result("quiet", viewers ? `Only ${plural2(viewers, "viewer", "viewers")} this month` : "No viewers this month");
+}
+function sortValue(key, entry) {
+  const viewers = entry.viewers || 0;
+  const previous = entry.prevViewers || 0;
+  if (key === "rising") return viewers - previous;
+  if (key === "fading") return previous - viewers;
+  if (key === "converting") return entry.starters || 0;
+  return viewers;
+}
+function buildTriage(actors, entries, thresholds2, { early = false } = {}) {
+  const buckets = new Map(BUCKETS.map((bucket) => [bucket.key, { ...bucket, items: [], viewers: 0 }]));
+  let scanned = 0;
+  let viewers = 0;
+  for (const actor of actors) {
+    const entry = entries.get(actor.id);
+    if (!entry) continue;
+    scanned++;
+    const assigned = assignBucket(entry, thresholds2, { early });
+    const bucket = buckets.get(assigned.key);
+    bucket.items.push({ actor, entry, ...assigned });
+    bucket.viewers += entry.viewers || 0;
+    viewers += entry.viewers || 0;
+  }
+  for (const bucket of buckets.values()) {
+    bucket.items.sort((left, right) => sortValue(right.key, right.entry) - sortValue(left.key, left.entry) || left.actor.name.localeCompare(right.actor.name));
+  }
+  return { buckets: [...buckets.values()], scanned, viewers };
+}
 
 // src/core/period.ts
 var periodInput = external_exports.union([
@@ -37825,8 +38006,173 @@ async function profitMargins(ctx, api, months, actorIds) {
   return new Map(entries);
 }
 function marketing(ctx, api, month, actorIds, portion) {
-  const key = `mk:${month}:${actorIds?.join(",") ?? "*"}`;
+  const key = `mk:${month}:${actorIds?.join(",") ?? "*"}:${portion ?? "all"}`;
   return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
+}
+var QUALITY_TTL = 5 * 6e4;
+function qualityScores(ctx, api, actorId) {
+  return ctx.cache.get(`qs:${actorId}`, QUALITY_TTL, () => api.qualityScores(actorId));
+}
+function qualityImprovements(ctx, api, actorId) {
+  return ctx.cache.get(`qi:${actorId}`, QUALITY_TTL, () => api.qualityImprovements(actorId));
+}
+function qualityBusinessValue(ctx, api, actorId) {
+  return ctx.cache.get(`qbv:${actorId}`, QUALITY_TTL, () => api.qualityBusinessValue(actorId));
+}
+
+// src/core/funnel.ts
+function funnel(data) {
+  const viewers = data.numUniqueViewingUsers;
+  return {
+    storePageViews: data.numUniqueWebPageViews,
+    consolePageViews: data.numUniqueConsolePageViews,
+    viewingUsers: viewers,
+    usersWithRun: data.numUniqueUsersWithRun,
+    viewToRunPct: viewers > 0 ? round(data.numUniqueUsersWithRun / viewers * 100, 1) : null
+  };
+}
+
+// src/core/scan.ts
+var SESSION_ERRORS = /* @__PURE__ */ new Set(["bridge_missing", "logged_out", "warming_up", "other_account", "disabled"]);
+function isSessionError(error62) {
+  return error62 instanceof ToolError && SESSION_ERRORS.has(error62.code);
+}
+async function scanActors(actors, load) {
+  const results = /* @__PURE__ */ new Map();
+  const failed = [];
+  let firstError;
+  await Promise.all(
+    actors.map(async (actor) => {
+      try {
+        results.set(actor.id, await load(actor));
+      } catch (error62) {
+        if (isSessionError(error62)) throw error62;
+        firstError ??= error62;
+        failed.push(actor);
+      }
+    })
+  );
+  if (actors.length && !results.size) throw firstError;
+  return { results, failed };
+}
+function failedNote(failed, total) {
+  if (!failed.length) return null;
+  const names = failed.map((actor) => actor.name).sort();
+  const shown = names.slice(0, 5).join(", ");
+  return `${failed.length} of ${total} actors could not be loaded and were left out: ${shown}${names.length > 5 ? ` and ${names.length - 5} more` : ""}.`;
+}
+
+// src/tools/acquisition-score.ts
+var acquisitionScoreInput = {
+  actor: external_exports.string().optional().describe("One actor (id, name, username/name or title): its bucket, reason and numbers. Omit for the portfolio triage."),
+  month: external_exports.union([external_exports.enum(["thisMonth", "lastMonth"]), external_exports.string().regex(/^\d{4}-\d{2}$/)]).default("thisMonth").describe("Calendar month. thisMonth (default) is compared with last month at the same point; a past month with the whole month before it."),
+  top: external_exports.number().int().min(1).max(50).default(20).describe("How many actors to scan, by 30-day users. Buckets are relative to these actors.")
+};
+var LISTED = { leaking: 5, rising: 5, fading: 5, converting: 5, steady: 0, quiet: 0 };
+function pct(value) {
+  return value == null ? null : round(value * 100, 1);
+}
+function changePct(value) {
+  return value === "new" ? "new" : pct(value);
+}
+function thresholdsOut(t) {
+  return { viewerFloor: t.viewerFloor, leakFloor: t.leakFloor, conversionLowPct: pct(t.conversionLow), conversionHighPct: pct(t.conversionHigh) };
+}
+function relativeNote(scanned) {
+  return `Thresholds and bucket sizes are relative to the top ${scanned} actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.`;
+}
+var EARLY_NOTE = "Before day 8 of the month, Rising and Fading are not judged: the change since the same point last month is too noisy.";
+var GROWTH_NOTE = "For referrers, countries and paying users, call growth with this actor and month.";
+async function acquisitionScore(ctx, args) {
+  const api = await ctx.console();
+  const now = ctx.now();
+  const period = resolvePeriod(args.month, now);
+  const month = period.wholeMonth ?? monthOf(period.from);
+  const prevMonth = addMonths(month, -1);
+  const current = month === monthOf(isoDay(now));
+  const comparePortion = current ? (Number(isoDay(now).slice(8)) - 1) / Number(monthEnd(month).slice(8)) : void 0;
+  const early = isEarlyMonth(month, now);
+  const catalog = await ctx.catalog();
+  const load = async (actor) => {
+    const [data, previous] = await Promise.all([
+      marketing(ctx, api, month, [actor.id]),
+      comparePortion === 0 ? Promise.resolve(null) : marketing(ctx, api, prevMonth, [actor.id], comparePortion)
+    ]);
+    return { data, entry: compactEntry(data, previous) };
+  };
+  let named = null;
+  if (args.actor) {
+    const found = resolveActor(catalog, args.actor);
+    if (found.kind === "not_found") throw new ToolError("actor_not_found", `No actor of yours matches "${args.actor}".`, "Call list_actors with a `query` to find the name.");
+    if (found.kind === "ambiguous") {
+      throw new ToolError("actor_ambiguous", `"${args.actor}" matches several actors.`, "Repeat with one of the candidates.", { candidates: found.candidates.map((actor) => actor.ref) });
+    }
+    named = found.actor;
+  }
+  const peers = catalog.filter((actor) => actor.isPublic && actor.id !== named?.id).sort((a, b) => (b.users30d ?? 0) - (a.users30d ?? 0)).slice(0, named ? Math.max(0, args.top - 1) : args.top);
+  const [mine, scan] = await Promise.all([named ? load(named) : null, peers.length ? scanActors(peers, load) : { results: /* @__PURE__ */ new Map(), failed: [] }]);
+  const loaded = new Map(scan.results);
+  const scanned = peers.filter((actor) => loaded.has(actor.id));
+  if (named && mine) {
+    loaded.set(named.id, mine);
+    scanned.unshift(named);
+  }
+  const thresholds2 = computeThresholds([...loaded.values()].map((item) => item.entry));
+  const asOf = new Date(now).toISOString();
+  const periodOut = { label: String(args.month), from: period.from, to: period.to, partial: current };
+  const failed = failedNote(scan.failed, scan.failed.length + scanned.length);
+  const label = `${month}${current ? " (in progress)" : ""}`;
+  if (named && mine) {
+    const assigned = assignBucket(mine.entry, thresholds2, { early });
+    const bucket = BUCKETS.find((item) => item.key === assigned.key);
+    const shown = funnel(mine.data);
+    const previous = mine.entry.prevViewers == null ? null : { viewingUsers: mine.entry.prevViewers, usersWithRun: mine.entry.prevStarters };
+    const notes = [GROWTH_NOTE, relativeNote(scanned.length), ...early ? [EARLY_NOTE] : [], ...failed ? [failed] : []];
+    return ok(`${named.name} (${label}): ${bucket.label}, ${bucket.action.toLowerCase()}. ${assigned.reason}.`, {
+      asOf,
+      source: ["console (unofficial)"],
+      period: periodOut,
+      actor: { name: named.name, ref: named.ref },
+      bucket: { key: bucket.key, label: bucket.label, action: bucket.action },
+      reason: assigned.reason,
+      funnel: shown,
+      previous,
+      viewerChangePct: changePct(assigned.viewerChange),
+      thresholds: thresholdsOut(thresholds2),
+      notes
+    });
+  }
+  const triage = buildTriage(scanned, new Map([...loaded].map(([id, item]) => [id, item.entry])), thresholds2, { early });
+  const buckets = triage.buckets.map((bucket) => ({
+    key: bucket.key,
+    label: bucket.label,
+    action: bucket.action,
+    count: bucket.items.length,
+    viewingUsers: bucket.viewers,
+    actors: bucket.items.slice(0, LISTED[bucket.key]).map((item) => {
+      const shown = funnel(loaded.get(item.actor.id).data);
+      return { name: item.actor.name, viewingUsers: shown.viewingUsers, usersWithRun: shown.usersWithRun, viewToRunPct: shown.viewToRunPct, viewerChangePct: changePct(item.viewerChange), reason: item.reason };
+    })
+  }));
+  const unlisted = buckets.reduce((sum, bucket) => sum + bucket.count - bucket.actors.length, 0);
+  const counts = buckets.map((bucket) => `${bucket.count} ${bucket.key}`).join(", ");
+  const summary = [`${label}: ${counts} among your top ${triage.scanned} actors (${triage.viewers.toLocaleString("en-US")} viewers).`];
+  const worst = triage.buckets.find((bucket) => bucket.key === "leaking")?.items[0];
+  if (worst) {
+    const shown = funnel(loaded.get(worst.actor.id).data);
+    summary.push(`Worst leaking: ${worst.actor.name} (${shown.viewingUsers} viewers, ${shown.usersWithRun} with a run, ${shown.viewToRunPct ?? "n/a"}%).`);
+  }
+  if (early) summary.push(EARLY_NOTE);
+  return ok(summary.join("\n"), {
+    asOf,
+    source: ["console (unofficial)"],
+    period: periodOut,
+    thresholds: thresholdsOut(thresholds2),
+    totals: { scanned: triage.scanned, viewingUsers: triage.viewers },
+    buckets,
+    ...unlisted ? { omitted: { rows: unlisted, hint: "Up to 5 actors are listed per bucket that needs action; Steady and Quiet are counted only. Pass `actor` to see any one actor." } } : {},
+    notes: [relativeNote(triage.scanned), ...early ? [EARLY_NOTE] : [], ...failed ? [failed] : [], "For raw counts, paying users, referrers and countries, call growth."]
+  });
 }
 
 // src/core/money-flags.ts
@@ -37840,8 +38186,8 @@ var NO_REVENUE_MIN_RUNS = 10;
 var CHARGING_MODELS = /* @__PURE__ */ new Set(["PAY_PER_EVENT", "PRICE_PER_DATASET_ITEM"]);
 function thresholds(rows, daysElapsed2) {
   const profit = rows.reduce((sum, row3) => sum + row3.profitUsd, 0);
-  const pace = daysElapsed2 ? profit / Math.max(1, daysElapsed2) * 30 : 0;
-  const materialityUsd = Math.max(MIN_MATERIALITY_USD, MATERIALITY_SHARE * Math.max(0, pace));
+  const pace2 = daysElapsed2 ? profit / Math.max(1, daysElapsed2) * 30 : 0;
+  const materialityUsd = Math.max(MIN_MATERIALITY_USD, MATERIALITY_SHARE * Math.max(0, pace2));
   return { materialityUsd, lossFloorUsd: Math.max(MIN_LOSS_USD, materialityUsd / 4) };
 }
 var MONEY_RULES = (t) => ({
@@ -37865,7 +38211,7 @@ function unitEconomics(row3) {
     priceMultiplierToBreakEven: round(multiplier, 3)
   };
 }
-function moneyFlags(row3, t, pace) {
+function moneyFlags(row3, t, pace2) {
   const flags = [];
   const rules = MONEY_RULES(t);
   const push = (flag, evidence) => flags.push({ flag, rule: rules[flag], evidence });
@@ -37887,9 +38233,9 @@ function moneyFlags(row3, t, pace) {
   if (failures >= MIN_FAILURES && failureRate >= FAILURE_RATE && ((row3.payingUsers ?? 0) >= 2 || row3.revenueUsd >= t.materialityUsd / 2)) {
     push("failing", { runs: row3.runs, failures, failureRatePct: round(failureRate * 100, 1), revenueAtRiskUsd: round(row3.revenueUsd * failureRate) });
   }
-  if (pace && pace.latestDays >= MIN_PACE_DAYS) {
-    const latestPerDay = row3.revenueUsd / pace.latestDays;
-    const previousPerDay = pace.previous ? pace.previous.revenueUsd / Math.max(1, pace.previousDays) : 0;
+  if (pace2 && pace2.latestDays >= MIN_PACE_DAYS) {
+    const latestPerDay = row3.revenueUsd / pace2.latestDays;
+    const previousPerDay = pace2.previous ? pace2.previous.revenueUsd / Math.max(1, pace2.previousDays) : 0;
     const monthlyChange = (latestPerDay - previousPerDay) * 30;
     const evidence = { revenuePerDayUsd: round(latestPerDay, 3), previousRevenuePerDayUsd: round(previousPerDay, 3), monthlyChangeUsd: round(monthlyChange) };
     const stopped = previousPerDay * 30 >= t.materialityUsd && latestPerDay === 0;
@@ -37913,7 +38259,7 @@ var actorProfitabilityInput = {
 function moneyRow(item, view) {
   const { row: row3, flags } = item;
   const economics = unitEconomics(row3);
-  const pace = flags.find((flag) => flag.flag === "declining" || flag.flag === "growing");
+  const pace2 = flags.find((flag) => flag.flag === "declining" || flag.flag === "growing");
   const priced = flags.some((flag) => flag.flag === "losing" || flag.flag === "below_cost" || flag.flag === "thin_margin");
   return {
     name: row3.name,
@@ -37929,7 +38275,7 @@ function moneyRow(item, view) {
     revenuePer1kUsd: economics.revenuePer1kChargedUsd,
     priceUsd: row3.pricing?.priceUsd ?? null,
     ...priced || view === "losers" || view === "below_cost" ? { breakEvenPriceUsd: economics.breakEvenPriceUsd } : {},
-    ...view === "movers" && pace ? pace.evidence : {},
+    ...view === "movers" && pace2 ? pace2.evidence : {},
     flags: flags.map((flag) => flag.flag)
   };
 }
@@ -38086,6 +38432,327 @@ async function actorProfitability(ctx, args) {
   const only = await resolveIds(ctx, args.actors);
   if (period.wholeMonth) return monthView(ctx, args, period, period.wholeMonth, only);
   return rangeView(ctx, args, period, only);
+}
+
+// src/core/quality.ts
+var PACE_MIN_DAY = 8;
+var MAX_DESCRIPTION_LENGTH = 600;
+var WORK_GROUPS = [
+  { key: "security", label: "Security", weight: 5, ids: ["SENSITIVE_PROPERTIES_WITHOUT_SECRET_FLAG", "PERMISSION_LEVEL"] },
+  { key: "ops", label: "Operations", weight: 4, ids: ["RELIABILITY", "ISSUE_RESPONSE_TIME"] },
+  { key: "schema", label: "Schema", weight: 3, ids: ["HAS_INPUT_SCHEMA", "HAS_OUTPUT_SCHEMA"] },
+  { key: "pricing", label: "Pricing", weight: 2, ids: ["ACTOR_START_PRICE", "PPE_PRICING", "PPE_PRIMARY_EVENT", "PPE_PLATFORM_USAGE", "TIERED_PRICING"] },
+  {
+    key: "listing",
+    label: "Listing & docs",
+    weight: 1,
+    ids: ["NO_README", "README_QUALITY", "TITLE_QUALITY", "DESCRIPTION_QUALITY", "HAS_AVATAR_IMAGE", "INPUT_PROPERTY_DESCRIPTION_QUALITY", "PUBLISH_TASK"]
+  },
+  { key: "other", label: "Other", weight: 1, ids: [] },
+  // Rating and user counts are not work you can do directly, so the extension hides them.
+  { key: "market", label: "Market", weight: 0.5, hidden: true, ids: ["RATING", "TOTAL_USERS"] }
+];
+var GROUP_BY_ID = new Map(WORK_GROUPS.flatMap((group) => group.ids.map((id) => [id, group])));
+var OTHER = WORK_GROUPS.find((group) => group.key === "other");
+var SCORE_LABELS = {
+  actorQuality: "Quality score",
+  actorQualityPercentile: "Quality percentile",
+  health: "Health",
+  runSuccessRate: "Run success rate",
+  rating: "Rating",
+  integrability: "Integrability",
+  issueResponseTime: "Issue response time",
+  pricing: "Pricing",
+  hasInputSchema: "Input schema",
+  hasOutputSchema: "Output schema",
+  hasReadme: "README",
+  hasAvatarImage: "Avatar image",
+  readmeQuality: "README quality",
+  inputPropertyDescriptionQuality: "Input field descriptions",
+  titleQuality: "Title quality",
+  descriptionQuality: "Description quality",
+  inputSchemaSecurity: "Input schema security",
+  maintenanceFrequency: "Maintenance frequency",
+  permissionLevel: "Permission level",
+  actorListing: "Store listing",
+  isPPEPlatformUsagePaidByUser: "Platform usage paid by user"
+};
+function finite2(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+function number4(value) {
+  return finite2(value) ?? 0;
+}
+function groupFor(id) {
+  return GROUP_BY_ID.get(id) ?? OTHER;
+}
+function compactScores(scores) {
+  if (!scores || typeof scores !== "object") return null;
+  const result = {};
+  for (const key of Object.keys(SCORE_LABELS)) {
+    const raw = scores[key];
+    const value = typeof raw === "boolean" ? Number(raw) : finite2(raw);
+    if (value != null) result[key] = Math.round(value * 1e4) / 1e4;
+  }
+  return result;
+}
+function trimText(value) {
+  const text = typeof value === "string" ? value : "";
+  return text.length > MAX_DESCRIPTION_LENGTH ? `${text.slice(0, MAX_DESCRIPTION_LENGTH - 1)}\u2026` : text;
+}
+function mergeImprovements(recommendations, businessValue) {
+  const items = [];
+  const seen = /* @__PURE__ */ new Map();
+  const businessItems = Array.isArray(businessValue) ? businessValue : businessValue?.improvements ?? [];
+  for (const raw of [...recommendations?.improvements ?? [], ...businessItems]) {
+    const id = String(raw.id || raw.title || "").trim();
+    if (!id) continue;
+    const existing = seen.get(id);
+    if (existing) {
+      if (!existing.detail && raw.descriptionDetail) existing.detail = trimText(raw.descriptionDetail);
+      if (existing.valueLift == null && raw.valueLift != null) existing.valueLift = raw.valueLift;
+      continue;
+    }
+    const item = {
+      id,
+      title: String(raw.title || id),
+      description: trimText(raw.description),
+      detail: raw.descriptionDetail ? trimText(raw.descriptionDetail) : "",
+      valueLift: raw.valueLift ?? null
+    };
+    seen.set(id, item);
+    items.push(item);
+  }
+  return items;
+}
+function pendingReason(scores, isPublic) {
+  if (!isPublic) return "unpublished";
+  if (!scores || finite2(scores.actorQuality) == null) return "unscored";
+  return null;
+}
+function compactEntry2(actorId, { scores, recommendations, businessValue }, isPublic) {
+  const compact = compactScores(scores);
+  const pending = pendingReason(compact, isPublic);
+  return {
+    id: actorId,
+    scores: pending ? null : compact,
+    improvements: pending ? [] : mergeImprovements(recommendations, businessValue),
+    praises: pending ? [] : (recommendations?.praises ?? []).map((item) => String(item.title || "")).filter(Boolean).slice(0, 6),
+    pending
+  };
+}
+function monthDays(now) {
+  const date5 = new Date(now);
+  return new Date(Date.UTC(date5.getUTCFullYear(), date5.getUTCMonth() + 1, 0)).getUTCDate();
+}
+function pace(value, now) {
+  const day = new Date(now).getUTCDate();
+  if (day < PACE_MIN_DAY) return 0;
+  return number4(value) * monthDays(now) / day;
+}
+function trafficFromMoney(previous, current) {
+  const traffic = /* @__PURE__ */ new Map();
+  const add = (rows, slot) => {
+    for (const row3 of rows ?? []) {
+      const target = traffic.get(row3.id) ?? { previous: null, current: null };
+      target[slot] = { revenue: row3.revenueUsd, runs: row3.runs, payingUsers: number4(row3.payingUsers), users: number4(row3.payingUsers) + number4(row3.freeUsers) };
+      traffic.set(row3.id, target);
+    }
+  };
+  add(previous, "previous");
+  add(current, "current");
+  return traffic;
+}
+function trafficWeight(traffic, now) {
+  const best = (key) => Math.max(number4(traffic?.previous?.[key]), pace(number4(traffic?.current?.[key]), now));
+  return Math.max(1, best("revenue") * 100 + best("runs") * 0.1 + best("payingUsers") * 10 + best("users") * 0.5);
+}
+function assignImpactLevels(items) {
+  const ranked = items.filter((item) => item.traffic > 1).sort((left, right) => right.impact - left.impact);
+  const high = Math.ceil(ranked.length * 0.2);
+  const medium = Math.ceil(ranked.length * 0.5);
+  for (const item of items) item.level = "low";
+  ranked.forEach((item, index) => {
+    item.level = index < high ? "high" : index < medium ? "medium" : "low";
+  });
+}
+var LEVEL_RANK = { high: 2, medium: 1, low: 0 };
+function buildInbox(actors, entries, trafficById, now) {
+  const items = [];
+  const withSuggestions = /* @__PURE__ */ new Set();
+  const toFix = /* @__PURE__ */ new Set();
+  for (const actor of actors) {
+    const entry = entries.get(actor.id);
+    if (!entry || entry.pending) continue;
+    const weight = trafficWeight(trafficById.get(actor.id), now);
+    for (const improvement of entry.improvements) {
+      const group = groupFor(improvement.id);
+      withSuggestions.add(actor.id);
+      if (!group.hidden) toFix.add(actor.id);
+      items.push({ actor, entry, improvement, group, impact: group.weight * weight, traffic: weight, level: "low" });
+    }
+  }
+  assignImpactLevels(items);
+  items.sort((left, right) => right.impact - left.impact || left.actor.name.localeCompare(right.actor.name));
+  return { items, issues: issuesFrom(items), actorsWithSuggestions: withSuggestions.size, actorsToFix: toFix.size };
+}
+function issuesFrom(items) {
+  const issues = /* @__PURE__ */ new Map();
+  for (const item of items) {
+    const key = `${item.group.key}:${item.improvement.id}`;
+    let issue2 = issues.get(key);
+    if (!issue2) {
+      issue2 = { id: item.improvement.id, title: item.improvement.title, description: item.improvement.detail || item.improvement.description, group: item.group, items: [], impact: 0, level: "low" };
+      issues.set(key, issue2);
+    }
+    issue2.items.push(item);
+    issue2.impact += item.impact;
+    if (LEVEL_RANK[item.level] > LEVEL_RANK[issue2.level]) issue2.level = item.level;
+  }
+  for (const issue2 of issues.values()) issue2.items.sort((left, right) => right.impact - left.impact);
+  return [...issues.values()].sort((left, right) => right.impact - left.impact || right.items.length - left.items.length || left.title.localeCompare(right.title));
+}
+function median(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+// src/tools/actor-quality.ts
+var actorQualityInput = {
+  actor: external_exports.string().optional().describe("One actor (id, name, username/name or title): its score, sub-scores, what Apify praises and its suggestions. Omit for the portfolio's top issues."),
+  top: external_exports.number().int().min(1).max(50).default(20).describe("How many actors to scan, by 30-day users. Impact levels are relative to these actors.")
+};
+var TOP_ISSUES = 8;
+var ACTORS_PER_ISSUE = 3;
+var DESCRIPTION_CHARS = 100;
+function pct2(value) {
+  return value == null ? null : round(value * 100, 1);
+}
+function short(text) {
+  return text.length > DESCRIPTION_CHARS ? `${text.slice(0, DESCRIPTION_CHARS - 1)}\u2026` : text;
+}
+async function loadQuality(ctx, api, actor) {
+  const [scores, recommendations, businessValue] = await Promise.all([
+    qualityScores(ctx, api, actor.id),
+    qualityImprovements(ctx, api, actor.id),
+    qualityBusinessValue(ctx, api, actor.id)
+  ]);
+  return compactEntry2(actor.id, { scores, recommendations, businessValue }, actor.isPublic);
+}
+async function loadTraffic(ctx, api, now) {
+  const month = monthOf(isoDay(now));
+  try {
+    const [previous, current] = await Promise.all([breakdown(ctx, api, addMonths(month, -1)), breakdown(ctx, api, month)]);
+    return { traffic: trafficFromMoney(previous, current), ok: true };
+  } catch {
+    return { traffic: /* @__PURE__ */ new Map(), ok: false };
+  }
+}
+var NO_TRAFFIC_NOTE = "Money data could not be loaded, so every actor has the same traffic weight and impact follows the work type only.";
+async function actorQuality(ctx, args) {
+  const api = await ctx.console();
+  const now = ctx.now();
+  const catalog = await ctx.catalog();
+  const asOf = new Date(now).toISOString();
+  if (args.actor) {
+    const found = resolveActor(catalog, args.actor);
+    if (found.kind === "not_found") throw new ToolError("actor_not_found", `No actor of yours matches "${args.actor}".`, "Call list_actors with a `query` to find the name.");
+    if (found.kind === "ambiguous") {
+      throw new ToolError("actor_ambiguous", `"${args.actor}" matches several actors.`, "Repeat with one of the candidates.", { candidates: found.candidates.map((actor2) => actor2.ref) });
+    }
+    const actor = found.actor;
+    const [entry, { traffic: traffic2, ok: trafficOk2 }] = await Promise.all([loadQuality(ctx, api, actor), loadTraffic(ctx, api, now)]);
+    const base = { asOf, source: ["console (unofficial)"], actor: { name: actor.name, ref: actor.ref } };
+    if (entry.pending) {
+      const why2 = entry.pending === "unpublished" ? "it is not public in the Store" : "Apify has not scored it yet";
+      return ok(`${actor.name}: no quality score yet, because ${why2}.`, {
+        ...base,
+        score: { qualityPct: null, percentilePct: null },
+        subScores: null,
+        pending: entry.pending,
+        praises: [],
+        improvements: [],
+        notes: ["Apify shows no real score or suggestions until an actor is public and scored; anything before that is a placeholder."]
+      });
+    }
+    const weight = trafficWeight(traffic2.get(actor.id), now);
+    const items = entry.improvements.map((improvement) => {
+      const group = groupFor(improvement.id);
+      return { improvement, group, impact: group.weight * weight, traffic: weight, level: "low" };
+    });
+    assignImpactLevels(items);
+    items.sort((left, right) => right.impact - left.impact);
+    const { actorQuality: quality, actorQualityPercentile: percentile2, ...rest } = entry.scores ?? {};
+    const qualityPct = pct2(quality);
+    const percentilePct = pct2(percentile2);
+    const improvements = items.map((item) => ({
+      id: item.improvement.id,
+      title: item.improvement.title,
+      description: short(item.improvement.detail || item.improvement.description),
+      group: item.group.key,
+      groupLabel: item.group.label,
+      impact: item.level
+    }));
+    const summary2 = [
+      `${actor.name}: quality ${qualityPct ?? "n/a"}%${percentilePct != null ? ` (percentile ${percentilePct})` : ""}.`,
+      entry.praises.length ? `Praises: ${entry.praises.join(", ")}.` : null,
+      improvements.length ? `${improvements.length} suggestion${improvements.length === 1 ? "" : "s"}: ${improvements.slice(0, 3).map((item) => `${item.id} (${item.groupLabel}, ${item.impact})`).join(", ")}.` : "No improvement suggestions."
+    ].filter(Boolean);
+    return ok(summary2.join(" "), {
+      ...base,
+      score: { qualityPct, percentilePct },
+      subScores: Object.keys(rest).length ? rest : null,
+      pending: null,
+      praises: entry.praises,
+      improvements,
+      notes: [
+        "Impact levels here rank this actor\u2019s own suggestions by work type and traffic. Call actor_quality without `actor` to rank suggestions across your actors.",
+        ...trafficOk2 ? [] : [NO_TRAFFIC_NOTE]
+      ]
+    });
+  }
+  const peers = catalog.filter((actor) => actor.isPublic).sort((a, b) => (b.users30d ?? 0) - (a.users30d ?? 0)).slice(0, args.top);
+  const [scan, { traffic, ok: trafficOk }] = await Promise.all([scanActors(peers, (actor) => loadQuality(ctx, api, actor)), loadTraffic(ctx, api, now)]);
+  const scanned = peers.filter((actor) => scan.results.has(actor.id));
+  const inbox = buildInbox(scanned, scan.results, traffic, now);
+  const scored = [...scan.results.values()].filter((entry) => !entry.pending && entry.scores);
+  const medianQualityPct = pct2(median(scored.map((entry) => entry.scores.actorQuality).filter((value) => value != null)));
+  const medianPercentilePct = pct2(median(scored.map((entry) => entry.scores.actorQualityPercentile).filter((value) => value != null)));
+  const visible = inbox.issues.filter((issue2) => !issue2.group.hidden);
+  const issues = visible.slice(0, TOP_ISSUES).map((issue2) => ({
+    id: issue2.id,
+    title: issue2.title,
+    description: short(issue2.description),
+    group: issue2.group.key,
+    groupLabel: issue2.group.label,
+    actorCount: issue2.items.length,
+    impact: issue2.level,
+    actors: issue2.items.slice(0, ACTORS_PER_ISSUE).map((item) => ({ name: item.actor.name, qualityPct: pct2(item.entry.scores?.actorQuality) }))
+  }));
+  const openSuggestions = inbox.items.filter((item) => !item.group.hidden).length;
+  const pending = [...scan.results.values()].filter((entry) => entry.pending).length;
+  const failed = failedNote(scan.failed, peers.length);
+  const summary = [
+    `${inbox.actorsToFix} of ${scanned.length} scanned actors have quality suggestions (${openSuggestions} in all).`,
+    issues.length ? `Top: ${issues.slice(0, 3).map((issue2) => `${issue2.id} on ${issue2.actorCount} actor${issue2.actorCount === 1 ? "" : "s"} (${issue2.groupLabel}, ${issue2.impact})`).join("; ")}.` : null,
+    medianQualityPct != null ? `Median quality: ${medianQualityPct}%.` : null
+  ].filter(Boolean);
+  return ok(summary.join(" "), {
+    asOf,
+    source: ["console (unofficial)"],
+    totals: { scanned: scanned.length, pending, actorsWithSuggestions: inbox.actorsToFix, openSuggestions },
+    scores: { medianQualityPct, medianPercentilePct },
+    issues,
+    ...visible.length > issues.length ? { omitted: { rows: visible.length - issues.length, hint: "Pass `actor` to see every suggestion for one actor." } } : {},
+    notes: [
+      `Impact levels are relative to the top ${scanned.length} actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.`,
+      "Impact = work-type weight (security 5, operations 4, schema 3, pricing 2, listing 1) \xD7 traffic weight from revenue, runs and users.",
+      ...trafficOk ? [] : [NO_TRAFFIC_NOTE],
+      ...failed ? [failed] : []
+    ]
+  });
 }
 
 // src/tools/actor-report.ts
@@ -38293,10 +38960,10 @@ function why(flag) {
 function moneyText(m) {
   return `$${round(m.revenueUsd)} revenue, $${round(m.profitUsd)} profit`;
 }
-function changeText(current, previous) {
+function changeText2(current, previous) {
   if (previous.revenueUsd === 0) return "no revenue in the comparison days";
-  const pct = round((current.revenueUsd - previous.revenueUsd) / previous.revenueUsd * 100, 1);
-  return `${pct > 0 ? "+" : ""}${pct}% revenue vs the same days last month ($${round(previous.revenueUsd)})`;
+  const pct3 = round((current.revenueUsd - previous.revenueUsd) / previous.revenueUsd * 100, 1);
+  return `${pct3 > 0 ? "+" : ""}${pct3}% revenue vs the same days last month ($${round(previous.revenueUsd)})`;
 }
 function healthItems(catalog, earned) {
   const items = [];
@@ -38393,11 +39060,11 @@ async function dailyBrief(ctx) {
   const lines = [
     `Morning check ${today} (paying users)`,
     `Yesterday: ${moneyText(y)}.`,
-    m && mc && mtd ? `Month to date (${mtd.from}..${mtd.to}): ${moneyText(m)}; ${changeText(m, mc)}.` : "Month to date: the month started today.",
+    m && mc && mtd ? `Month to date (${mtd.from}..${mtd.to}): ${moneyText(m)}; ${changeText2(m, mc)}.` : "Month to date: the month started today.",
     items.length ? "Look at:" : "Nothing needs attention by the rules.",
     ...items.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}. Next: ${item.next}`),
     ...money2.growing.length ? [`Growing: ${money2.growing.map((item) => `${item.actor} (+$${item.evidence.monthlyChangeUsd}/month pace)`).join(", ")}.`] : [],
-    `All flags: ${Object.entries(counts).map(([flag, count2]) => `${flag} ${count2}`).join(", ") || "none"}.`
+    `All flags: ${Object.entries(counts).map(([flag, count3]) => `${flag} ${count3}`).join(", ") || "none"}.`
   ];
   return ok(lines.join("\n"), {
     asOf: new Date(now).toISOString(),
@@ -38426,23 +39093,12 @@ var growthInput = {
   by: external_exports.enum(["payingUsers", "users30d", "worstConversion"]).default("payingUsers").describe("Which actors to show when no `actor` is given: most paying users, most 30-day users, or lowest view-to-run conversion among your 10 most-used actors."),
   top: external_exports.number().int().min(1).max(10).default(5)
 };
-function funnel(data) {
-  const viewers = data.numUniqueViewingUsers;
-  return {
-    storePageViews: data.numUniqueWebPageViews,
-    consolePageViews: data.numUniqueConsolePageViews,
-    viewingUsers: viewers,
-    usersWithRun: data.numUniqueUsersWithRun,
-    viewToRunPct: viewers > 0 ? round(data.numUniqueUsersWithRun / viewers * 100, 1) : null
-  };
-}
 async function growth(ctx, args) {
   const api = await ctx.console();
   const now = ctx.now();
   const period = resolvePeriod(args.month, now);
   const month = period.wholeMonth ?? monthOf(period.from);
   const current = month === monthOf(isoDay(now));
-  const portion = current ? daysElapsed(month, now) / Number(monthEnd(month).slice(8)) : void 0;
   const [catalog, money2] = await Promise.all([ctx.catalog(), breakdown(ctx, api, month)]);
   const paying = new Map(money2.map((row3) => [row3.id, row3]));
   let chosen;
@@ -38459,8 +39115,8 @@ async function growth(ctx, args) {
     chosen = [...publicActors].sort((a, b) => key(b) - key(a)).slice(0, args.by === "worstConversion" ? 10 : args.top);
   }
   const [account, ...perActor] = await Promise.all([
-    marketing(ctx, api, month, void 0, portion),
-    ...chosen.map((actor) => marketing(ctx, api, month, [actor.id], portion))
+    marketing(ctx, api, month, void 0),
+    ...chosen.map((actor) => marketing(ctx, api, month, [actor.id]))
   ]);
   let rows = chosen.map((actor, i) => {
     const data = perActor[i];
@@ -38562,12 +39218,12 @@ function shape(money2) {
   };
 }
 function delta(current, previous) {
-  const pct = (a, b) => b !== 0 ? round((a - b) / Math.abs(b) * 100, 1) : null;
+  const pct3 = (a, b) => b !== 0 ? round((a - b) / Math.abs(b) * 100, 1) : null;
   return {
     revenueUsd: round(current.revenueUsd - previous.revenueUsd),
     profitUsd: round(current.profitUsd - previous.profitUsd),
-    revenuePct: pct(current.revenueUsd, previous.revenueUsd),
-    profitPct: pct(current.profitUsd, previous.profitUsd)
+    revenuePct: pct3(current.revenueUsd, previous.revenueUsd),
+    profitPct: pct3(current.profitUsd, previous.profitUsd)
   };
 }
 async function moneyOf(ctx, period, audience) {
@@ -38588,8 +39244,8 @@ async function revenueSummary(ctx, args) {
     const other = comparisonPeriod(period, args.compareTo, now);
     const previous = await moneyOf(ctx, other, args.audience);
     comparison = { period: { label: other.label, from: other.from, to: other.to }, totals: shape(previous.money), change: delta(current.money, previous.money) };
-    const change = delta(current.money, previous.money);
-    compareLine = ` vs $${round(previous.money.revenueUsd)} (${other.from}..${other.to}): ${change.revenuePct == null ? "n/a" : `${change.revenuePct > 0 ? "+" : ""}${change.revenuePct}%`} revenue.`;
+    const change2 = delta(current.money, previous.money);
+    compareLine = ` vs $${round(previous.money.revenueUsd)} (${other.from}..${other.to}): ${change2.revenuePct == null ? "n/a" : `${change2.revenuePct > 0 ? "+" : ""}${change2.revenuePct}%`} revenue.`;
   }
   let daily;
   if (args.includeDaily) {
@@ -38786,7 +39442,7 @@ async function storeRankTool(ctx, args) {
 }
 
 // src/server.ts
-var VERSION = true ? "0.3.0" : "0.0.0-dev";
+var VERSION = true ? "0.4.0" : "0.0.0-dev";
 var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 async function logUsage(ctx, tool) {
   if (!ctx.config.usageLog) return;
@@ -38812,7 +39468,7 @@ function createServer(ctx) {
   const server = new McpServer(
     { name: "apify-insights", version: VERSION },
     {
-      instructions: 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. "How am I doing" \u2192 daily_brief. "Is anything broken" \u2192 run_health. "Which actors lose money / should I reprice" \u2192 actor_profitability(view: losers) then actor_report. Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.'
+      instructions: 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. "How am I doing" \u2192 daily_brief. "Is anything broken" \u2192 run_health. "Which actors lose money / should I reprice" \u2192 actor_profitability(view: losers) then actor_report. "How many viewed, ran or paid", referrers, countries \u2192 growth. "Which actors are leaking, rising or fading, and what to do" \u2192 acquisition_score. "What should I fix for quality" \u2192 actor_quality. Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.'
     }
   );
   server.registerTool(
@@ -38887,11 +39543,31 @@ function createServer(ctx) {
     "growth",
     {
       title: "Views to runs to paying users",
-      description: "For a calendar month: how many users viewed your actors, ran them and paid, per actor (most paying users, most used, or worst view-to-run conversion). One actor adds top referrers and countries.",
+      description: "For a calendar month: how many users viewed your actors, ran them and paid, per actor (most paying users, most used, or worst view-to-run conversion). One actor adds top referrers and countries. For which actors need attention and what to do, use acquisition_score.",
       inputSchema: growthInput,
       annotations: READ_ONLY
     },
     (args) => guarded(ctx, "growth", () => growth(ctx, args))
+  );
+  server.registerTool(
+    "acquisition_score",
+    {
+      title: "Acquisition triage",
+      description: "Which actors need attention for acquisition, and what to do: each of your top actors (by 30-day users) is Leaking, Rising, Fading, Converting, Steady or Quiet, judged against the same point last month and against your other actors, with the reason. Rising and Fading are not judged before day 8 of the month. Pass `actor` for one actor. Same numbers and field names as growth; for raw counts, paying users, referrers or countries use growth.",
+      inputSchema: acquisitionScoreInput,
+      annotations: READ_ONLY
+    },
+    (args) => guarded(ctx, "acquisition_score", () => acquisitionScore(ctx, args))
+  );
+  server.registerTool(
+    "actor_quality",
+    {
+      title: "Quality scores and suggestions",
+      description: "Apify's quality score for your actors and its improvement suggestions, grouped by work type (security, operations, schema, pricing, listing) and ranked by impact (work-type weight \xD7 traffic). Without `actor`: the top issues across your top actors by 30-day users, each with the actors it affects. With `actor`: that actor's score, sub-scores, praises and suggestions.",
+      inputSchema: actorQualityInput,
+      annotations: READ_ONLY
+    },
+    (args) => guarded(ctx, "actor_quality", () => actorQuality(ctx, args))
   );
   server.registerTool(
     "store_rank",
@@ -38937,6 +39613,18 @@ function createServer(ctx) {
     "Health sweep",
     "Which actors are flagged, failing or charging nothing.",
     "Call run_health. List each problem with its flag, rule and numbers, worst first. For the top two call actor_report and say what to fix first. Do not change anything."
+  );
+  prompt(
+    "funnel-check",
+    "Funnel check",
+    "Which actors are gaining or losing users, and what to do.",
+    "Call acquisition_score. Report each bucket with its count and the actors listed, using the reasons exactly as returned. For the first Leaking actor, call growth with that actor for its referrers and countries, then call actor_report and say what to fix in the listing or input. Do not change anything."
+  );
+  prompt(
+    "quality-review",
+    "Quality review",
+    "Which quality suggestions to fix first across your actors.",
+    "Call actor_quality. List the top issues with their work type, actor count and impact level. For the top issue, call actor_quality with its first actor and say what to fix first. Do not change anything."
   );
   return server;
 }

@@ -31,11 +31,13 @@ async function tempHome() {
 }
 
 describe('server surface', () => {
-    it('lists all ten tools, read-only, the three prompts and the glossary', async () => {
+    it('lists all twelve tools, read-only, the five prompts and the glossary', async () => {
         const { client } = await connect(portfolio(), testConfig(await tempHome()));
         const { tools } = await client.listTools();
         expect(tools.map((tool) => tool.name).sort()).toEqual([
+            'acquisition_score',
             'actor_profitability',
+            'actor_quality',
             'actor_report',
             'auth_status',
             'competitor_benchmark',
@@ -47,7 +49,7 @@ describe('server surface', () => {
             'store_rank',
         ]);
         const { prompts } = await client.listPrompts();
-        expect(prompts.map((prompt) => prompt.name).sort()).toEqual(['health-check', 'loss-hunt', 'morning-brief']);
+        expect(prompts.map((prompt) => prompt.name).sort()).toEqual(['funnel-check', 'health-check', 'loss-hunt', 'morning-brief', 'quality-review']);
         const brief = await client.getPrompt({ name: 'morning-brief' });
         expect((brief.messages[0]!.content as { text: string }).text).toContain('daily_brief');
         expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);
