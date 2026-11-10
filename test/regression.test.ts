@@ -43,6 +43,7 @@ const CALLS: Array<[string, Record<string, unknown>]> = [
     ['daily_brief', {}],
     ['list_actors', {}],
     ['run_health', {}],
+    ['run_health', { actor: 'broken' }],
     ['revenue_summary', {}],
     ['revenue_summary', { period: 'lastMonth', compareTo: 'previousPeriod' }],
     ['revenue_summary', { period: 'last7d', compareTo: 'sameDaysLastMonth', includeDaily: true }],

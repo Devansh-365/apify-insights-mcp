@@ -15,6 +15,7 @@ export const ALLOWED_PATHS = [
     'actor-analytics/run-statistics/monthly/all-users',
     'actor-analytics/user-count-statistics',
     'actor-analytics/monthly-marketing',
+    'actor-analytics/shared-runs',
 ] as const;
 
 export type ConsolePath = (typeof ALLOWED_PATHS)[number];
@@ -61,6 +62,27 @@ export const breakdownRowSchema = z
 export const breakdownSchema = z.object({ monetizationPerActor: z.array(breakdownRowSchema) }).passthrough();
 
 export const runStatisticsSchema = z.object({ dailyStats: z.record(z.string(), runCounts) }).passthrough();
+
+// actor-analytics/shared-runs (captured live 2026-11-10): runs users chose to share with the developer.
+export const sharedRunSchema = z
+    .object({
+        _id: z.string(),
+        actId: z.string().nullish(),
+        status: z.string(),
+        startedAt: z.string().nullish(),
+        finishedAt: z.string().nullish(),
+        buildNumber: z.string().nullish(),
+        exitCode: z.number().nullish(),
+        isRunOfPayingUser: z.boolean().nullish(),
+    })
+    .passthrough();
+
+export const sharedRunsSchema = z
+    .object({
+        data: z.array(sharedRunSchema),
+        sequencePagination: z.object({ nextPageToken: z.string().nullish(), totalCount: num.nullish() }).passthrough().nullish(),
+    })
+    .passthrough();
 export const userCountsSchema = z.record(z.string(), z.object({ freeUsers: num, payingUsers: num }).passthrough());
 export const marketingSchema = z
     .object({
@@ -94,6 +116,8 @@ export type ProfitMargin = z.infer<typeof profitMarginSchema>;
 export type BreakdownRow = z.infer<typeof breakdownRowSchema>;
 export type Breakdown = z.infer<typeof breakdownSchema>;
 export type RunStatistics = z.infer<typeof runStatisticsSchema>;
+export type SharedRun = z.infer<typeof sharedRunSchema>;
+export type SharedRuns = z.infer<typeof sharedRunsSchema>;
 export type UserCounts = z.infer<typeof userCountsSchema>;
 export type Marketing = z.infer<typeof marketingSchema>;
 export type QualityScores = z.infer<typeof qualityScoresSchema>;
@@ -108,7 +132,10 @@ export interface ConsoleApi {
      * `actorIds`, only those actors' rows (checked live: same rows as the full list, ~11 KB instead of ~770 KB).
      */
     actorBreakdown(month: string, actorIds?: string[]): Promise<Breakdown>;
+    /** Runs per UTC day by status (today included, partial). Several actorIds return their sum, not one row each. */
     runStatistics(month: string, actorIds?: string[]): Promise<RunStatistics>;
+    /** Runs users shared with you for these actors, newest finished first. `searchAfter` is the previous page's `nextPageToken`. */
+    sharedRuns(actorIds: string[], options: { limit: number; searchAfter?: string }): Promise<SharedRuns>;
     userCounts(month: string, actorIds?: string[]): Promise<UserCounts>;
     /**
      * Store page views and users with a run. The Console multiplies every count by `portionOfMonthElapsed`
@@ -312,6 +339,12 @@ export function createConsoleApi(tokens: TokenProvider, fetchImpl: typeof fetch 
             return { monetizationPerActor: parts.flatMap((part) => part.monetizationPerActor) };
         },
         runStatistics: (m, actorIds) => get('actor-analytics/run-statistics/monthly/all-users', { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
+        sharedRuns: async (actorIds, { limit, searchAfter }) => {
+            for (const id of actorIds) if (!ACTOR_ID.test(id)) throw new Error(`Not an actor ID: ${JSON.stringify(id)}`);
+            // The server requires the bracket key `sort[finishedAt]` (URLSearchParams encodes it as
+            // sort%5BfinishedAt%5D, which it accepts); `startedAt` and other sort fields are rejected. Keep it.
+            return get('actor-analytics/shared-runs', { actorIds: actorIds.join(','), limit: String(limit), 'sort[finishedAt]': '-1', searchAfter }, sharedRunsSchema);
+        },
         userCounts: (m, actorIds) => get('actor-analytics/user-count-statistics', { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
         // This endpoint wants `actorIds` present (empty = all actors) and a month start date.
         marketing: (m, actorIds, portion) =>

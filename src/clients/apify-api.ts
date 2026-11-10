@@ -66,6 +66,29 @@ export interface StoreSearchItem {
     };
 }
 
+/** `/v2/acts/{id}/builds` item. */
+export interface BuildItem {
+    id: string;
+    status: string;
+    buildNumber?: string;
+    startedAt?: string | null;
+    finishedAt?: string | null;
+}
+
+/** The end of a run's log. `available: false` when the API did not return it (not shared, deleted, no access). */
+export interface RunLog {
+    available: boolean;
+    lines: string[];
+    /** The log was longer than the byte cap; `lines` are the last lines of the part that was read. */
+    truncatedAtBytes: boolean;
+}
+
+export interface RunLogOptions {
+    maxBytes?: number;
+    lines?: number;
+    lineChars?: number;
+}
+
 export interface ApifyApi {
     me(): Promise<Me>;
     myActors(): Promise<MyActor[]>;
@@ -77,6 +100,10 @@ export interface ApifyApi {
      * Hard-capped at 100 by the backend; pagination is not supported.
      */
     storeSearch(keyword: string, limit: number): Promise<StoreSearchItem[]>;
+    /** Newest builds first. */
+    builds(actorId: string, limit: number): Promise<BuildItem[]>;
+    /** The last lines of a run's log, read with a byte cap. Never throws for a missing log. */
+    runLog(runId: string, options?: RunLogOptions): Promise<RunLog>;
 }
 
 export class ApiError extends Error {
@@ -89,7 +116,50 @@ export class ApiError extends Error {
 }
 
 const PAGE = 1000;
+const RUN_ID = /^[A-Za-z0-9]{1,32}$/;
+/** Logs are read up to this size; failing runs usually end with the error, so the tail is what matters. */
+export const MAX_LOG_BYTES = 8 * 1024 * 1024;
 const STORE_SEARCH_URL = 'https://apify.com/api/store-search';
+
+/**
+ * Streams a body and keeps only its last `lines` lines (each cut to `lineChars`), so memory stays small
+ * whatever the log size. Stops after `maxBytes`; then `truncatedAtBytes` is true and the lines are the
+ * last ones read, not the end of the log. Exported for tests.
+ */
+export async function tailOf(body: ReadableStream<Uint8Array> | null, maxBytes: number, lines: number, lineChars: number): Promise<{ lines: string[]; truncatedAtBytes: boolean }> {
+    if (!body) return { lines: [], truncatedAtBytes: false };
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    const kept: string[] = [];
+    const cut = (line: string) => (line.length > lineChars ? `${line.slice(0, lineChars)}…` : line);
+    const keep = (line: string) => {
+        kept.push(cut(line.replace(/\r$/, '')));
+        if (kept.length > lines) kept.shift();
+    };
+    let partial = '';
+    let size = 0;
+    let truncated = false;
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const room = maxBytes - size;
+        const chunk = value.byteLength > room ? value.subarray(0, room) : value;
+        size += chunk.byteLength;
+        const parts = (partial + decoder.decode(chunk, { stream: true })).split('\n');
+        partial = parts.pop() ?? '';
+        // A single huge line must not grow without bound.
+        if (partial.length > lineChars * 4) partial = partial.slice(0, lineChars * 4);
+        for (const line of parts) keep(line);
+        if (value.byteLength > room || size >= maxBytes) {
+            truncated = value.byteLength > room || !(await reader.read()).done;
+            await reader.cancel().catch(() => {});
+            break;
+        }
+    }
+    partial += decoder.decode();
+    if (partial) keep(partial);
+    return { lines: kept, truncatedAtBytes: truncated };
+}
 
 export function createApifyApi(token: string, base = 'https://api.apify.com/v2'): ApifyApi {
     async function get<T>(path: string, authenticated = true): Promise<T> {
@@ -148,6 +218,33 @@ export function createApifyApi(token: string, base = 'https://api.apify.com/v2')
         throw lastError instanceof Error ? lastError : new Error(String(lastError));
     }
 
+    async function runLog(runId: string, options: RunLogOptions = {}): Promise<RunLog> {
+        const missing: RunLog = { available: false, lines: [], truncatedAtBytes: false };
+        if (!RUN_ID.test(runId)) return missing;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt) await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
+            try {
+                const response = await fetch(`${base}/actor-runs/${runId}/log`, {
+                    headers: { Accept: 'text/plain', Authorization: `Bearer ${token}` },
+                    signal: AbortSignal.timeout(20_000),
+                });
+                if (response.status === 429 || response.status >= 500) {
+                    await response.body?.cancel().catch(() => {});
+                    continue;
+                }
+                if (!response.ok) {
+                    await response.body?.cancel().catch(() => {});
+                    return missing;
+                }
+                const tail = await tailOf(response.body, options.maxBytes ?? MAX_LOG_BYTES, options.lines ?? 30, options.lineChars ?? 300);
+                return { available: true, ...tail };
+            } catch {
+                // Network error or timeout: try again, then give up quietly.
+            }
+        }
+        return missing;
+    }
+
     return {
         me: () => get<Me>('/users/me'),
         myActors: () => all<MyActor>('/acts?my=1'),
@@ -158,5 +255,7 @@ export function createApifyApi(token: string, base = 'https://api.apify.com/v2')
             const result = await raw<{ items: StoreSearchItem[] }>(url);
             return result.items ?? [];
         },
+        builds: async (actorId, limit) => (await get<{ items: BuildItem[] }>(`/acts/${encodeURIComponent(actorId)}/builds?desc=1&limit=${limit}`)).items,
+        runLog,
     };
 }

@@ -1,6 +1,6 @@
 {
   "name": "apify-insights",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Ask Gemini about your own Apify actors: revenue, profit, run health, users, pricing and Store rank. Read-only.",
   "mcpServers": {
     "apify-insights": {

@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-11-10
+
+### Added
+
+- `run_health` takes `period` (same values as the money tools). With a Console session it adds `byDay`: failed, timed-out and aborted runs per UTC day for the account and for your actors with problem runs (top 10 by default), each with its problem days, worst day and today so far. Today is partial; a period that ends before today reports it separately.
+- `run_health` with `actor` and `period` also lists the failed and timed-out runs users shared with you in the period (newest first, with a Console link), the last 30 log lines of up to 3 of them, your last 5 builds and the newest build that finished before the failures began. `logs: false` leaves the logs out. Logs are never cached or written to disk.
+- Glossary entries for runs per day, problem days, shared runs and the build before the first problem.
+
+### Changed
+
+- The `health-check` prompt asks for the last 7 days by day and drills into the actor with the most failed runs.
+- Without `period`, `run_health` returns exactly what it did in 0.5.0. Without a Console session, `period` is skipped with a note instead of an error.
+
 ## [0.5.0] - 2026-11-08
 
 ### Added
@@ -109,6 +122,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Actor catalog, resolver, cache, response envelope and local source lookup (`APIFY_INSIGHTS_ACTOR_DIRS`).
 - Unit and protocol tests on made-up data, and a live smoke test over stdio (`scripts/smoke.mjs`).
 
+[0.6.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Devansh-365/apify-insights-mcp/compare/v0.2.1...v0.3.0

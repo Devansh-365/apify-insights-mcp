@@ -1,4 +1,4 @@
-import type { ConsoleApi, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores } from '../clients/console.js';
+import type { ConsoleApi, Marketing, ProfitMargin, QualityBusinessValue, QualityImprovements, QualityScores, RunStatistics, SharedRuns } from '../clients/console.js';
 import type { Context } from '../context.js';
 import { ToolError } from './envelope.js';
 import { DISK_TTL_MS, recordDiskUse } from './disk-cache.js';
@@ -98,6 +98,22 @@ export function marketing(ctx: Context, api: ConsoleApi, month: string, actorIds
     // The portion is part of the key: last month "up to today's point" and last month in full differ.
     const key = `mk:${month}:${actorIds?.join(',') ?? '*'}:${portion ?? 'all'}`;
     return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
+}
+
+/**
+ * Runs per day by status. Account-wide finished months go through the disk cache like money (counts
+ * only). Per-actor months stay in memory: one small call each, and nothing per actor goes to disk.
+ */
+export function runStatistics(ctx: Context, api: ConsoleApi, month: string, actorId?: string): Promise<RunStatistics> {
+    if (!actorId) return settled(ctx, `runs:${month}`, 'runs', month, () => api.runStatistics(month));
+    return ctx.cache.get(`runs:${month}:${actorId}`, monthTtl(month, ctx.now()), () => api.runStatistics(month, [actorId]));
+}
+
+// Shared runs can appear at any time; a fix should show within a session.
+const SHARED_RUNS_TTL = 5 * 60_000;
+
+export function sharedRuns(ctx: Context, api: ConsoleApi, actorId: string, limit: number): Promise<SharedRuns> {
+    return ctx.cache.get(`shared:${actorId}:${limit}`, SHARED_RUNS_TTL, () => api.sharedRuns([actorId], { limit }));
 }
 
 // Quality scores change at most daily, but a fix should show within a session.

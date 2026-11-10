@@ -7,12 +7,21 @@ import { breakdown } from '../core/console-data.js';
 import { failingFlag, FAILURE_RATE, MIN_FAILURES, noticeFlag, type Flag } from '../core/flags.js';
 import { daysElapsed, type ActorMoney } from '../core/money.js';
 import { MONEY_RULES, moneyFlags, thresholds } from '../core/money-flags.js';
-import { isoDay, monthOf } from '../core/period.js';
+import { isoDay, monthOf, periodInput, resolvePeriod } from '../core/period.js';
+import type { ConsoleApi } from '../clients/console.js';
+import { actorDays, portfolioDays } from './run-health-days.js';
 
 export const runHealthInput = {
     actor: z.string().optional().describe('One actor (id, name, username/name or title). Omit to check every actor.'),
     onlyProblems: z.boolean().default(true).describe('Return only actors with a flag. Ignored when `actor` is given.'),
     top: z.number().int().min(1).max(50).default(10),
+    period: periodInput
+        .optional()
+        .describe(
+            'Add `byDay`: failed / timed-out / aborted runs per UTC day for this period, today included (partial). With `actor`, also the failed runs users shared with you, their log tails and recent builds. Needs the Console session. ' +
+                periodInput.description,
+        ),
+    logs: z.boolean().default(true).describe('With `actor` and `period`: include the last 30 log lines of up to 3 newest failed shared runs.'),
 };
 
 type Args = z.infer<z.ZodObject<typeof runHealthInput>>;
@@ -70,19 +79,22 @@ function severity(actor: ActorSummary, flags: Flag[], money: MoneyContext | null
     return flagged + noRevenue + atRisk * 1e6 + hit * 1000 + (actor.runs30d?.failures ?? 0);
 }
 
-async function loadMoney(ctx: Context): Promise<{ money: MoneyContext | null; t: ReturnType<typeof thresholds> | null; state: string }> {
+async function loadMoney(ctx: Context): Promise<{ money: MoneyContext | null; t: ReturnType<typeof thresholds> | null; state: string; api: ConsoleApi | null }> {
     const { api, state } = await ctx.optionalConsole();
-    if (!api) return { money: null, t: null, state };
+    if (!api) return { money: null, t: null, state, api };
     const month = monthOf(isoDay(ctx.now()));
     const rows = await breakdown(ctx, api, month);
     const t = thresholds(rows, daysElapsed(month, ctx.now()));
-    return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state };
+    return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state, api };
 }
 
 export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolResult> {
     const catalog = await ctx.catalog();
     const asOf = new Date(ctx.now()).toISOString();
-    const { money, t, state } = await loadMoney(ctx);
+    // Resolve the period first so a bad one fails before any request.
+    const period = args.period === undefined ? null : resolvePeriod(args.period, ctx.now());
+    const { money, t, state, api } = await loadMoney(ctx);
+    const withDays = period && api ? { period, api } : null;
     const rules = money ? { ...RULES, no_revenue: money.noRevenueRule } : RULES;
     const notes = [
         "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
@@ -91,6 +103,7 @@ export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolR
             ? `Money columns are ${money.month} so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate.`
             : `No Console session (${state}), so money columns and the no_revenue check are skipped.`,
     ];
+    if (period && !api) notes.push(`Per-day counts (\`period\`) need the Console session (${state}); this answer has the 30-day numbers only.`);
 
     if (args.actor) {
         const found = resolveActor(catalog, args.actor);
@@ -106,7 +119,22 @@ export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolR
         const summary = flags.length
             ? `${found.actor.ref}: ${flags.map((flag) => flag.flag).join(', ')}.`
             : `${found.actor.ref}: no problems found.`;
-        return ok(summary, { asOf, source: ['apify-api'], rows: [row(found.actor, flags, money)], flags, rules, notes });
+        if (!withDays) return ok(summary, { asOf, source: ['apify-api'], rows: [row(found.actor, flags, money)], flags, rules, notes });
+        const days = await actorDays(ctx, withDays.api, found.actor, withDays.period, args.logs);
+        const localPath = (await ctx.localActorPaths()).get(found.actor.name) ?? null;
+        return ok(`${summary} ${days.summary}`, {
+            asOf,
+            source: ['apify-api', 'console (unofficial)'],
+            rows: [row(found.actor, flags, money)],
+            flags,
+            byDay: days.byDay,
+            sharedRuns: days.sharedRuns,
+            builds: days.builds,
+            buildBeforeFirstProblem: days.buildBeforeFirstProblem,
+            ...(localPath ? { localPath } : {}),
+            rules,
+            notes: [...notes, ...days.notes],
+        });
     }
 
     const checked = catalog.filter((actor) => actor.isPublic);
@@ -124,14 +152,16 @@ export async function runHealthTool(ctx: Context, args: Args): Promise<CallToolR
               .map((r) => `${r.ref} (${r.flags.join('+')}${r.failureRatePct != null ? `, ${r.failureRatePct}% failed` : ''})`)
               .join('; ')}.`
         : `No problems found across ${checked.length} public actors.`;
-    return ok(summary, {
+    const days = withDays ? await portfolioDays(ctx, withDays.api, catalog, withDays.period, args.top) : null;
+    return ok(days ? `${summary} ${days.summary}` : summary, {
         asOf,
-        source: ['apify-api'],
+        source: days ? ['apify-api', 'console (unofficial)'] : ['apify-api'],
         period: { label: 'last30d' },
         totals: { checked: checked.length, notCheckedPrivate: catalog.length - checked.length, problems: problems.length, flagged: flaggedCount, failing: failingCount },
         rows: page.rows,
         ...(page.omitted ? { omitted: page.omitted } : {}),
+        ...(days ? { byDay: days.byDay } : {}),
         rules,
-        notes,
+        notes: days ? [...notes, ...days.notes] : notes,
     });
 }

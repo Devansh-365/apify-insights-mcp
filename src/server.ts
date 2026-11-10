@@ -64,7 +64,7 @@ export function createServer(ctx: Context): McpServer {
         {
             instructions:
                 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. ' +
-                '"How am I doing" → daily_brief. "Is anything broken" → run_health. "Which actors lose money / should I reprice" → actor_profitability(view: losers) then actor_report. ' +
+                '"How am I doing" → daily_brief. "Is anything broken" → run_health. "On which days did runs fail, how many today, which runs failed and why" → run_health with `period` (add `actor` for the failed runs, log tails and builds). "Which actors lose money / should I reprice" → actor_profitability(view: losers) then actor_report. ' +
                 '"How many viewed, ran or paid", referrers, countries → growth. "Which actors are leaking, rising or fading, and what to do" → acquisition_score. "What should I fix for quality" → actor_quality. ' +
                 'Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. ' +
                 'Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.',
@@ -122,7 +122,8 @@ export function createServer(ctx: Context): McpServer {
             title: 'Run health',
             description:
                 "Finds actors that need attention: `flagged` (Apify notice such as under maintenance, hidden from Store search), `failing` (3+ failed or timed-out users' runs and 5%+ failure rate in 30 days, aborts excluded) and, with a Console session, `no_revenue` plus revenue at risk. " +
-                'Returns only problems by default, worst first. Pass `actor` to check one actor.',
+                'Returns only problems by default, worst first. Pass `actor` to check one actor. ' +
+                'Pass `period` (needs the Console session) for `byDay`: failed, timed-out and aborted runs per UTC day, today included; with `actor` also the failed runs users shared with you, their log tails, recent builds and the build before the failures began.',
             inputSchema: runHealthInput,
             annotations: READ_ONLY,
         },
@@ -241,7 +242,7 @@ export function createServer(ctx: Context): McpServer {
         'health-check',
         'Health sweep',
         'Which actors are flagged, failing or charging nothing.',
-        'Call run_health. List each problem with its flag, rule and numbers, worst first. For the top two call actor_report and say what to fix first. Do not change anything.',
+        'Call run_health with period last7d. List each problem with its flag, rule and numbers, worst first, then the days with failed runs and today so far from byDay. For the actor with the most failed runs call run_health with that actor and period last7d, and report its failed runs, log tails and the build before the failures began; then call actor_report for it and say what to fix first. Do not guess causes the logs do not show. Do not change anything.',
     );
     prompt(
         'funnel-check',

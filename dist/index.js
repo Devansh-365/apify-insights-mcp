@@ -510,17 +510,17 @@ var require_codegen = __commonJS({
         this.nodes = nodes;
       }
       render(opts) {
-        return this.nodes.reduce((code, n2) => code + n2.render(opts), "");
+        return this.nodes.reduce((code, n3) => code + n3.render(opts), "");
       }
       optimizeNodes() {
         const { nodes } = this;
         let i = nodes.length;
         while (i--) {
-          const n2 = nodes[i].optimizeNodes();
-          if (Array.isArray(n2))
-            nodes.splice(i, 1, ...n2);
-          else if (n2)
-            nodes[i] = n2;
+          const n3 = nodes[i].optimizeNodes();
+          if (Array.isArray(n3))
+            nodes.splice(i, 1, ...n3);
+          else if (n3)
+            nodes[i] = n3;
           else
             nodes.splice(i, 1);
         }
@@ -530,16 +530,16 @@ var require_codegen = __commonJS({
         const { nodes } = this;
         let i = nodes.length;
         while (i--) {
-          const n2 = nodes[i];
-          if (n2.optimizeNames(names, constants))
+          const n3 = nodes[i];
+          if (n3.optimizeNames(names, constants))
             continue;
-          subtractNames(names, n2.names);
+          subtractNames(names, n3.names);
           nodes.splice(i, 1);
         }
         return nodes.length > 0 ? this : void 0;
       }
       get names() {
-        return this.nodes.reduce((names, n2) => addNames(names, n2.names), {});
+        return this.nodes.reduce((names, n3) => addNames(names, n3.names), {});
       }
     };
     var BlockNode = class extends ParentNode {
@@ -950,8 +950,8 @@ var require_codegen = __commonJS({
       endFunc() {
         return this._endBlockNode(Func);
       }
-      optimize(n2 = 1) {
-        while (n2-- > 0) {
+      optimize(n3 = 1) {
+        while (n3-- > 0) {
           this._root.optimizeNodes();
           this._root.optimizeNames(this._root.names, this._constants);
         }
@@ -965,19 +965,19 @@ var require_codegen = __commonJS({
         this._nodes.push(node2);
       }
       _endBlockNode(N1, N2) {
-        const n2 = this._currNode;
-        if (n2 instanceof N1 || N2 && n2 instanceof N2) {
+        const n3 = this._currNode;
+        if (n3 instanceof N1 || N2 && n3 instanceof N2) {
           this._nodes.pop();
           return this;
         }
         throw new Error(`CodeGen: not in block "${N2 ? `${N1.kind}/${N2.kind}` : N1.kind}"`);
       }
       _elseNode(node2) {
-        const n2 = this._currNode;
-        if (!(n2 instanceof If)) {
+        const n3 = this._currNode;
+        if (!(n3 instanceof If)) {
           throw new Error('CodeGen: "else" without "if"');
         }
-        this._currNode = n2.else = node2;
+        this._currNode = n3.else = node2;
         return this;
       }
       get _root() {
@@ -994,8 +994,8 @@ var require_codegen = __commonJS({
     };
     exports.CodeGen = CodeGen;
     function addNames(names, from) {
-      for (const n2 in from)
-        names[n2] = (names[n2] || 0) + (from[n2] || 0);
+      for (const n3 in from)
+        names[n3] = (names[n3] || 0) + (from[n3] || 0);
       return names;
     }
     function addExprNames(names, from) {
@@ -1015,11 +1015,11 @@ var require_codegen = __commonJS({
           items.push(c);
         return items;
       }, []));
-      function replaceName(n2) {
-        const c = constants[n2.str];
-        if (c === void 0 || names[n2.str] !== 1)
-          return n2;
-        delete names[n2.str];
+      function replaceName(n3) {
+        const c = constants[n3.str];
+        if (c === void 0 || names[n3.str] !== 1)
+          return n3;
+        delete names[n3.str];
         return c;
       }
       function canOptimize(e) {
@@ -1027,8 +1027,8 @@ var require_codegen = __commonJS({
       }
     }
     function subtractNames(names, from) {
-      for (const n2 in from)
-        names[n2] = (names[n2] || 0) - (from[n2] || 0);
+      for (const n3 in from)
+        names[n3] = (names[n3] || 0) - (from[n3] || 0);
     }
     function not(x) {
       return typeof x == "boolean" || typeof x == "number" || x === null ? !x : (0, code_1._)`!${par(x)}`;
@@ -10625,10 +10625,10 @@ function capSize(inst, size) {
   const cap = Math.min(...caps.map((c) => c[0]));
   const parse4 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
-    const n2 = size(payload.value);
-    if (n2 > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
+    const n3 = size(payload.value);
+    if (n3 > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
       for (const [max, ch] of sizeCaps(inst._zod.def.checks)) {
-        if (n2 > max && ch._zod.def.when(payload)) {
+        if (n3 > max && ch._zod.def.when(payload)) {
           const start = payload.issues.length;
           ch._zod.check(payload);
           payload.issues[start].continue = false;
@@ -25294,17 +25294,17 @@ var ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   inst._zod.processJSONSchema = (ctx, json2, params) => arrayProcessor(inst, ctx, json2, params);
   inst.element = def.element;
 }, {
-  min(n2, params) {
-    return this.check(_minLength(n2, params));
+  min(n3, params) {
+    return this.check(_minLength(n3, params));
   },
   nonempty(params) {
     return this.check(_minLength(1, params));
   },
-  max(n2, params) {
-    return this.check(_maxLength(n2, params));
+  max(n3, params) {
+    return this.check(_maxLength(n3, params));
   },
-  length(n2, params) {
-    return this.check(_length(n2, params));
+  length(n3, params) {
+    return this.check(_length(n3, params));
   },
   unwrap() {
     return this.element;
@@ -26261,8 +26261,8 @@ function containsRef(value) {
     return Object.values(sub).some(containsRef);
   });
 }
-function plural(n2) {
-  return n2 === 1 ? "element" : "elements";
+function plural(n3) {
+  return n3 === 1 ? "element" : "elements";
 }
 function checkArrayGuards(arraySchema, guards) {
   const guard = z.transform((value) => value).check((payload) => {
@@ -29290,7 +29290,43 @@ var ApiError = class extends Error {
   status;
 };
 var PAGE = 1e3;
+var RUN_ID = /^[A-Za-z0-9]{1,32}$/;
+var MAX_LOG_BYTES = 8 * 1024 * 1024;
 var STORE_SEARCH_URL = "https://apify.com/api/store-search";
+async function tailOf(body, maxBytes, lines, lineChars) {
+  if (!body) return { lines: [], truncatedAtBytes: false };
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  const kept = [];
+  const cut = (line) => line.length > lineChars ? `${line.slice(0, lineChars)}\u2026` : line;
+  const keep = (line) => {
+    kept.push(cut(line.replace(/\r$/, "")));
+    if (kept.length > lines) kept.shift();
+  };
+  let partial2 = "";
+  let size = 0;
+  let truncated = false;
+  for (; ; ) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const room = maxBytes - size;
+    const chunk = value.byteLength > room ? value.subarray(0, room) : value;
+    size += chunk.byteLength;
+    const parts = (partial2 + decoder.decode(chunk, { stream: true })).split("\n");
+    partial2 = parts.pop() ?? "";
+    if (partial2.length > lineChars * 4) partial2 = partial2.slice(0, lineChars * 4);
+    for (const line of parts) keep(line);
+    if (value.byteLength > room || size >= maxBytes) {
+      truncated = value.byteLength > room || !(await reader.read()).done;
+      await reader.cancel().catch(() => {
+      });
+      break;
+    }
+  }
+  partial2 += decoder.decode();
+  if (partial2) keep(partial2);
+  return { lines: kept, truncatedAtBytes: truncated };
+}
 function createApifyApi(token, base = "https://api.apify.com/v2") {
   async function get(path, authenticated = true) {
     let lastError;
@@ -29345,6 +29381,33 @@ function createApifyApi(token, base = "https://api.apify.com/v2") {
     }
     throw lastError instanceof Error ? lastError : new Error(String(lastError));
   }
+  async function runLog(runId, options = {}) {
+    const missing = { available: false, lines: [], truncatedAtBytes: false };
+    if (!RUN_ID.test(runId)) return missing;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt) await new Promise((resolve2) => setTimeout(resolve2, 500 * 2 ** attempt));
+      try {
+        const response = await fetch(`${base}/actor-runs/${runId}/log`, {
+          headers: { Accept: "text/plain", Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(2e4)
+        });
+        if (response.status === 429 || response.status >= 500) {
+          await response.body?.cancel().catch(() => {
+          });
+          continue;
+        }
+        if (!response.ok) {
+          await response.body?.cancel().catch(() => {
+          });
+          return missing;
+        }
+        const tail = await tailOf(response.body, options.maxBytes ?? MAX_LOG_BYTES, options.lines ?? 30, options.lineChars ?? 300);
+        return { available: true, ...tail };
+      } catch {
+      }
+    }
+    return missing;
+  }
   return {
     me: () => get("/users/me"),
     myActors: () => all("/acts?my=1"),
@@ -29354,7 +29417,9 @@ function createApifyApi(token, base = "https://api.apify.com/v2") {
       const url2 = `${STORE_SEARCH_URL}?search=${encodeURIComponent(keyword)}&limit=${Math.min(limit, 100)}`;
       const result = await raw(url2);
       return result.items ?? [];
-    }
+    },
+    builds: async (actorId, limit) => (await get(`/acts/${encodeURIComponent(actorId)}/builds?desc=1&limit=${limit}`)).items,
+    runLog
   };
 }
 
@@ -29365,7 +29430,8 @@ var ALLOWED_PATHS = [
   "actor-analytics/actor-breakdown",
   "actor-analytics/run-statistics/monthly/all-users",
   "actor-analytics/user-count-statistics",
-  "actor-analytics/monthly-marketing"
+  "actor-analytics/monthly-marketing",
+  "actor-analytics/shared-runs"
 ];
 var ALLOWED_ID_PATHS = [
   "actor-quality/scores/:id",
@@ -29388,6 +29454,20 @@ var breakdownRowSchema = external_exports.object({
 }).passthrough();
 var breakdownSchema = external_exports.object({ monetizationPerActor: external_exports.array(breakdownRowSchema) }).passthrough();
 var runStatisticsSchema = external_exports.object({ dailyStats: external_exports.record(external_exports.string(), runCounts) }).passthrough();
+var sharedRunSchema = external_exports.object({
+  _id: external_exports.string(),
+  actId: external_exports.string().nullish(),
+  status: external_exports.string(),
+  startedAt: external_exports.string().nullish(),
+  finishedAt: external_exports.string().nullish(),
+  buildNumber: external_exports.string().nullish(),
+  exitCode: external_exports.number().nullish(),
+  isRunOfPayingUser: external_exports.boolean().nullish()
+}).passthrough();
+var sharedRunsSchema = external_exports.object({
+  data: external_exports.array(sharedRunSchema),
+  sequencePagination: external_exports.object({ nextPageToken: external_exports.string().nullish(), totalCount: num.nullish() }).passthrough().nullish()
+}).passthrough();
 var userCountsSchema = external_exports.record(external_exports.string(), external_exports.object({ freeUsers: num, payingUsers: num }).passthrough());
 var marketingSchema = external_exports.object({
   numUniqueWebPageViews: num,
@@ -29544,6 +29624,10 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
       return { monetizationPerActor: parts.flatMap((part) => part.monetizationPerActor) };
     },
     runStatistics: (m, actorIds) => get("actor-analytics/run-statistics/monthly/all-users", { month: month(m), actorIds: ids(actorIds) }, runStatisticsSchema),
+    sharedRuns: async (actorIds, { limit, searchAfter }) => {
+      for (const id of actorIds) if (!ACTOR_ID.test(id)) throw new Error(`Not an actor ID: ${JSON.stringify(id)}`);
+      return get("actor-analytics/shared-runs", { actorIds: actorIds.join(","), limit: String(limit), "sort[finishedAt]": "-1", searchAfter }, sharedRunsSchema);
+    },
     userCounts: (m, actorIds) => get("actor-analytics/user-count-statistics", { month: month(m), actorIds: ids(actorIds) }, userCountsSchema),
     // This endpoint wants `actorIds` present (empty = all actors) and a month start date.
     marketing: (m, actorIds, portion) => get(
@@ -29946,6 +30030,14 @@ async function profitMargins(ctx, api, months, actorIds) {
 function marketing(ctx, api, month, actorIds, portion) {
   const key = `mk:${month}:${actorIds?.join(",") ?? "*"}:${portion ?? "all"}`;
   return ctx.cache.get(key, monthTtl(month, ctx.now()), () => api.marketing(month, actorIds, portion));
+}
+function runStatistics(ctx, api, month, actorId) {
+  if (!actorId) return settled(ctx, `runs:${month}`, "runs", month, () => api.runStatistics(month));
+  return ctx.cache.get(`runs:${month}:${actorId}`, monthTtl(month, ctx.now()), () => api.runStatistics(month, [actorId]));
+}
+var SHARED_RUNS_TTL = 5 * 6e4;
+function sharedRuns(ctx, api, actorId, limit) {
+  return ctx.cache.get(`shared:${actorId}:${limit}`, SHARED_RUNS_TTL, () => api.sharedRuns([actorId], { limit }));
 }
 var QUALITY_TTL = 5 * 6e4;
 function qualityScores(ctx, api, actorId) {
@@ -38195,6 +38287,9 @@ Definitions used by every tool in this server. Repeat numbers as they are given;
 - **losing**: profit at or below minus the loss floor. **thin_margin**: revenue at or above materiality at under 30% margin. **below_cost**: cost per 1K results above revenue per 1K. **no_revenue**: 10+ runs and a paying user but $0 revenue on a charging actor (often an event the code never charges).
 - **declining / growing**: revenue per day this month vs last month changed by 25%+ and by at least materiality per month. Needs 7+ days of the month.
 - **Revenue at risk**: revenue \xD7 failure rate.
+- **Runs per day** (run_health \`byDay\`): failed, timed-out and aborted runs per UTC calendar day from Console run statistics, counting every run of the actor. The rest of run_health uses the public rolling 30 days of users' runs, so totals can differ. **Today** is partial (the day has not ended); a period that ends before today reports it separately and never adds it to the period totals.
+- **Problem day**: a day with at least one failed or timed-out run. **Worst day**: the day with the most (the later one on a tie). Aborted runs never count.
+- **Shared runs**: runs users chose to share with you. Only these can be opened, so their logs are a sample; the counts come from run statistics and cover every run. **buildBeforeFirstProblem**: the newest successful build that finished before the first problem day in the period, a fact to check rather than a proven cause.
 - **Viewers, input-page views, users with a run** (growth, acquisition_score): from Console analytics (\`monthly-marketing\`), unique per month. Both tools use the same field names and values: \`viewingUsers\` (viewed the Store page), \`consolePageViews\` (opened the input page), \`usersWithRun\`, and \`viewToRunPct\` = users with a run \xF7 viewers. viewToRunPct can exceed 100% because users can run an actor (API, schedules) without viewing its page that month.
 - **growth vs acquisition_score**: growth gives the raw counts, paying users, referrers and countries. acquisition_score gives each actor's bucket, the reason and what to do.
 - **Acquisition buckets** (acquisition_score), first match wins: **Leaking** (viewers \u2265 leakFloor but under 2 start, or conversion in your bottom quarter: fix the listing), **Rising** (viewers up 30%+ and by 5+ vs the same point last month: market it more), **Fading** (viewers down 25%+ and by 5+: find out why), **Converting** (2+ start and conversion in your top quarter: double down), **Steady** (enough viewers, no strong signal), **Quiet** (too few viewers to judge). Same rules as the Apify Insights Plus extension.
@@ -39606,11 +39701,249 @@ async function revenueSummary(ctx, args) {
   });
 }
 
+// src/core/run-days.ts
+function n2(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+function statusCounts(date5, stat3) {
+  const runs = n2(stat3?.TOTAL);
+  if (!runs) return { date: date5, runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
+  const succeeded = n2(stat3?.SUCCEEDED);
+  const aborted2 = n2(stat3?.ABORTED);
+  const timedOut = n2(stat3?.["TIMED-OUT"]);
+  const failed = stat3?.FAILED == null ? Math.max(0, runs - succeeded - aborted2 - timedOut) : n2(stat3.FAILED);
+  return { date: date5, runs, succeeded, failed, timedOut, aborted: aborted2 };
+}
+function problems(counts) {
+  return counts.failed + counts.timedOut;
+}
+function failureRatePct(counts) {
+  return counts.runs ? round(problems(counts) / counts.runs * 100, 1) : null;
+}
+function daysOf(stats, days) {
+  const merged = {};
+  for (const month of stats) Object.assign(merged, month.dailyStats);
+  return days.map((day) => statusCounts(day, merged[day]));
+}
+function totalsOf(days) {
+  const sum = { runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
+  for (const day of days) {
+    sum.runs += day.runs;
+    sum.succeeded += day.succeeded;
+    sum.failed += day.failed;
+    sum.timedOut += day.timedOut;
+    sum.aborted += day.aborted;
+  }
+  return { ...sum, failureRatePct: failureRatePct(sum) };
+}
+function worstDay(days) {
+  let worst = null;
+  for (const day of days) if (problems(day) > 0 && (!worst || problems(day) >= problems(worst))) worst = day;
+  return worst;
+}
+function problemDays(days) {
+  return days.filter((day) => problems(day) > 0);
+}
+function dayWindow(period, today) {
+  const todayInPeriod = period.to >= today;
+  const months = [...period.months];
+  if (!months.includes(monthOf(today))) months.push(monthOf(today));
+  return { days: daysInRange(period.from, todayInPeriod ? today : period.to), today, todayInPeriod, months };
+}
+
+// src/tools/run-health-days.ts
+var MAX_DAY_ACTORS = 25;
+var LONG_RANGE_MONTHS = 3;
+var SHARED_RUNS_LIMIT = 100;
+var LOG_RUNS = 3;
+var BUILDS = 5;
+var PROBLEM_STATUSES = /* @__PURE__ */ new Set(["FAILED", "TIMED-OUT"]);
+var DAY_SOURCE_NOTE = "byDay counts every run per UTC calendar day from the Apify Console. The rest of run_health uses the public rolling 30 days of users' runs, so the numbers can differ.";
+function dayRow(day, window) {
+  const { succeeded: _succeeded, ...rest } = day;
+  return window.todayInPeriod && day.date === window.today ? { ...rest, partial: true } : rest;
+}
+function todayBlock(window, days) {
+  if (window.todayInPeriod) return void 0;
+  const today = days.find((day) => day.date === window.today);
+  return today ? { ...dayRow(today, window), partial: true } : void 0;
+}
+function periodBlock(period, window) {
+  return { label: period.label, from: window.days[0], to: window.days[window.days.length - 1], timezone: "UTC", source: "console-run-statistics" };
+}
+function span(days) {
+  const bad = problemDays(days);
+  const worst = worstDay(days);
+  return {
+    problemDays: bad.length,
+    firstProblemDay: bad[0]?.date ?? null,
+    lastProblemDay: bad[bad.length - 1]?.date ?? null,
+    worstDay: worst ? { date: worst.date, failed: worst.failed, timedOut: worst.timedOut, runs: worst.runs } : null
+  };
+}
+function windowDays(stats, window) {
+  const inPeriod = daysOf(stats, window.days);
+  const withToday = window.todayInPeriod ? inPeriod : [...inPeriod, ...daysOf(stats, [window.today])];
+  return { inPeriod, withToday };
+}
+async function portfolioDays(ctx, api, catalog, period, top) {
+  const window = dayWindow(period, isoDay(ctx.now()));
+  const notes = [];
+  const cap = window.months.length > LONG_RANGE_MONTHS ? 10 : MAX_DAY_ACTORS;
+  const limit = Math.min(top, cap);
+  if (limit < top) notes.push(`byDay checks at most ${limit} actors for this period (one request per actor per month).`);
+  const [accountStats, monthRows] = await Promise.all([
+    Promise.all(window.months.map((month) => runStatistics(ctx, api, month))),
+    Promise.all(window.months.map((month) => breakdown(ctx, api, month)))
+  ]);
+  const account = windowDays(accountStats, window);
+  const accountTotals = totalsOf(account.inPeriod);
+  const monthly = /* @__PURE__ */ new Map();
+  for (const rows of monthRows) {
+    for (const row3 of rows) {
+      const entry = monthly.get(row3.id) ?? { name: row3.name, problems: 0 };
+      entry.problems += row3.failed + row3.timedOut;
+      monthly.set(row3.id, entry);
+    }
+  }
+  const candidates = [...monthly.entries()].filter(([, entry]) => entry.problems > 0).sort((a, b) => b[1].problems - a[1].problems || a[1].name.localeCompare(b[1].name));
+  const checked = candidates.slice(0, limit);
+  const byId = new Map(catalog.map((actor) => [actor.id, actor]));
+  let done = 0;
+  const actors = await Promise.all(
+    checked.map(async ([id, entry]) => {
+      const stats = await Promise.all(window.months.map((month) => runStatistics(ctx, api, month, id)));
+      reportProgress(++done, checked.length, `Checked runs per day for ${entry.name}`);
+      const { inPeriod, withToday } = windowDays(stats, window);
+      const totals = totalsOf(inPeriod);
+      const today = withToday.find((day) => day.date === window.today);
+      return {
+        ref: byId.get(id)?.ref ?? entry.name,
+        runs: totals.runs,
+        failed: totals.failed,
+        timedOut: totals.timedOut,
+        aborted: totals.aborted,
+        failureRatePct: totals.failureRatePct,
+        todayFailed: today?.failed ?? 0,
+        todayTimedOut: today?.timedOut ?? 0,
+        ...span(inPeriod),
+        days: problemDays(inPeriod).map((day) => dayRow(day, window))
+      };
+    })
+  );
+  const listed = actors.filter((actor) => problems(actor) > 0 || actor.todayFailed + actor.todayTimedOut > 0).sort((a, b) => problems(b) - problems(a) || b.todayFailed + b.todayTimedOut - (a.todayFailed + a.todayTimedOut) || a.ref.localeCompare(b.ref));
+  if (candidates.length > checked.length) {
+    notes.push(`${candidates.length - checked.length} more actors had failed or timed-out runs in ${window.months.join(", ")} and were not checked; ${limit < cap ? `raise \`top\` (up to ${cap}) or ` : ""}pass \`actor\` for one of them.`);
+  }
+  if (checked.length === candidates.length) {
+    const listedProblems = actors.reduce((sum, actor) => sum + problems(actor), 0);
+    if (listedProblems < problems(accountTotals)) {
+      notes.push(`Actors listed add up to ${listedProblems} failed or timed-out runs; the account total is ${problems(accountTotals)}. The rest are in actors missing from the Console breakdown.`);
+    }
+  }
+  notes.push(DAY_SOURCE_NOTE);
+  const todayRow = todayBlock(window, account.withToday);
+  const todayCounts = account.withToday.find((day) => day.date === window.today);
+  const worst = listed[0];
+  const summary = `By day (${period.label}, UTC): ${accountTotals.failed} failed, ${accountTotals.timedOut} timed out, ${accountTotals.aborted} aborted of ${accountTotals.runs} runs` + (todayCounts ? `; today so far ${todayCounts.failed} failed, ${todayCounts.timedOut} timed out of ${todayCounts.runs}` : "") + (worst ? `. Most: ${worst.ref} (${worst.failed} failed, ${worst.timedOut} timed out${worst.worstDay ? `, worst ${worst.worstDay.date}` : ""})` : "") + ".";
+  return {
+    summary,
+    notes,
+    byDay: {
+      period: periodBlock(period, window),
+      account: { totals: accountTotals, days: account.inPeriod.map((day) => dayRow(day, window)) },
+      ...todayRow ? { today: todayRow } : {},
+      actors: listed,
+      coverage: { actorsWithProblemRuns: candidates.length, checked: checked.length }
+    }
+  };
+}
+function runDay(run) {
+  const at = run.finishedAt ?? run.startedAt;
+  return at ? at.slice(0, 10) : null;
+}
+async function actorDays(ctx, api, actor, period, logs) {
+  const window = dayWindow(period, isoDay(ctx.now()));
+  const notes = [];
+  const [stats, shared, builds] = await Promise.all([
+    Promise.all(window.months.map((month) => runStatistics(ctx, api, month, actor.id))),
+    // One more try on a dropped connection; the cache forgets a failed load.
+    sharedRuns(ctx, api, actor.id, SHARED_RUNS_LIMIT).catch((error62) => error62 instanceof ToolError ? Promise.reject(error62) : sharedRuns(ctx, api, actor.id, SHARED_RUNS_LIMIT)).catch((error62) => {
+      notes.push(`Shared runs could not be loaded: ${error62 instanceof Error ? error62.message : String(error62)}`);
+      return null;
+    }),
+    wrapApi(() => ctx.api().builds(actor.id, BUILDS)).catch((error62) => {
+      notes.push(`Builds could not be loaded: ${error62 instanceof Error ? error62.message : String(error62)}`);
+      return null;
+    })
+  ]);
+  const { inPeriod, withToday } = windowDays(stats, window);
+  const totals = totalsOf(inPeriod);
+  const spanned = span(inPeriod);
+  let sharedBlock = null;
+  if (shared) {
+    const from = window.days[0];
+    const to = window.days[window.days.length - 1];
+    const inWindow = (day) => !!day && (day >= from && day <= to || day === window.today);
+    const failing = shared.data.filter((run) => PROBLEM_STATUSES.has(run.status) && inWindow(runDay(run)));
+    const withLogs = logs ? failing.slice(0, LOG_RUNS) : [];
+    const tails = await Promise.all(withLogs.map((run) => ctx.api().runLog(run._id)));
+    sharedBlock = {
+      shared: shared.sequencePagination?.totalCount ?? shared.data.length,
+      failedInPeriod: failing.length,
+      failed: failing.slice(0, Math.max(LOG_RUNS, 10)).map((run, i) => ({
+        runId: run._id,
+        status: run.status,
+        startedAt: run.startedAt ?? null,
+        finishedAt: run.finishedAt ?? null,
+        buildNumber: run.buildNumber ?? null,
+        exitCode: run.exitCode ?? null,
+        payingUser: run.isRunOfPayingUser ?? null,
+        consoleUrl: `https://console.apify.com/view/runs/${run._id}`,
+        ...i < tails.length ? { logTail: tails[i].available ? tails[i].lines : null, ...tails[i].truncatedAtBytes ? { logTruncated: true } : {} } : {}
+      }))
+    };
+    notes.push("Only runs users chose to share are listed; most users do not share runs. The counts come from run statistics and cover every run.");
+    if (tails.some((tail) => !tail.available)) notes.push("logTail is null where the API did not return the log (not shared any more, or deleted).");
+    if (withLogs.length) notes.push("Log tails can contain your users' input. They are shown here only and never saved.");
+  }
+  const buildRows = builds?.map((build2) => ({ buildNumber: build2.buildNumber ?? null, status: build2.status, finishedAt: build2.finishedAt ?? null })) ?? null;
+  let before = null;
+  if (buildRows && spanned.firstProblemDay) {
+    const start = `${spanned.firstProblemDay}T00:00:00.000Z`;
+    const found = buildRows.find((build2) => build2.status === "SUCCEEDED" && build2.finishedAt != null && build2.finishedAt < start);
+    before = found ? { buildNumber: found.buildNumber, finishedAt: found.finishedAt } : null;
+    if (!found) notes.push(`None of the last ${BUILDS} builds finished before ${spanned.firstProblemDay}, so buildBeforeFirstProblem is null.`);
+  }
+  notes.push(DAY_SOURCE_NOTE);
+  const today = withToday.find((day) => day.date === window.today);
+  const todayRow = todayBlock(window, withToday);
+  const summary = `By day (${period.label}, UTC): ${totals.failed} failed, ${totals.timedOut} timed out, ${totals.aborted} aborted of ${totals.runs} runs` + (spanned.problemDays ? ` on ${spanned.problemDays} day${spanned.problemDays === 1 ? "" : "s"} (worst ${spanned.worstDay.date})` : "") + (today ? `; today so far ${today.failed} failed, ${today.timedOut} timed out of ${today.runs}` : "") + (sharedBlock ? `. ${sharedBlock.failedInPeriod} failed shared run${sharedBlock.failedInPeriod === 1 ? "" : "s"} in the period` : "") + ".";
+  return {
+    summary,
+    notes,
+    byDay: {
+      period: periodBlock(period, window),
+      totals,
+      ...spanned,
+      days: inPeriod.map((day) => dayRow(day, window)),
+      ...todayRow ? { today: todayRow } : {}
+    },
+    sharedRuns: sharedBlock,
+    builds: buildRows,
+    buildBeforeFirstProblem: before
+  };
+}
+
 // src/tools/run-health.ts
 var runHealthInput = {
   actor: external_exports.string().optional().describe("One actor (id, name, username/name or title). Omit to check every actor."),
   onlyProblems: external_exports.boolean().default(true).describe("Return only actors with a flag. Ignored when `actor` is given."),
-  top: external_exports.number().int().min(1).max(50).default(10)
+  top: external_exports.number().int().min(1).max(50).default(10),
+  period: periodInput.optional().describe(
+    "Add `byDay`: failed / timed-out / aborted runs per UTC day for this period, today included (partial). With `actor`, also the failed runs users shared with you, their log tails and recent builds. Needs the Console session. " + periodInput.description
+  ),
+  logs: external_exports.boolean().default(true).describe("With `actor` and `period`: include the last 30 log lines of up to 3 newest failed shared runs.")
 };
 var RULES = {
   flagged: "Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.",
@@ -39653,22 +39986,25 @@ function severity(actor, flags, money2) {
 }
 async function loadMoney(ctx) {
   const { api, state } = await ctx.optionalConsole();
-  if (!api) return { money: null, t: null, state };
+  if (!api) return { money: null, t: null, state, api };
   const month = monthOf(isoDay(ctx.now()));
   const rows = await breakdown(ctx, api, month);
   const t = thresholds(rows, daysElapsed(month, ctx.now()));
-  return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state };
+  return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state, api };
 }
 async function runHealthTool(ctx, args) {
   const catalog = await ctx.catalog();
   const asOf = new Date(ctx.now()).toISOString();
-  const { money: money2, t, state } = await loadMoney(ctx);
+  const period = args.period === void 0 ? null : resolvePeriod(args.period, ctx.now());
+  const { money: money2, t, state, api } = await loadMoney(ctx);
+  const withDays = period && api ? { period, api } : null;
   const rules = money2 ? { ...RULES, no_revenue: money2.noRevenueRule } : RULES;
   const notes = [
     "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
     "Private actors have no public run stats and are not checked here.",
     money2 ? `Money columns are ${money2.month} so far, paying users (Console). revenueAtRiskUsd = revenue \xD7 30-day failure rate.` : `No Console session (${state}), so money columns and the no_revenue check are skipped.`
   ];
+  if (period && !api) notes.push(`Per-day counts (\`period\`) need the Console session (${state}); this answer has the 30-day numbers only.`);
   if (args.actor) {
     const found = resolveActor(catalog, args.actor);
     if (found.kind === "not_found") {
@@ -39681,26 +40017,43 @@ async function runHealthTool(ctx, args) {
     }
     const flags = flagsFor(found.actor, money2, t);
     const summary2 = flags.length ? `${found.actor.ref}: ${flags.map((flag) => flag.flag).join(", ")}.` : `${found.actor.ref}: no problems found.`;
-    return ok(summary2, { asOf, source: ["apify-api"], rows: [row2(found.actor, flags, money2)], flags, rules, notes });
+    if (!withDays) return ok(summary2, { asOf, source: ["apify-api"], rows: [row2(found.actor, flags, money2)], flags, rules, notes });
+    const days2 = await actorDays(ctx, withDays.api, found.actor, withDays.period, args.logs);
+    const localPath = (await ctx.localActorPaths()).get(found.actor.name) ?? null;
+    return ok(`${summary2} ${days2.summary}`, {
+      asOf,
+      source: ["apify-api", "console (unofficial)"],
+      rows: [row2(found.actor, flags, money2)],
+      flags,
+      byDay: days2.byDay,
+      sharedRuns: days2.sharedRuns,
+      builds: days2.builds,
+      buildBeforeFirstProblem: days2.buildBeforeFirstProblem,
+      ...localPath ? { localPath } : {},
+      rules,
+      notes: [...notes, ...days2.notes]
+    });
   }
   const checked = catalog.filter((actor) => actor.isPublic);
   const assessed = checked.map((actor) => ({ actor, flags: flagsFor(actor, money2, t) }));
-  const problems = assessed.filter((item) => item.flags.length);
-  const pool = args.onlyProblems ? problems : assessed;
+  const problems2 = assessed.filter((item) => item.flags.length);
+  const pool = args.onlyProblems ? problems2 : assessed;
   pool.sort((a, b) => severity(b.actor, b.flags, money2) - severity(a.actor, a.flags, money2));
   const page = topN(pool.map((item) => row2(item.actor, item.flags, money2)), args.top, "raise `top`, or pass `actor` for one actor");
-  const flaggedCount = problems.filter((item) => item.flags.some((flag) => flag.flag === "flagged")).length;
-  const failingCount = problems.filter((item) => item.flags.some((flag) => flag.flag === "failing")).length;
-  const summary = problems.length ? `${problems.length} of ${checked.length} public actors need attention: ${flaggedCount} with an Apify notice, ${failingCount} failing. Worst: ${page.rows.slice(0, 3).map((r) => `${r.ref} (${r.flags.join("+")}${r.failureRatePct != null ? `, ${r.failureRatePct}% failed` : ""})`).join("; ")}.` : `No problems found across ${checked.length} public actors.`;
-  return ok(summary, {
+  const flaggedCount = problems2.filter((item) => item.flags.some((flag) => flag.flag === "flagged")).length;
+  const failingCount = problems2.filter((item) => item.flags.some((flag) => flag.flag === "failing")).length;
+  const summary = problems2.length ? `${problems2.length} of ${checked.length} public actors need attention: ${flaggedCount} with an Apify notice, ${failingCount} failing. Worst: ${page.rows.slice(0, 3).map((r) => `${r.ref} (${r.flags.join("+")}${r.failureRatePct != null ? `, ${r.failureRatePct}% failed` : ""})`).join("; ")}.` : `No problems found across ${checked.length} public actors.`;
+  const days = withDays ? await portfolioDays(ctx, withDays.api, catalog, withDays.period, args.top) : null;
+  return ok(days ? `${summary} ${days.summary}` : summary, {
     asOf,
-    source: ["apify-api"],
+    source: days ? ["apify-api", "console (unofficial)"] : ["apify-api"],
     period: { label: "last30d" },
-    totals: { checked: checked.length, notCheckedPrivate: catalog.length - checked.length, problems: problems.length, flagged: flaggedCount, failing: failingCount },
+    totals: { checked: checked.length, notCheckedPrivate: catalog.length - checked.length, problems: problems2.length, flagged: flaggedCount, failing: failingCount },
     rows: page.rows,
     ...page.omitted ? { omitted: page.omitted } : {},
+    ...days ? { byDay: days.byDay } : {},
     rules,
-    notes
+    notes: days ? [...notes, ...days.notes] : notes
   });
 }
 
@@ -39770,7 +40123,7 @@ async function storeRankTool(ctx, args) {
 }
 
 // src/server.ts
-var VERSION2 = true ? "0.5.0" : "0.0.0-dev";
+var VERSION2 = true ? "0.6.0" : "0.0.0-dev";
 var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 async function logUsage(ctx, tool) {
   if (!ctx.config.usageLog) return;
@@ -39804,7 +40157,7 @@ function createServer(ctx) {
   const server = new McpServer(
     { name: "apify-insights", version: VERSION2 },
     {
-      instructions: 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. "How am I doing" \u2192 daily_brief. "Is anything broken" \u2192 run_health. "Which actors lose money / should I reprice" \u2192 actor_profitability(view: losers) then actor_report. "How many viewed, ran or paid", referrers, countries \u2192 growth. "Which actors are leaking, rising or fading, and what to do" \u2192 acquisition_score. "What should I fix for quality" \u2192 actor_quality. Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.'
+      instructions: 'Answers questions about the Apify actors owned by the connected account: money, users, run health, notices, pricing, Store rank. "How am I doing" \u2192 daily_brief. "Is anything broken" \u2192 run_health. "On which days did runs fail, how many today, which runs failed and why" \u2192 run_health with `period` (add `actor` for the failed runs, log tails and builds). "Which actors lose money / should I reprice" \u2192 actor_profitability(view: losers) then actor_report. "How many viewed, ran or paid", referrers, countries \u2192 growth. "Which actors are leaking, rising or fading, and what to do" \u2192 acquisition_score. "What should I fix for quality" \u2192 actor_quality. Read apify-insights://glossary before explaining a metric. Repeat numbers exactly as returned; null means "not available", never zero; never estimate. Per-actor money is paying-users money by calendar month; day ranges per actor cover only named actors or the top 10 earners.'
     }
   );
   server.registerTool(
@@ -39849,7 +40202,7 @@ function createServer(ctx) {
     "run_health",
     {
       title: "Run health",
-      description: "Finds actors that need attention: `flagged` (Apify notice such as under maintenance, hidden from Store search), `failing` (3+ failed or timed-out users' runs and 5%+ failure rate in 30 days, aborts excluded) and, with a Console session, `no_revenue` plus revenue at risk. Returns only problems by default, worst first. Pass `actor` to check one actor.",
+      description: "Finds actors that need attention: `flagged` (Apify notice such as under maintenance, hidden from Store search), `failing` (3+ failed or timed-out users' runs and 5%+ failure rate in 30 days, aborts excluded) and, with a Console session, `no_revenue` plus revenue at risk. Returns only problems by default, worst first. Pass `actor` to check one actor. Pass `period` (needs the Console session) for `byDay`: failed, timed-out and aborted runs per UTC day, today included; with `actor` also the failed runs users shared with you, their log tails, recent builds and the build before the failures began.",
       inputSchema: runHealthInput,
       annotations: READ_ONLY
     },
@@ -39948,7 +40301,7 @@ function createServer(ctx) {
     "health-check",
     "Health sweep",
     "Which actors are flagged, failing or charging nothing.",
-    "Call run_health. List each problem with its flag, rule and numbers, worst first. For the top two call actor_report and say what to fix first. Do not change anything."
+    "Call run_health with period last7d. List each problem with its flag, rule and numbers, worst first, then the days with failed runs and today so far from byDay. For the actor with the most failed runs call run_health with that actor and period last7d, and report its failed runs, log tails and the build before the failures began; then call actor_report for it and say what to fix first. Do not guess causes the logs do not show. Do not change anything."
   );
   prompt(
     "funnel-check",

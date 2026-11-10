@@ -1164,6 +1164,61 @@ exports[`tool output stays the same (AC1) > revenue_summary {} 1`] = `
 }
 `;
 
+exports[`tool output stays the same (AC1) > run_health {"actor":"broken"} 1`] = `
+{
+  "data": {
+    "asOf": "2026-11-08T03:00:00.000Z",
+    "flags": [
+      {
+        "evidence": {
+          "failed": 15,
+          "failureRatePct": 20,
+          "runs": 100,
+          "timedOut": 5,
+          "window": "last 30 days, users' runs",
+        },
+        "flag": "failing",
+        "rule": "At least 3 failed or timed-out runs and a 5%+ failure rate (aborted runs excluded)",
+      },
+    ],
+    "notes": [
+      "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
+      "Private actors have no public run stats and are not checked here.",
+      "Money columns are 2026-11 so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate.",
+    ],
+    "rows": [
+      {
+        "aborted": 0,
+        "failed": 15,
+        "failureRatePct": 20,
+        "flags": [
+          "failing",
+        ],
+        "lastRun": "2026-11-07",
+        "payingUsersThisMonth": 3,
+        "ref": "acme/broken",
+        "revenueAtRiskUsd": 0.4,
+        "revenueThisMonthUsd": 2,
+        "runs30d": 100,
+        "timedOut": 5,
+        "users30d": 12,
+      },
+    ],
+    "rules": {
+      "failing": "At least 3 failed or timed-out runs and a 5%+ failure rate in users' runs over 30 days (aborted runs excluded).",
+      "flagged": "Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.",
+      "no_revenue": "10+ runs and 1+ paying user but $0 revenue on a pay-per-event or pay-per-result actor: possibly an event that is never charged.",
+    },
+    "source": [
+      "apify-api",
+    ],
+  },
+  "text": "acme/broken: failing.
+
+{"asOf":"2026-11-08T03:00:00.000Z","source":["apify-api"],"rows":[{"ref":"acme/broken","flags":["failing"],"users30d":12,"runs30d":100,"failed":15,"timedOut":5,"aborted":0,"failureRatePct":20,"lastRun":"2026-11-07","payingUsersThisMonth":3,"revenueThisMonthUsd":2,"revenueAtRiskUsd":0.4}],"flags":[{"flag":"failing","rule":"At least 3 failed or timed-out runs and a 5%+ failure rate (aborted runs excluded)","evidence":{"window":"last 30 days, users' runs","runs":100,"failed":15,"timedOut":5,"failureRatePct":20}}],"rules":{"flagged":"Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.","failing":"At least 3 failed or timed-out runs and a 5%+ failure rate in users' runs over 30 days (aborted runs excluded).","no_revenue":"10+ runs and 1+ paying user but $0 revenue on a pay-per-event or pay-per-result actor: possibly an event that is never charged."},"notes":["Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.","Private actors have no public run stats and are not checked here.","Money columns are 2026-11 so far, paying users (Console). revenueAtRiskUsd = revenue × 30-day failure rate."]}",
+}
+`;
+
 exports[`tool output stays the same (AC1) > run_health {} 1`] = `
 {
   "data": {

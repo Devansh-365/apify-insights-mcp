@@ -25,6 +25,7 @@
 | *"How did I do yesterday?"* | Profit against the same days last month, plus the 3 actors to look at |
 | *"Which actors lose money?"* | Each one with the price where it would break even |
 | *"Is anything broken?"* | Actors that fail, that Apify flagged, or that charge nothing |
+| *"Which actors had failed runs this week, and on which days?"* | Failed, timed-out and aborted runs per day and today so far; for one actor, the failed runs users shared, their last log lines and the build before it started |
 | *"Tell me about maps-scraper"* | Users, runs, price, builds, reviews and 3 months of money |
 | *"Which actors are leaking users?"* | Each actor marked Leaking, Rising, Fading or Converting, with the reason and what to do |
 | *"What should I fix for quality?"* | Apify's quality suggestions across your actors, ranked by impact |
