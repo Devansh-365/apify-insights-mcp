@@ -13,6 +13,8 @@ export interface Config {
     diskCache?: boolean;
     /** After the first money tool of a session, load this and last month's money in the background (APIFY_INSIGHTS_PREFETCH=0 turns it off). */
     prefetch?: boolean;
+    /** Experimental early-warning watch: registers `decline_watch` and adds one line to daily_brief (APIFY_INSIGHTS_WATCH=1). Off by default. */
+    watch?: boolean;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -23,5 +25,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
         usageLog: env.APIFY_INSIGHTS_USAGE_LOG === '1',
         diskCache: env.APIFY_INSIGHTS_CACHE !== '0',
         prefetch: env.APIFY_INSIGHTS_PREFETCH !== '0',
+        watch: env.APIFY_INSIGHTS_WATCH === '1',
     };
 }

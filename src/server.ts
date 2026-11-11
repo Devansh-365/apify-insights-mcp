@@ -15,6 +15,7 @@ import { actorReport, actorReportInput } from './tools/actor-report.js';
 import { authStatus } from './tools/auth-status.js';
 import { competitorBenchmarkInput, competitorBenchmarkTool } from './tools/competitor-benchmark.js';
 import { dailyBrief } from './tools/daily-brief.js';
+import { declineWatch, declineWatchInput } from './tools/decline-watch.js';
 import { growth, growthInput } from './tools/growth.js';
 import { listActors, listActorsInput } from './tools/list-actors.js';
 import { revenueSummary, revenueSummaryInput } from './tools/revenue-summary.js';
@@ -215,6 +216,22 @@ export function createServer(ctx: Context): McpServer {
         },
         (args, extra) => guarded(ctx, 'competitor_benchmark', () => competitorBenchmarkTool(ctx, args), extra),
     );
+
+    // Experimental (off by default): only with APIFY_INSIGHTS_WATCH=1 in the server's environment.
+    if (ctx.config.watch) {
+        server.registerTool(
+            'decline_watch',
+            {
+                title: 'Early-warning alerts (experimental)',
+                description:
+                    'Reads the local early-warning job (`apify-insights-mcp watch run`): open PAGE alerts (revenue drop vs the actor\'s own 8-week median, results per run drop, failure spike, Apify notice, cost above revenue), WATCH items and the latest digest, each with its rule, numbers and next action. ' +
+                    'Pass `actor` for a drill-down: weekly revenue, runs and failures from local facts, live month-to-date days (up to 3 Console reads) and rivals from config. Read-only.',
+                inputSchema: declineWatchInput,
+                annotations: READ_ONLY,
+            },
+            (args, extra) => guarded(ctx, 'decline_watch', () => declineWatch(ctx, args), extra),
+        );
+    }
 
     server.registerResource(
         'glossary',

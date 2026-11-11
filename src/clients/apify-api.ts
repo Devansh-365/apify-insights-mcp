@@ -104,7 +104,22 @@ export interface ApifyApi {
     builds(actorId: string, limit: number): Promise<BuildItem[]>;
     /** The last lines of a run's log, read with a byte cap. Never throws for a missing log. */
     runLog(runId: string, options?: RunLogOptions): Promise<RunLog>;
+    /**
+     * Runs this account started (any actor), newest first, back to `startedAfter` (ISO). Used by the
+     * experimental watch to tell the owner's own test runs apart. Optional so test fakes can omit it.
+     */
+    myRuns?(startedAfter: string): Promise<OwnRun[]>;
 }
+
+/** `/v2/actor-runs` item, trimmed to what the watch needs. */
+export interface OwnRun {
+    actId: string;
+    status: string;
+    startedAt: string;
+}
+
+/** Most pages `myRuns` reads (1,000 runs each). */
+export const MY_RUNS_MAX_PAGES = 40;
 
 export class ApiError extends Error {
     constructor(
@@ -257,5 +272,23 @@ export function createApifyApi(token: string, base = 'https://api.apify.com/v2')
         },
         builds: async (actorId, limit) => (await get<{ items: BuildItem[] }>(`/acts/${encodeURIComponent(actorId)}/builds?desc=1&limit=${limit}`)).items,
         runLog,
+        myRuns: async (startedAfter) => {
+            const since = Date.parse(startedAfter);
+            const out: OwnRun[] = [];
+            for (let page = 0; page < MY_RUNS_MAX_PAGES; page++) {
+                const data = await get<{ items: Array<{ actId?: string; status?: string; startedAt?: string }> }>(`/actor-runs?desc=1&limit=${PAGE}&offset=${page * PAGE}`);
+                let older = false;
+                for (const item of data.items) {
+                    if (typeof item.actId !== 'string' || typeof item.startedAt !== 'string' || typeof item.status !== 'string') continue;
+                    if (Date.parse(item.startedAt) < since) {
+                        older = true;
+                        continue;
+                    }
+                    out.push({ actId: item.actId, status: item.status, startedAt: item.startedAt });
+                }
+                if (older || data.items.length < PAGE) break;
+            }
+            return out;
+        },
     };
 }

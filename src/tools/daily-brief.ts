@@ -9,6 +9,7 @@ import { failingFlag, noticeFlag, type Flag } from '../core/flags.js';
 import { daysElapsed, moneyForPeriod, type ActorMoney, type Money } from '../core/money.js';
 import { moneyFlags, thresholds } from '../core/money-flags.js';
 import { addMonths, comparisonPeriod, isoDay, monthOf, monthStart, resolvePeriod, type Period } from '../core/period.js';
+import { briefLine, readWatchSummary } from '../core/watch/reader.js';
 
 // The morning check (plan W1). Deterministic: every item names the rule that produced it, at most three
 // items, ordered by what costs the most if ignored. No forecasts.
@@ -102,6 +103,16 @@ async function tryConsole(ctx: Context): Promise<{ api: ConsoleApi | null; reaso
     }
 }
 
+/** The experimental early-warning line, only when APIFY_INSIGHTS_WATCH=1 (reads local files, never fails the brief). */
+async function earlyWarning(ctx: Context): Promise<string | null> {
+    if (!ctx.config.watch) return null;
+    try {
+        return briefLine(await readWatchSummary(ctx.config.home), ctx.now());
+    } catch {
+        return null;
+    }
+}
+
 export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
     const now = ctx.now();
     const today = isoDay(now);
@@ -109,16 +120,19 @@ export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
     const catalog = await ctx.catalog();
     reportProgress(1, 3, 'Actors loaded');
     const { api, reason } = await tryConsole(ctx);
+    const watchLine = await earlyWarning(ctx);
 
     if (!api) {
         const items = pickItems(healthItems(catalog, null));
         const lines = [`Morning check ${today} (no money: ${reason})`, ...items.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}`)];
         if (!items.length) lines.push('No flagged or failing actors.');
+        if (watchLine) lines.push(watchLine);
         return ok(lines.join('\n'), {
             asOf: new Date(now).toISOString(),
             source: ['apify-api'],
             money: null,
             items: items.map(itemOut),
+            ...(watchLine ? { earlyWarning: watchLine } : {}),
             notes: [`Money sections need the Console session: ${reason}`],
         });
     }
@@ -156,6 +170,7 @@ export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
         ...items.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}. Next: ${item.next}`),
         ...(money.growing.length ? [`Growing: ${money.growing.map((item) => `${item.actor} (+$${item.evidence.monthlyChangeUsd}/month pace)`).join(', ')}.`] : []),
         `All flags: ${Object.entries(counts).map(([flag, count]) => `${flag} ${count}`).join(', ') || 'none'}.`,
+        ...(watchLine ? [watchLine] : []),
     ];
     return ok(lines.join('\n'), {
         asOf: new Date(now).toISOString(),
@@ -170,6 +185,7 @@ export async function dailyBrief(ctx: Context): Promise<CallToolResult> {
         items: items.map(itemOut),
         growing: money.growing.map(itemOut),
         counts,
+        ...(watchLine ? { earlyWarning: watchLine } : {}),
         notes: [
             'Items are ordered: Apify notice (hidden from search) > paying users but $0 charged > losing money > failing > declining; one item per actor, at most three.',
             'Per-actor rules use this month so far against the month before (revenue per day, so a partial month compares fairly).',

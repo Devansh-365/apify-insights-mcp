@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added (experimental, off by default)
+
+- Early-warning watch behind `APIFY_INSIGHTS_WATCH=1` (or `--experimental` on the CLI). A daily snapshot of the Console actor breakdown and Store stats, differenced into day-level facts per actor, checked against each actor's own 8-week median and recurrence class. Rules: R1 revenue slide, R2 paying users down or buyer quiet, R3 results per run drop, R4 failure or timeout spike (your own runs subtracted where the run list has them), R5 Apify notice, R6 view-to-run collapse, R7 cost above revenue, R8 single-buyer concentration.
+- CLI `watch backfill | run | status | snooze | unsnooze | replay | install | uninstall`. `install` writes a LaunchAgent (4 runs a day) and copies the server to `~/.apify-insights/app`; `install --print` only shows the plist. A macOS notification fires for new or 50% worse PAGE alerts (at most one a day), and once when Console money has been missing for 48 hours.
+- State with dedupe, hold (hysteresis), snooze and resolve; `alerts.jsonl` event log and a markdown digest under `~/.apify-insights/watch/`. The first run lists what is already true as a silent backlog.
+- Read-only MCP tool `decline_watch` (registered only with the flag) and one `daily_brief` line pointing to it.
+- Owner-run exclusion: a month whose only paying user looks like your own account is not counted as a paying user. It is a heuristic from run counts and can hide a real buyer whose runs are never charged; the digest lists every exclusion for review.
+
 ## [0.6.0] - 2026-11-10
 
 ### Added

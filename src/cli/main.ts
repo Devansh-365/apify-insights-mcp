@@ -8,8 +8,10 @@ import { loadConfig } from '../config.js';
 import { cacheRoot, clearDiskCache } from '../core/disk-cache.js';
 import { BRIDGE_EXTENSION_ID, NATIVE_HOST_NAME, runNativeHost } from '../native/host.js';
 import { copyServer, setup, type Runner } from './setup.js';
+import { watchCli, type WatchCliOptions } from './watch.js';
 
-// Command-line entry: `native-host` (started by Chrome), `setup`, `install` and `uninstall`. Anything else
+// Command-line entry: `native-host` (started by Chrome), `setup`, `install`, `uninstall`, `cache` and the
+// experimental `watch`. Anything else
 // returns null so index.ts starts the MCP server as usual.
 
 export interface CliOptions {
@@ -31,6 +33,8 @@ export interface CliOptions {
     /** For `setup`: runs and finds client CLIs. */
     run?: Runner;
     which?: (command: string) => boolean;
+    /** For `watch`: replace the network, clock and notifier (tests). */
+    watchDeps?: WatchCliOptions['deps'];
 }
 
 const MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
@@ -217,6 +221,20 @@ export async function runCli(argv: string[], options: CliOptions = {}): Promise<
         }
         log((await clearDiskCache(home)) ? `Cleared the local cache in ${cacheRoot(home)}.` : 'The local cache was already empty.');
         return 0;
+    }
+    if (command === 'watch') {
+        const { env, homeDir, home, platform, log } = resolve(options);
+        return watchCli(rest, {
+            env,
+            homeDir,
+            home,
+            platform,
+            log,
+            nodePath: options.nodePath ?? process.execPath,
+            sourceEntry: options.entryPath ?? join(packageRoot(), 'dist', 'index.js'),
+            run: options.run,
+            deps: options.watchDeps,
+        });
     }
     if (command === 'install') return install(options);
     if (command === 'uninstall') return uninstall(options);

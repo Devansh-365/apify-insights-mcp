@@ -1099,11 +1099,11 @@ var require_util = __commonJS({
       return false;
     }
     exports.schemaHasRules = schemaHasRules;
-    function schemaHasRulesButRef(schema, RULES2) {
+    function schemaHasRulesButRef(schema, RULES3) {
       if (typeof schema == "boolean")
         return !schema;
       for (const key in schema)
-        if (key !== "$ref" && RULES2.all[key])
+        if (key !== "$ref" && RULES3.all[key])
           return true;
       return false;
     }
@@ -2497,17 +2497,17 @@ var require_validate = __commonJS({
     }
     function schemaKeywords(it, types, typeErrors, errsCount) {
       const { gen, schema, data, allErrors, opts, self } = it;
-      const { RULES: RULES2 } = self;
-      if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1.schemaHasRulesButRef)(schema, RULES2))) {
-        gen.block(() => keywordCode(it, "$ref", RULES2.all.$ref.definition));
+      const { RULES: RULES3 } = self;
+      if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1.schemaHasRulesButRef)(schema, RULES3))) {
+        gen.block(() => keywordCode(it, "$ref", RULES3.all.$ref.definition));
         return;
       }
       if (!opts.jtd)
         checkStrictTypes(it, types);
       gen.block(() => {
-        for (const group of RULES2.rules)
+        for (const group of RULES3.rules)
           groupKeywords(group);
-        groupKeywords(RULES2.post);
+        groupKeywords(RULES3.post);
       });
       function groupKeywords(group) {
         if (!(0, applicability_1.shouldUseGroup)(schema, group))
@@ -4662,10 +4662,10 @@ var require_core = __commonJS({
       }
       // Remove keyword
       removeKeyword(keyword) {
-        const { RULES: RULES2 } = this;
-        delete RULES2.keywords[keyword];
-        delete RULES2.all[keyword];
-        for (const group of RULES2.rules) {
+        const { RULES: RULES3 } = this;
+        delete RULES3.keywords[keyword];
+        delete RULES3.all[keyword];
+        for (const group of RULES3.rules) {
           const i = group.rules.findIndex((rule) => rule.keyword === keyword);
           if (i >= 0)
             group.rules.splice(i, 1);
@@ -4833,9 +4833,9 @@ var require_core = __commonJS({
     }
     var KEYWORD_NAME = /^[a-z_$][a-z0-9_$:-]*$/i;
     function checkKeyword(keyword, def) {
-      const { RULES: RULES2 } = this;
+      const { RULES: RULES3 } = this;
       (0, util_1.eachItem)(keyword, (kwd) => {
-        if (RULES2.keywords[kwd])
+        if (RULES3.keywords[kwd])
           throw new Error(`Keyword ${kwd} is already defined`);
         if (!KEYWORD_NAME.test(kwd))
           throw new Error(`Keyword ${kwd} has invalid name`);
@@ -4851,13 +4851,13 @@ var require_core = __commonJS({
       const post = definition === null || definition === void 0 ? void 0 : definition.post;
       if (dataType && post)
         throw new Error('keyword with "post" flag cannot have "type"');
-      const { RULES: RULES2 } = this;
-      let ruleGroup = post ? RULES2.post : RULES2.rules.find(({ type: t }) => t === dataType);
+      const { RULES: RULES3 } = this;
+      let ruleGroup = post ? RULES3.post : RULES3.rules.find(({ type: t }) => t === dataType);
       if (!ruleGroup) {
         ruleGroup = { type: dataType, rules: [] };
-        RULES2.rules.push(ruleGroup);
+        RULES3.rules.push(ruleGroup);
       }
-      RULES2.keywords[keyword] = true;
+      RULES3.keywords[keyword] = true;
       if (!definition)
         return;
       const rule = {
@@ -4872,7 +4872,7 @@ var require_core = __commonJS({
         addBeforeRule.call(this, ruleGroup, rule, definition.before);
       else
         ruleGroup.rules.push(rule);
-      RULES2.all[keyword] = rule;
+      RULES3.all[keyword] = rule;
       (_a3 = definition.implements) === null || _a3 === void 0 ? void 0 : _a3.forEach((kwd) => this.addKeyword(kwd));
     }
     function addBeforeRule(ruleGroup, rule, before) {
@@ -10768,7 +10768,7 @@ function handleCatchall(proms, input2, payload, ctx, def, inst, abortEarly) {
     }
     const r = _catchall.run({ value: input2[key], issues: [] }, ctx);
     if (r instanceof Promise) {
-      proms.push(r.then((r2) => handlePropertyResult(r2, payload, key, input2, optin, optout)));
+      proms.push(r.then((r3) => handlePropertyResult(r3, payload, key, input2, optin, optout)));
     } else {
       handlePropertyResult(r, payload, key, input2, optin, optout);
     }
@@ -10856,7 +10856,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
       const optout = el._zod.optout;
       const r = el._zod.run({ value: input2[key], issues: [] }, ctx);
       if (r instanceof Promise) {
-        proms.push(r.then((r2) => handlePropertyResult(r2, payload, key, input2, optin, optout)));
+        proms.push(r.then((r3) => handlePropertyResult(r3, payload, key, input2, optin, optout)));
       } else {
         handlePropertyResult(r, payload, key, input2, optin, optout);
       }
@@ -12283,7 +12283,7 @@ var $ZodCustom = /* @__PURE__ */ $constructor("$ZodCustom", (inst, def) => {
     const input2 = payload.value;
     const r = def.fn(input2);
     if (r instanceof Promise) {
-      return r.then((r2) => handleRefineResult(r2, payload, input2, inst));
+      return r.then((r3) => handleRefineResult(r3, payload, input2, inst));
     }
     handleRefineResult(r, payload, input2, inst);
     return;
@@ -28613,9 +28613,9 @@ var StdioServerTransport = class {
 
 // src/cli/main.ts
 import { existsSync as existsSync2 } from "node:fs";
-import { access, chmod as chmod3, copyFile as copyFile2, mkdir as mkdir4, rm as rm3, rmdir, writeFile as writeFile3 } from "node:fs/promises";
-import { homedir as homedir2 } from "node:os";
-import { dirname as dirname2, join as join5 } from "node:path";
+import { access, chmod as chmod5, copyFile as copyFile3, mkdir as mkdir7, rm as rm5, rmdir, writeFile as writeFile6 } from "node:fs/promises";
+import { homedir as homedir3 } from "node:os";
+import { dirname as dirname4, join as join10 } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/config.ts
@@ -28628,7 +28628,8 @@ function loadConfig(env = process.env) {
     apiBase: env.APIFY_API_BASE || "https://api.apify.com/v2",
     usageLog: env.APIFY_INSIGHTS_USAGE_LOG === "1",
     diskCache: env.APIFY_INSIGHTS_CACHE !== "0",
-    prefetch: env.APIFY_INSIGHTS_PREFETCH !== "0"
+    prefetch: env.APIFY_INSIGHTS_PREFETCH !== "0",
+    watch: env.APIFY_INSIGHTS_WATCH === "1"
   };
 }
 
@@ -28937,164 +28938,14 @@ async function setup(options) {
   return 0;
 }
 
-// src/cli/main.ts
-var MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
-var BRIDGE_FILES = ["manifest.json", "sw.js"];
-var GITHUB_SPEC = "github:Devansh-365/apify-insights-mcp";
-function packageRoot() {
-  let dir = dirname2(fileURLToPath(import.meta.url));
-  while (!existsSync2(join5(dir, "package.json")) && dirname2(dir) !== dir) dir = dirname2(dir);
-  return dir;
-}
-function browserDirs(homeDir, platform) {
-  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join5(configDir, "NativeMessagingHosts") });
-  if (platform === "darwin") {
-    const base = join5(homeDir, "Library", "Application Support");
-    return [
-      entry("Chrome", join5(base, "Google", "Chrome")),
-      entry("Chromium", join5(base, "Chromium")),
-      entry("Brave", join5(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join5(base, "Microsoft Edge")),
-      entry("Arc", join5(base, "Arc", "User Data"))
-    ];
-  }
-  if (platform === "linux") {
-    const base = join5(homeDir, ".config");
-    return [
-      entry("Chrome", join5(base, "google-chrome")),
-      entry("Chromium", join5(base, "chromium")),
-      entry("Brave", join5(base, "BraveSoftware", "Brave-Browser")),
-      entry("Edge", join5(base, "microsoft-edge"))
-    ];
-  }
-  return [];
-}
-function shellQuote(value) {
-  return `'${value.replace(/'/g, `'\\''`)}'`;
-}
-async function exists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-function resolve(options) {
-  const env = options.env ?? process.env;
-  return {
-    env,
-    homeDir: options.homeDir ?? homedir2(),
-    home: options.home ?? loadConfig(env).home,
-    platform: options.platform ?? process.platform,
-    log: options.log ?? ((line) => console.log(line))
-  };
-}
-async function install(options) {
-  const { homeDir, home, platform, log } = resolve(options);
-  const dirs = browserDirs(homeDir, platform);
-  if (dirs.length === 0) {
-    log(`install supports macOS and Linux only (this is ${platform}).`);
-    return 1;
-  }
-  const nodePath = options.nodePath ?? process.execPath;
-  const sourceEntry = options.entryPath ?? join5(packageRoot(), "dist", "index.js");
-  const sourceBridge = options.extensionDir ?? join5(packageRoot(), "bridge");
-  const entryPath = await copyServer(sourceEntry, home);
-  const extensionDir = join5(home, "bridge");
-  await mkdir4(extensionDir, { recursive: true });
-  for (const file2 of BRIDGE_FILES) await copyFile2(join5(sourceBridge, file2), join5(extensionDir, file2));
-  log(`Server copied to ${entryPath}`);
-  const binDir = join5(home, "bin");
-  await mkdir4(binDir, { recursive: true, mode: 448 });
-  const launcher = join5(binDir, "native-host");
-  const script = [
-    "#!/bin/sh",
-    "# Written by `apify-insights-mcp install`. Chrome starts this once per Apify Insights Bridge message.",
-    `APIFY_INSIGHTS_HOME=${shellQuote(home)} exec ${shellQuote(nodePath)} ${shellQuote(entryPath)} native-host "$@"`,
-    ""
-  ].join("\n");
-  await writeFile3(launcher, script, { mode: 448 });
-  await chmod3(launcher, 448);
-  log(`Launcher: ${launcher}`);
-  const manifest = {
-    name: NATIVE_HOST_NAME,
-    description: "apify-insights-mcp native host for the Apify Insights Bridge extension",
-    path: launcher,
-    type: "stdio",
-    allowed_origins: [`chrome-extension://${BRIDGE_EXTENSION_ID}/`]
-  };
-  let installed = 0;
-  for (const dir of dirs) {
-    if (!await exists(dir.configDir)) continue;
-    await mkdir4(dir.hostsDir, { recursive: true });
-    await writeFile3(join5(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
-`);
-    log(`Native host registered for ${dir.browser}: ${join5(dir.hostsDir, MANIFEST_FILE)}`);
-    installed++;
-  }
-  if (installed === 0) log("No supported browser profile folder found (Chrome, Chromium, Brave, Edge, Arc). Nothing registered.");
-  log("");
-  log("Next:");
-  log(`1. In your browser open chrome://extensions, turn on Developer mode, click "Load unpacked" and pick:
-   ${extensionDir}`);
-  log(`   The extension ID must be ${BRIDGE_EXTENSION_ID}.`);
-  log(`2. If you have not yet, register the server with your AI clients:
-   npx -y ${GITHUB_SPEC} setup`);
-  return installed > 0 ? 0 : 1;
-}
-async function uninstall(options) {
-  const { homeDir, home, platform, log } = resolve(options);
-  for (const platformDirs of /* @__PURE__ */ new Set([platform, "darwin", "linux"])) {
-    for (const dir of browserDirs(homeDir, platformDirs)) {
-      const path = join5(dir.hostsDir, MANIFEST_FILE);
-      if (await exists(path)) {
-        await rm3(path, { force: true });
-        log(`Removed ${path}`);
-      }
-    }
-  }
-  const binDir = join5(home, "bin");
-  for (const path of [join5(binDir, "native-host"), join5(home, "app"), join5(home, "bridge"), join5(home, "sessions"), join5(home, "wanted")]) {
-    if (await exists(path)) {
-      await rm3(path, { recursive: true, force: true });
-      log(`Removed ${path}`);
-    }
-  }
-  await rmdir(binDir).catch(() => void 0);
-  log("Remove the Apify Insights Bridge extension from chrome://extensions yourself.");
-  return 0;
-}
-async function runCli(argv, options = {}) {
-  const [command, ...rest] = argv;
-  if (command === "native-host" || command?.startsWith("chrome-extension://")) {
-    const args = command === "native-host" ? rest : argv;
-    const origin = args.map((arg) => /^chrome-extension:\/\/([a-p]{32})\/?$/.exec(arg)?.[1]).find(Boolean);
-    const { home } = resolve(options);
-    return runNativeHost(options.stdin ?? process.stdin, options.stdout ?? process.stdout, home, Date.now, origin ?? BRIDGE_EXTENSION_ID);
-  }
-  if (command === "setup") {
-    const { env, homeDir, home, platform, log } = resolve(options);
-    const sourceEntry = options.entryPath ?? join5(packageRoot(), "dist", "index.js");
-    return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
-  }
-  if (command === "cache") {
-    const { home, log } = resolve(options);
-    if (rest[0] !== "clear") {
-      log("Usage: apify-insights-mcp cache clear   (deletes the local money cache; always safe)");
-      return 1;
-    }
-    log(await clearDiskCache(home) ? `Cleared the local cache in ${cacheRoot(home)}.` : "The local cache was already empty.");
-    return 0;
-  }
-  if (command === "install") return install(options);
-  if (command === "uninstall") return uninstall(options);
-  return null;
-}
+// src/cli/watch.ts
+import { execFile as execFile3 } from "node:child_process";
+import { chmod as chmod4, mkdir as mkdir6, rm as rm4, writeFile as writeFile5 } from "node:fs/promises";
+import { dirname as dirname3 } from "node:path";
 
 // src/auth/console-session.ts
-import { mkdir as mkdir5, utimes, writeFile as writeFile4 } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { mkdir as mkdir4, utimes, writeFile as writeFile3 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 
 // src/core/envelope.ts
 var ToolError = class extends Error {
@@ -29170,10 +29021,10 @@ function progressPing(message) {
 
 // src/auth/session.ts
 import { readdir as readdir2, readFile as readFile3, stat as stat2 } from "node:fs/promises";
-import { join as join6 } from "node:path";
+import { join as join5 } from "node:path";
 var FRESH_FOR_MS = 2 * 60 * 60 * 1e3;
 async function newestSession(home) {
-  const dir = join6(home, "sessions");
+  const dir = join5(home, "sessions");
   let names;
   try {
     names = (await readdir2(dir)).filter((name) => name.endsWith(".json"));
@@ -29183,7 +29034,7 @@ async function newestSession(home) {
   let newest = null;
   for (const name of names) {
     try {
-      const path = join6(dir, name);
+      const path = join5(dir, name);
       const [info, raw] = await Promise.all([stat2(path), readFile3(path, "utf8")]);
       const file2 = JSON.parse(raw);
       if (typeof file2.uiToken !== "string" || !file2.uiToken) continue;
@@ -29214,13 +29065,13 @@ async function readAnySessionToken(home, accountUserId) {
 
 // src/auth/console-session.ts
 async function touchWanted(home) {
-  await mkdir5(home, { recursive: true, mode: 448 });
-  const path = join7(home, "wanted");
+  await mkdir4(home, { recursive: true, mode: 448 });
+  const path = join6(home, "wanted");
   const now = /* @__PURE__ */ new Date();
   try {
     await utimes(path, now, now);
   } catch {
-    await writeFile4(path, "", { mode: 384 });
+    await writeFile3(path, "", { mode: 384 });
   }
 }
 var FIX = {
@@ -29252,7 +29103,7 @@ function arrived(token) {
 }
 async function refreshedConsoleToken(home, accountUserId, rejected, options = {}) {
   const now = options.now ?? Date.now;
-  const sleep = options.sleep ?? ((ms) => new Promise((resolve2) => setTimeout(resolve2, ms)));
+  const sleep2 = options.sleep ?? ((ms) => new Promise((resolve2) => setTimeout(resolve2, ms)));
   const deadline = now() + (options.timeoutMs ?? 65e3);
   for (; ; ) {
     await touchWanted(home);
@@ -29262,19 +29113,19 @@ async function refreshedConsoleToken(home, accountUserId, rejected, options = {}
     if (status.state === "bridge_missing" || status.state === "other_account") throw consoleError(status.state);
     if (now() >= deadline) throw consoleError("warming_up");
     progressPing("Waiting for the Apify Console session to refresh");
-    await sleep(3e3);
+    await sleep2(3e3);
   }
 }
 
 // src/auth/public.ts
 import { readFile as readFile4 } from "node:fs/promises";
-import { homedir as homedir3 } from "node:os";
-import { join as join8 } from "node:path";
-async function findPublicToken(env = process.env, home = homedir3()) {
+import { homedir as homedir2 } from "node:os";
+import { join as join7 } from "node:path";
+async function findPublicToken(env = process.env, home = homedir2()) {
   const fromEnv = env.APIFY_TOKEN?.trim();
   if (fromEnv && !/^\$\{.*\}$|^\$[A-Z_]+$/.test(fromEnv)) return { token: fromEnv, source: "env" };
   try {
-    const auth = JSON.parse(await readFile4(join8(home, ".apify", "auth.json"), "utf8"));
+    const auth = JSON.parse(await readFile4(join7(home, ".apify", "auth.json"), "utf8"));
     if (typeof auth.token === "string" && auth.token.trim()) return { token: auth.token.trim(), source: "apify-cli" };
   } catch {
   }
@@ -29282,6 +29133,7 @@ async function findPublicToken(env = process.env, home = homedir3()) {
 }
 
 // src/clients/apify-api.ts
+var MY_RUNS_MAX_PAGES = 40;
 var ApiError = class extends Error {
   constructor(status, message) {
     super(message);
@@ -29419,7 +29271,25 @@ function createApifyApi(token, base = "https://api.apify.com/v2") {
       return result.items ?? [];
     },
     builds: async (actorId, limit) => (await get(`/acts/${encodeURIComponent(actorId)}/builds?desc=1&limit=${limit}`)).items,
-    runLog
+    runLog,
+    myRuns: async (startedAfter) => {
+      const since = Date.parse(startedAfter);
+      const out = [];
+      for (let page = 0; page < MY_RUNS_MAX_PAGES; page++) {
+        const data = await get(`/actor-runs?desc=1&limit=${PAGE}&offset=${page * PAGE}`);
+        let older = false;
+        for (const item of data.items) {
+          if (typeof item.actId !== "string" || typeof item.startedAt !== "string" || typeof item.status !== "string") continue;
+          if (Date.parse(item.startedAt) < since) {
+            older = true;
+            continue;
+          }
+          out.push({ actId: item.actId, status: item.status, startedAt: item.startedAt });
+        }
+        if (older || data.items.length < PAGE) break;
+      }
+      return out;
+    }
   };
 }
 
@@ -29528,7 +29398,7 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
   const jitter = options.jitter ?? (() => Math.random() * 500);
   const retryDelayMs = options.retryDelayMs ?? 1e3;
   const rateLimitDelayMs = options.rateLimitDelayMs ?? 2e3;
-  const sleep = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
+  const sleep2 = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
   const refreshing = /* @__PURE__ */ new Map();
   let pausedUntil = 0;
   let active = 0;
@@ -29565,7 +29435,7 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
       let rateRetries = 0;
       for (; ; ) {
         const wait = pausedUntil - Date.now();
-        if (wait > 0) await sleep(wait);
+        if (wait > 0) await sleep2(wait);
         let response;
         let body;
         try {
@@ -29577,7 +29447,7 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
           if (response.ok) body = await response.json();
         } catch (error62) {
           if (isNetworkError(error62) && serverRetries < SERVER_RETRIES) {
-            await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
+            await sleep2(retryDelayMs * 2 ** serverRetries++ + jitter());
             continue;
           }
           throw error62;
@@ -29597,7 +29467,7 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
           continue;
         }
         if (response.status >= 500 && serverRetries < SERVER_RETRIES) {
-          await sleep(retryDelayMs * 2 ** serverRetries++ + jitter());
+          await sleep2(retryDelayMs * 2 ** serverRetries++ + jitter());
           continue;
         }
         if (!response.ok) {
@@ -29640,6 +29510,982 @@ function createConsoleApi(tokens, fetchImpl = fetch, options = {}) {
     qualityBusinessValue: (actorId) => getById("actor-quality/business-value-improvements/:id", actorId, qualityBusinessValueSchema)
   };
 }
+
+// src/core/watch/constants.ts
+var RULES_VERSION = "w1";
+var WATCH_FLAG_ENV = "APIFY_INSIGHTS_WATCH";
+var DAY_MS = 864e5;
+var HOUR_MS = 36e5;
+var WEEK_MS = 7 * DAY_MS;
+var SPREAD_ABOVE_DAYS = 1.5;
+var REVENUE_DAY_USD = 0.05;
+var BASELINE = { windows: 8, minWindows: 4, minCoverage: 0.5 };
+var CLASS = { steadyDays: 35, steadyPeak: 0.4, burstyDays: 14, burstyPeak: 0.6, peakMinTotalUsd: 5 };
+var POOL = { days: 35, revenueUsd: 3, payingUsers: 3, payingRevenueUsd: 0.5 };
+var R1 = { steadyRatio: 0.65, intermittentRatio: 0.5, minGapUsd: 5, resolveRatio: 0.8, burstRatio: 3, burstPlusUsd: 15, burstEndRatio: 1.5 };
+var R2 = { pudRatio: 0.5, pudMinMedian: 4, quietDays: 14, quietRevenueDays: 4, quietRevenueUsd: 5, monthlyRatio: 0.5, monthlyMinPrevious: 3, watchedActors: 30 };
+var R3 = { minRuns: 50, priorDays: 28, runBandLow: 0.75, runBandHigh: 1.25, yieldRatio: 0.75, holdRatio: 0.85 };
+var R4 = {
+  minFailures: 5,
+  minRate: 0.1,
+  priorDays: 28,
+  quietPriorRate: 0.05,
+  spikeMultiple: 2,
+  fastDays: 2,
+  fastFailures: 5,
+  fastRate: 0.25,
+  timeoutShare: 0.5,
+  holdRate: 0.05,
+  holdFailures: 3
+};
+var R5 = { users30d: 3, revenue56Usd: 1, remindDays: 7 };
+var R6 = { minDay: 8, viewers: 30, previousStarters: 4, rateRatio: 0.5, minPointDrop: 3, cnShare: 0.5, actors: 30 };
+var R7 = { day1LossUsd: 1, day3LossUsd: 2, day7LossUsd: 3, thinRevenueUsd: 5, thinMargin: 0.2, holdLossUsd: 1 };
+var R8 = { revenue56Usd: 20, peakShare: 0.6, maxPayingUsers: 2 };
+var NO_REVENUE = { minRuns: 10, maxRevenueUsd: 5e-3 };
+var OWNER_EXCLUSION = { maxRevenueUsd: 0.01 };
+var NOTIFY = { worseRatio: 1.5, remindDays: 14 };
+var DIGEST = { maxPage: 5, maxWatch: 10, maxInfo: 10, keepDays: 180, resolvedKeepDays: 30 };
+var RETENTION = { snapshotDays: 400 };
+var BLIND_HOURS = 48;
+var SESSION_WAIT_MS = 18e4;
+var CLOSE_DAYS = 4;
+var BACKFILL = { defaultDays: 63, minRevenueUsd: 1, minCostUsd: 1, minFailures: 5 };
+var LOG = { maxBytes: 1e6, keep: 2 };
+var URGENCY = ["R7", "R5", "R4", "R3", "R1", "R2", "R6", "R8", "no_revenue", "burst_started", "burst_ended", "reversal"];
+
+// src/core/watch/types.ts
+var VALUE_KEYS = ["rev", "cost", "runs", "succeeded", "failed", "timedOut", "aborted", "results"];
+
+// src/core/watch/facts.ts
+function zero() {
+  return { rev: 0, cost: 0, runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0, results: 0 };
+}
+function addInto(target, source, factor = 1) {
+  for (const key of VALUE_KEYS) target[key] += source[key] * factor;
+}
+function monthStartMs(month) {
+  return Date.parse(`${month}-01T00:00:00Z`);
+}
+function nextMonth(month) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7);
+}
+function previousMonth(month) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 7);
+}
+function monthEndMs(month) {
+  return monthStartMs(nextMonth(month));
+}
+function dayStartMs(day) {
+  return Date.parse(`${day}T00:00:00Z`);
+}
+function isoDayOf(ms) {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+function slimRow(row3) {
+  return {
+    id: row3.id,
+    name: row3.name,
+    notice: row3.notice,
+    rev: row3.revenueUsd,
+    cost: row3.costUsd,
+    runs: row3.runs,
+    succeeded: row3.succeeded,
+    failed: row3.failed,
+    timedOut: row3.timedOut,
+    aborted: row3.aborted,
+    results: row3.results,
+    charged: row3.chargedResults,
+    payingUsers: row3.payingUsers,
+    freeUsers: row3.freeUsers,
+    model: row3.pricing?.model ?? null
+  };
+}
+function storeRow(actor) {
+  return {
+    id: actor.id,
+    name: actor.name,
+    users7d: actor.users7d,
+    users30d: actor.users30d,
+    users90d: actor.users90d,
+    notice: actor.notice && actor.notice !== "NONE" ? actor.notice : null,
+    runs30d: actor.runs30d ? { runs: actor.runs30d.runs, failed: actor.runs30d.failed, timedOut: actor.runs30d.timedOut, aborted: actor.runs30d.aborted } : null
+  };
+}
+function readingsOf(month, snapshots) {
+  const readings = [];
+  for (const snap of snapshots) {
+    const takenAt = Date.parse(snap.takenAt);
+    if (snap.breakdown && snap.month === month) readings.push({ month, takenAt, close: false, rows: snap.breakdown });
+    if (snap.prevMonthFinal && snap.prevMonthFinal.month === month) readings.push({ month, takenAt, close: true, rows: snap.prevMonthFinal.rows });
+  }
+  return readings.sort((a, b) => a.takenAt - b.takenAt || Number(a.close) - Number(b.close));
+}
+function anyNonZero(v) {
+  return VALUE_KEYS.some((key) => Math.abs(v[key]) > 1e-12);
+}
+function fact(id, name, t0, t1, v, charged, src) {
+  return { t0: new Date(t0).toISOString(), t1: new Date(t1).toISOString(), days: Math.round((t1 - t0) / DAY_MS * 1e3) / 1e3, id, name, ...v, charged, src };
+}
+function deriveMonthFacts(month, readings, backfill) {
+  const start = monthStartMs(month);
+  const end = monthEndMs(month);
+  const ids = /* @__PURE__ */ new Map();
+  for (const reading of readings) for (const row3 of reading.rows) ids.set(row3.id, row3.name);
+  for (const [id, actor] of Object.entries(backfill?.actors ?? {})) if (!ids.has(id)) ids.set(id, actor.name);
+  const facts = [];
+  for (const [id, fallbackName] of ids) {
+    const own2 = readings.map((reading) => ({ reading, row: reading.rows.find((row3) => row3.id === id) })).filter((x) => x.row);
+    const name = own2[own2.length - 1]?.row.name ?? fallbackName;
+    const firstAt = own2.length ? Math.min(own2[0].reading.takenAt, end) : Infinity;
+    const cumulative = zero();
+    let charged = 0;
+    let cursor = start;
+    const days = Object.entries(backfill?.actors[id]?.days ?? {}).sort(([a], [b]) => a.localeCompare(b));
+    for (const [day, values] of days) {
+      const d0 = dayStartMs(day);
+      const d1 = d0 + DAY_MS;
+      if (d0 < start || d1 > end || d1 > firstAt) continue;
+      if (d0 !== cursor) continue;
+      addInto(cumulative, values);
+      charged = null;
+      cursor = d1;
+      if (anyNonZero(values)) facts.push(fact(id, name, d0, d1, { ...values }, null, "backfill"));
+    }
+    for (const { reading, row: row3 } of own2) {
+      const t1 = Math.min(reading.takenAt, end);
+      if (t1 < cursor) continue;
+      const delta2 = zero();
+      for (const key of VALUE_KEYS) delta2[key] = row3[key] - cumulative[key];
+      const chargedDelta = charged != null && row3.charged != null ? row3.charged - charged : null;
+      if (anyNonZero(delta2)) facts.push(fact(id, name, cursor, t1, delta2, chargedDelta, reading.close ? "close" : "delta"));
+      for (const key of VALUE_KEYS) cumulative[key] = row3[key];
+      charged = row3.charged;
+      cursor = t1;
+    }
+  }
+  return facts.sort((a, b) => a.t1.localeCompare(b.t1) || a.id.localeCompare(b.id));
+}
+function toSlices(facts) {
+  return facts.map((f) => {
+    const v = zero();
+    for (const key of VALUE_KEYS) v[key] = f[key];
+    return { t0: Date.parse(f.t0), t1: Date.parse(f.t1), v, days: f.days, negativeRev: f.rev < 0 };
+  });
+}
+function sumWindow(slices, from, to) {
+  const v = zero();
+  let approximate = false;
+  let negativeRevUsd = 0;
+  for (const s of slices) {
+    let share2 = 0;
+    if (s.days <= SPREAD_ABOVE_DAYS) {
+      if (s.t1 > from && s.t1 <= to) share2 = 1;
+    } else {
+      const overlap = Math.min(s.t1, to) - Math.max(s.t0, from);
+      if (overlap > 0) {
+        share2 = overlap / (s.t1 - s.t0);
+        approximate = true;
+      }
+    }
+    if (share2 > 0) {
+      addInto(v, s.v, share2);
+      if (s.negativeRev) negativeRevUsd += s.v.rev * share2;
+    }
+  }
+  return { v, approximate, negativeRevUsd };
+}
+function dailyRevenue(slices, to, count3) {
+  const out = [];
+  for (let i = count3; i >= 1; i--) out.push(sumWindow(slices, to - i * DAY_MS, to - (i - 1) * DAY_MS).v.rev);
+  return out;
+}
+
+// src/core/watch/files.ts
+import { appendFile, chmod as chmod3, mkdir as mkdir5, readdir as readdir3, readFile as readFile5, rename as rename3, rm as rm3, stat as stat3, writeFile as writeFile4 } from "node:fs/promises";
+import { dirname as dirname2, join as join8 } from "node:path";
+import { gunzipSync, gzipSync } from "node:zlib";
+function watchDir(home) {
+  return join8(home, "watch");
+}
+var paths = (home) => {
+  const root = watchDir(home);
+  return {
+    root,
+    snapshots: join8(root, "snapshots"),
+    facts: join8(root, "facts"),
+    backfill: join8(root, "backfill"),
+    users: join8(root, "users"),
+    ownerRuns: join8(root, "owner-runs"),
+    digests: join8(root, "digests"),
+    state: join8(root, "state.json"),
+    alerts: join8(root, "alerts.jsonl"),
+    config: join8(root, "config.json"),
+    log: join8(root, "watch.log"),
+    lock: join8(root, "run.lock"),
+    snapshot: (day) => join8(root, "snapshots", `${day}.json.gz`),
+    factsMonth: (month) => join8(root, "facts", `${month}.jsonl`),
+    backfillMonth: (month) => join8(root, "backfill", `${month}.json.gz`),
+    usersMonth: (month) => join8(root, "users", `${month}.json.gz`),
+    ownerMonth: (month) => join8(root, "owner-runs", `${month}.json.gz`),
+    digest: (day) => join8(root, "digests", `${day}.md`)
+  };
+};
+async function ensureDir(dir) {
+  await mkdir5(dir, { recursive: true, mode: 448 });
+  await chmod3(dir, 448);
+}
+async function writeSecure(path, data) {
+  await ensureDir(dirname2(path));
+  const tmp = `${path}.${process.pid}.tmp`;
+  await writeFile4(tmp, data, { mode: 384 });
+  await chmod3(tmp, 384);
+  await rename3(tmp, path);
+}
+async function appendSecure(path, line) {
+  await ensureDir(dirname2(path));
+  await appendFile(path, line, { mode: 384 });
+  await chmod3(path, 384);
+}
+async function writeJson(path, value) {
+  await writeSecure(path, `${JSON.stringify(value, null, 1)}
+`);
+}
+async function readJson(path) {
+  try {
+    return JSON.parse(await readFile5(path, "utf8"));
+  } catch {
+    return null;
+  }
+}
+async function writeGz(path, value) {
+  await writeSecure(path, gzipSync(Buffer.from(JSON.stringify(value))));
+}
+async function readGz(path) {
+  try {
+    return JSON.parse(gunzipSync(await readFile5(path)).toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+async function listNames(dir, pattern) {
+  try {
+    return (await readdir3(dir)).filter((name) => pattern.test(name)).sort();
+  } catch {
+    return [];
+  }
+}
+async function exists(path) {
+  try {
+    await stat3(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function removeFile(path) {
+  await rm3(path, { force: true });
+}
+var DEFAULT_CONFIG = { ignore: [], rivals: {}, digestCopyPath: null, notifications: true, extraNext: {} };
+async function loadWatchConfig(home) {
+  const raw = await readJson(paths(home).config);
+  if (!raw || typeof raw !== "object") return { ...DEFAULT_CONFIG };
+  return {
+    ignore: Array.isArray(raw.ignore) ? raw.ignore.filter((item) => typeof item === "string" && item.trim() !== "") : [],
+    rivals: raw.rivals && typeof raw.rivals === "object" ? raw.rivals : {},
+    digestCopyPath: typeof raw.digestCopyPath === "string" && raw.digestCopyPath ? raw.digestCopyPath : null,
+    notifications: raw.notifications !== false,
+    extraNext: raw.extraNext && typeof raw.extraNext === "object" ? raw.extraNext : {}
+  };
+}
+function isIgnored(config2, actor) {
+  const name = actor.name.toLowerCase();
+  return config2.ignore.some((entry) => {
+    const e = entry.trim().toLowerCase();
+    return e === actor.id.toLowerCase() || name === e || name.includes(e);
+  });
+}
+var secrets = /* @__PURE__ */ new Set();
+function registerSecret(value) {
+  if (value && value.length >= 8) secrets.add(value);
+}
+function redact(line) {
+  let out = line.replace(/Bearer\s+\S+/gi, "Bearer [redacted]");
+  for (const secret of secrets) if (out.includes(secret)) out = out.split(secret).join("[redacted]");
+  return out;
+}
+function createLog(home, echo, now = Date.now) {
+  const p = paths(home);
+  let chain = Promise.resolve();
+  const log = ((line) => {
+    const clean = redact(line);
+    echo(clean);
+    const entry = `${new Date(now()).toISOString()} ${clean}
+`;
+    chain = chain.then(async () => {
+      try {
+        const size = (await stat3(p.log).catch(() => null))?.size ?? 0;
+        if (size > LOG.maxBytes) {
+          for (let i = LOG.keep - 1; i >= 1; i--) await rename3(`${p.log}.${i}`, `${p.log}.${i + 1}`).catch(() => {
+          });
+          await rename3(p.log, `${p.log}.1`).catch(() => {
+          });
+          await rm3(`${p.log}.${LOG.keep + 1}`, { force: true }).catch(() => {
+          });
+        }
+        await appendSecure(p.log, entry);
+      } catch {
+      }
+    });
+  });
+  log.flush = () => chain;
+  return log;
+}
+
+// src/core/watch/owner-runs.ts
+function aggregateOwnerRuns(items, ownActorIds) {
+  const out = {};
+  for (const item of items) {
+    if (!ownActorIds.has(item.actId) || typeof item.startedAt !== "string") continue;
+    const day = item.startedAt.slice(0, 10);
+    const actor = out[item.actId] ??= {};
+    const counts = actor[day] ??= { runs: 0, failed: 0, timedOut: 0 };
+    counts.runs++;
+    if (item.status === "FAILED") counts.failed++;
+    if (item.status === "TIMED-OUT") counts.timedOut++;
+  }
+  return out;
+}
+function ownerRunsIn(days, from, to) {
+  const sum = { runs: 0, failed: 0, timedOut: 0 };
+  for (const [day, counts] of Object.entries(days ?? {})) {
+    const end = Date.parse(`${day}T00:00:00Z`) + 864e5;
+    if (end > from && end <= to) {
+      sum.runs += counts.runs;
+      sum.failed += counts.failed;
+      sum.timedOut += counts.timedOut;
+    }
+  }
+  return sum;
+}
+function ownerRunsInMonth(days, month, upToMs = Infinity) {
+  let runs = 0;
+  for (const [day, counts] of Object.entries(days ?? {})) {
+    if (day.startsWith(month) && Date.parse(`${day}T00:00:00Z`) < upToMs) runs += counts.runs;
+  }
+  return runs;
+}
+function ownerRunExclusion(month, ownerRuns) {
+  if (!month || month.payingUsers !== 1 || month.revenueUsd >= OWNER_EXCLUSION.maxRevenueUsd || ownerRuns < 1) return null;
+  if ((month.freeUsers ?? 0) === 0) return month.runs === ownerRuns ? "exact" : null;
+  return month.runs >= ownerRuns ? "probable" : null;
+}
+function effectivePayingUsers(month, ownerRuns) {
+  if (!month || month.payingUsers == null) return { count: null, excluded: null };
+  const excluded = ownerRunExclusion(month, ownerRuns);
+  return { count: excluded ? month.payingUsers - 1 : month.payingUsers, excluded };
+}
+var OWNER_EXCLUSION_CAVEAT = "Heuristic: the Console does not say which paying user ran which run. A month is excluded when its only paying user looks like your own account (1 paying user, under $0.01 revenue, and the run count matches your own runs). A real buyer whose runs are never charged can hide behind this; check each excluded actor at the 4-week review.";
+
+// src/core/watch/rules.ts
+var usd = (v) => `$${(Math.round(v * 100) / 100).toFixed(2)}`;
+var pct = (v) => `${Math.round(v * 1e3) / 10}%`;
+var r2 = (v) => Math.round(v * 100) / 100;
+function median(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+function coverage(input2, from, to) {
+  if (input2.coveredFrom == null || input2.latestDataAt == null) return 0;
+  const overlap = Math.min(to, input2.latestDataAt) - Math.max(from, input2.coveredFrom);
+  return Math.max(0, overlap) / (to - from);
+}
+function classify(revenueDays56, peakShare56, hasBaseline) {
+  if (!hasBaseline) return "new";
+  if (revenueDays56 >= CLASS.steadyDays && (peakShare56 == null || peakShare56 < CLASS.steadyPeak)) return "steady";
+  if (revenueDays56 < CLASS.burstyDays || peakShare56 != null && peakShare56 >= CLASS.burstyPeak) return "bursty";
+  return "intermittent";
+}
+function actorFacts(input2, asOf) {
+  const w0 = sumWindow(input2.slices, asOf - WEEK_MS, asOf);
+  const w1 = sumWindow(input2.slices, asOf - 2 * WEEK_MS, asOf - WEEK_MS);
+  const windows = [];
+  for (let k = 1; k <= BASELINE.windows; k++) {
+    const from = asOf - (k + 1) * WEEK_MS;
+    const to = asOf - k * WEEK_MS;
+    if (coverage(input2, from, to) >= BASELINE.minCoverage) windows.push(sumWindow(input2.slices, from, to).v.rev);
+  }
+  const baseline = windows.length >= BASELINE.minWindows ? median(windows) : null;
+  const days56 = dailyRevenue(input2.slices, asOf - WEEK_MS, 56);
+  const revenue56 = days56.reduce((a, b) => a + b, 0);
+  const revenueDays56 = days56.filter((v) => v >= REVENUE_DAY_USD).length;
+  let peak = 0;
+  for (let i = 0; i + 7 <= days56.length; i++) peak = Math.max(peak, days56.slice(i, i + 7).reduce((a, b) => a + b, 0));
+  const peakShare56 = revenue56 >= CLASS.peakMinTotalUsd ? peak / revenue56 : null;
+  const cls = classify(revenueDays56, peakShare56, baseline != null);
+  const revenue35 = sumWindow(input2.slices, asOf - POOL.days * DAY_MS, asOf).v.rev;
+  const exclusions = [];
+  const paying = (month, ownerRuns) => {
+    const result = effectivePayingUsers(month, ownerRuns);
+    if (result.excluded && month) exclusions.push(exclusionText(month.month, result.excluded, month, ownerRuns));
+    return result.count;
+  };
+  const payingThis = paying(input2.thisMonth, input2.ownerRunsThisMonth);
+  const payingLast = paying(input2.lastMonth, input2.ownerRunsLastMonth);
+  const pool = revenue35 >= POOL.revenueUsd || payingThis != null && payingThis >= POOL.payingUsers && (input2.thisMonth?.revenueUsd ?? 0) >= POOL.payingRevenueUsd || payingLast != null && payingLast >= POOL.payingUsers && (input2.lastMonth?.revenueUsd ?? 0) >= POOL.payingRevenueUsd;
+  return { w0, w1, baseline, baselineWindows: windows.length, cls, revenueDays56, revenue56, peakShare56, revenue35, pool, payingThis, payingLast, exclusions };
+}
+function exclusionText(month, strength, m, ownerRuns) {
+  return `${month}: 1 paying user treated as your own account (${strength}: ${m.runs} Console runs, ${ownerRuns} of them yours, ${m.freeUsers ?? 0} free users, ${usd(m.revenueUsd)} revenue)`;
+}
+function nextText(rule, name, base, extra) {
+  const more = extra?.[rule];
+  return more ? `${base} Then: ${more.replaceAll("<actor>", name)}` : base;
+}
+var NEXT = {
+  R1: (a) => `actor_report("${a}"), then run_health("${a}", period: "last30d"). Flat failures and flat results per run mean buyer volume (no fix; note it). Results per run down: see R3. Then check same-site rivals' 7-day users and store_rank.`,
+  R2: (a) => `growth("${a}", month: "thisMonth"). Check failures in the 7 days before the drop; if failures came first, fix them; otherwise no fix.`,
+  R3: (a) => `One Cloud test (2 at most) with a broad query and maxItems 300 to check pagination. Full pages mean the buyer narrowed their queries (no fix); short pages mean pagination or blocking to fix in "${a}".`,
+  R4: (a) => `run_health("${a}", period: "last7d") for the failed runs, log tails and buildBeforeFirstProblem. If the spike started right after a build, roll the build tag back first, then fix.`,
+  R5: (a) => `Reproduce Apify's QA run of "${a}" on its default input and fix it; then clear the notice through the API and check that the actor shows in Store search again.`,
+  R6: (a) => `acquisition_score("${a}") and growth("${a}") for referrers and countries. If the traffic mix changed, ignore; otherwise run the prefilled input once and check recent README or title changes.`,
+  R7: (a) => `run_health("${a}", period: "last7d") (timeouts?), then cut cost per run: memory, proxy, timeouts and retry limits that also cover paying users. If the cause is unknown and the loss keeps running, pause the actor.`,
+  R8: (a) => `No fix. Leave this revenue out of MRR plans and check run_health("${a}") weekly; a monitoring or incremental mode can turn batch buyers into recurring ones.`,
+  no_revenue: (a) => `actor_report("${a}"): check that the code charges its events for paying users.`,
+  burst_started: (a) => `run_health("${a}"): check that it keeps up; nothing else.`,
+  burst_ended: () => "Nothing to do: the burst ended and revenue is back near its baseline.",
+  reversal: () => "Check Apify notifications for a refund or fraud reversal."
+};
+var SOURCE_MONEY = "Console breakdown deltas and backfilled days (paying-users money)";
+var SOURCE_RUNS = "Console run counts (every run of the actor, your own runs subtracted where known)";
+function signal(rule, tier, a, opts, fields) {
+  return { rule, tier, ...fields, next: fields.next ?? nextText(rule, a.name, NEXT[rule](a.name), opts.extraNext) };
+}
+function evaluateActor(input2, opts) {
+  const signals = [];
+  const asOf = opts.asOf;
+  const f = opts.money ? actorFacts(input2, asOf) : null;
+  if (input2.notice) {
+    const paying = Math.max(f?.payingThis ?? 0, f?.payingLast ?? 0);
+    const revenue56 = f?.revenue56 ?? 0;
+    const page = (input2.users30d ?? 0) >= R5.users30d || paying >= 1 || revenue56 >= R5.revenue56Usd;
+    signals.push(
+      signal("R5", page ? "PAGE" : "WATCH", input2, opts, {
+        atStakeUsd: r2(revenue56 / 8),
+        title: `R5 Apify notice ${input2.notice}`,
+        evidence: `notice ${input2.notice}${input2.noticeSince ? ` (first seen by the watch ${input2.noticeSince.slice(0, 10)})` : ""} | users 30d ${input2.users30d ?? "null"} | paying users ${f ? paying : "null"} | 56-day revenue ${f ? usd(revenue56) : "null"}`,
+        numbers: { notice: input2.notice, users30d: input2.users30d, payingUsers: f ? paying : null, revenue56Usd: f ? r2(revenue56) : null },
+        source: "Public Store stats (notice)"
+      })
+    );
+  }
+  if (!f) return { signals, facts: null };
+  const { w0, w1, baseline: B, cls } = f;
+  const rev0 = w0.v.rev;
+  const rev1 = w1.v.rev;
+  const approx = w0.approximate || w1.approximate;
+  const classText = `class ${cls} (revenue on ${f.revenueDays56} of 56 days${f.peakShare56 != null ? `, peak week ${pct(f.peakShare56)}` : ""})`;
+  const window = (days) => sumWindow(input2.slices, asOf - days * DAY_MS, asOf);
+  const d1 = window(1);
+  const d3 = window(3);
+  const d7 = w0;
+  const loss = (w) => w.v.cost - w.v.rev;
+  const loss1 = loss(d1);
+  const loss3 = loss(d3);
+  const loss7 = loss(d7);
+  const ownerFrom = input2.ownerFrom ?? null;
+  const ownIn = (from, to) => ownerFrom != null && ownerFrom < to ? ownerRunsIn(input2.ownerDaily, Math.max(from, ownerFrom), to) : null;
+  const ownText = (own2, from, days) => {
+    const since = ownerFrom != null ? new Date(ownerFrom).toISOString().slice(0, 10) : null;
+    if (!own2) return `your own runs not subtracted (no owner-run history${since ? ` before ${since}` : ""})`;
+    return `your own runs excluded (${own2.runs} in ${days} days${ownerFrom != null && from < ownerFrom ? `, counted from ${since} only` : ""})`;
+  };
+  const own7 = ownIn(asOf - WEEK_MS, asOf);
+  if (loss1 >= R7.day1LossUsd || loss3 >= R7.day3LossUsd || loss7 >= R7.day7LossUsd) {
+    const reversal = d7.negativeRevUsd < -5e-3 && loss7 + d7.negativeRevUsd < R7.day7LossUsd && loss1 + d1.negativeRevUsd < R7.day1LossUsd;
+    const timedOut = d7.v.timedOut;
+    signals.push(
+      signal("R7", "PAGE", input2, opts, {
+        atStakeUsd: r2(Math.max(loss7, loss3, loss1)),
+        title: reversal ? "R7 loss from a revenue reversal" : "R7 cost above revenue",
+        evidence: `24 h loss ${usd(loss1)} (cost ${usd(d1.v.cost)}, revenue ${usd(d1.v.rev)}) | 3-day loss ${usd(loss3)} | 7-day loss ${usd(loss7)} | 7-day runs ${Math.round(d7.v.runs)}, timed out ${Math.round(timedOut)}, failed ${Math.round(d7.v.failed)} | your own runs in 7 days ${own7 ? own7.runs : "not available"}${reversal ? ` | revenue reversal ${usd(d7.negativeRevUsd)}` : ""}`,
+        numbers: { loss24hUsd: r2(loss1), loss3dUsd: r2(loss3), loss7dUsd: r2(loss7), cost24hUsd: r2(d1.v.cost), revenue24hUsd: r2(d1.v.rev), runs7d: Math.round(d7.v.runs), timedOut7d: Math.round(timedOut), ownerRuns7d: own7?.runs ?? null, reversal },
+        source: SOURCE_MONEY,
+        approximate: d1.approximate || approx,
+        next: reversal ? nextText("reversal", input2.name, NEXT.reversal(input2.name), opts.extraNext) : void 0
+      })
+    );
+  } else if (loss7 >= R7.holdLossUsd) {
+    signals.push(signal("R7", "PAGE", input2, opts, { hold: true, atStakeUsd: r2(loss7), title: "R7 cost above revenue", evidence: `7-day loss ${usd(loss7)}`, numbers: { loss7dUsd: r2(loss7) }, source: SOURCE_MONEY }));
+  } else if (rev0 >= R7.thinRevenueUsd && (rev0 - d7.v.cost) / rev0 < R7.thinMargin) {
+    signals.push(
+      signal("R7", "WATCH", input2, opts, {
+        variant: "thin",
+        atStakeUsd: r2(Math.max(0, d7.v.cost - rev0 * (1 - R7.thinMargin))),
+        title: "R7 thin margin",
+        evidence: `7-day revenue ${usd(rev0)}, cost ${usd(d7.v.cost)}, margin ${pct((rev0 - d7.v.cost) / rev0)}`,
+        numbers: { revenue7dUsd: r2(rev0), cost7dUsd: r2(d7.v.cost) },
+        source: SOURCE_MONEY,
+        approximate: approx
+      })
+    );
+  }
+  if (d7.negativeRevUsd <= -0.05) {
+    signals.push(
+      signal("reversal", "info", input2, opts, {
+        atStakeUsd: r2(-d7.negativeRevUsd),
+        title: "revenue reversal",
+        evidence: `negative revenue ${usd(d7.negativeRevUsd)} in 7 days (refund or fraud reversal; kept as it is)`,
+        numbers: { negativeRevenueUsd: r2(d7.negativeRevUsd) },
+        source: SOURCE_MONEY
+      })
+    );
+  }
+  const net = (w, own2) => {
+    const runs = Math.max(0, w.v.runs - (own2?.runs ?? 0));
+    const failed = Math.max(0, w.v.failed - (own2?.failed ?? 0));
+    const timedOut = Math.max(0, w.v.timedOut - (own2?.timedOut ?? 0));
+    return { runs, failed, timedOut, failures: failed + timedOut, rate: runs > 0 ? (failed + timedOut) / runs : null };
+  };
+  const n0 = net(w0, own7);
+  const priorFrom = asOf - WEEK_MS - R4.priorDays * DAY_MS;
+  const prior = sumWindow(input2.slices, priorFrom, asOf - WEEK_MS);
+  const nPrior = net(prior, ownIn(priorFrom, asOf - WEEK_MS));
+  const fastW = window(R4.fastDays);
+  const ownFast = ownIn(asOf - R4.fastDays * DAY_MS, asOf);
+  const nFast = net(fastW, ownFast);
+  const usersPaying28 = Object.entries(input2.usersDaily ?? {}).some(([day, c]) => {
+    const end = Date.parse(`${day}T00:00:00Z`) + DAY_MS;
+    return end > asOf - 28 * DAY_MS && end <= asOf && c.paying > 0;
+  });
+  const anyPaying = (f.payingThis ?? 0) >= 1 || (f.payingLast ?? 0) >= 1 || usersPaying28;
+  const spike = n0.rate != null && n0.failures >= R4.minFailures && n0.rate >= R4.minRate && (nPrior.rate == null || nPrior.rate < R4.quietPriorRate || n0.rate >= R4.spikeMultiple * nPrior.rate);
+  const fast = f.pool && nFast.rate != null && nFast.failures >= R4.fastFailures && nFast.rate >= R4.fastRate;
+  if (spike && (f.pool || anyPaying) || fast) {
+    const use = fast && !spike ? nFast : n0;
+    const timeouts = use.failures > 0 && use.timedOut / use.failures >= R4.timeoutShare;
+    const weeklyRevenue = Math.max(rev0, prior.v.rev / 4);
+    signals.push(
+      signal("R4", f.pool ? "PAGE" : "WATCH", input2, opts, {
+        atStakeUsd: r2(weeklyRevenue * (use.rate ?? 0)),
+        title: `R4 ${timeouts ? "timeout" : "failure"} spike${fast && !spike ? " (last 2 days)" : ""}`,
+        evidence: `${fast && !spike ? "2-day" : "7-day"} ${use.failures} of ${use.runs} runs ${timeouts ? "timed out or failed" : "failed or timed out"} (${pct(use.rate ?? 0)}; ${use.timedOut} timed out) vs ${nPrior.rate == null ? "no runs" : pct(nPrior.rate)} in the 28 days before | ${fast && !spike ? ownText(ownFast, asOf - R4.fastDays * DAY_MS, R4.fastDays) : ownText(own7, asOf - WEEK_MS, 7)} | paying users ${f.payingThis ?? "null"} this month, ${f.payingLast ?? "null"} last`,
+        numbers: { failures: use.failures, runs: use.runs, timedOut: use.timedOut, failureRatePct: r2((use.rate ?? 0) * 100), priorFailureRatePct: nPrior.rate == null ? null : r2(nPrior.rate * 100), ownerRuns7d: own7?.runs ?? null, fastPath: fast && !spike },
+        source: SOURCE_RUNS,
+        approximate: approx
+      })
+    );
+  } else if (n0.rate != null && n0.rate >= R4.holdRate && n0.failures >= R4.holdFailures) {
+    signals.push(signal("R4", "WATCH", input2, opts, { hold: true, atStakeUsd: r2(rev0 * n0.rate), title: "R4 failure spike", evidence: `7-day failure rate ${pct(n0.rate)}`, numbers: { failureRatePct: r2(n0.rate * 100) }, source: SOURCE_RUNS }));
+  }
+  if (w0.v.runs >= R3.minRuns && w0.v.succeeded > 0) {
+    const yFrom = asOf - WEEK_MS - R3.priorDays * DAY_MS;
+    const y = sumWindow(input2.slices, yFrom, asOf - WEEK_MS);
+    const fromFacts = coverage(input2, yFrom, asOf - WEEK_MS) >= 0.95 && y.v.succeeded > 0;
+    const last = input2.lastMonth;
+    const yieldPrior = fromFacts ? y.v.results / y.v.succeeded : last && last.succeeded > 0 ? last.results / last.succeeded : null;
+    const weeklyRuns = fromFacts ? y.v.runs / 4 : last && last.days > 0 ? last.runs / last.days * 7 : null;
+    const yield0 = w0.v.results / w0.v.succeeded;
+    if (yieldPrior && weeklyRuns) {
+      const band = w0.v.runs / weeklyRuns;
+      const ratio = yield0 / yieldPrior;
+      const flat = band >= R3.runBandLow && band <= R3.runBandHigh;
+      const perResult = input2.thisMonth?.model === "PRICE_PER_DATASET_ITEM" || (input2.thisMonth?.charged ?? input2.lastMonth?.charged ?? 0) > 0;
+      const evidence = `results per run ${yield0.toFixed(1)} vs ${yieldPrior.toFixed(1)} in the 28 days before (${pct(ratio - 1)}) | runs per day ${(w0.v.runs / 7).toFixed(0)} vs ${(weeklyRuns / 7).toFixed(0)}`;
+      if (flat && ratio <= R3.yieldRatio) {
+        signals.push(
+          signal("R3", f.pool && perResult ? "PAGE" : "WATCH", input2, opts, {
+            atStakeUsd: r2(rev0 * (1 - ratio)),
+            title: "R3 yield drop",
+            evidence,
+            numbers: { resultsPerRun: r2(yield0), priorResultsPerRun: r2(yieldPrior), runsPerDay: r2(w0.v.runs / 7), priorRunsPerDay: r2(weeklyRuns / 7), basis: fromFacts ? "facts" : "last month" },
+            source: "Console run counts and results",
+            approximate: approx
+          })
+        );
+      } else if (ratio <= R3.holdRatio) {
+        signals.push(signal("R3", "WATCH", input2, opts, { hold: true, atStakeUsd: r2(rev0 * (1 - ratio)), title: "R3 yield drop", evidence, numbers: { resultsPerRun: r2(yield0) }, source: "Console run counts and results" }));
+      }
+    }
+  }
+  if (B != null) {
+    const gap = B - rev0;
+    const evidence = `7d revenue ${usd(rev0)} vs 8-week median ${usd(B)} (${B > 0 ? pct(rev0 / B - 1) : "n/a"}) | previous 7d ${usd(rev1)} | ${classText} | paying users ${f.payingThis ?? "null"} (last month ${f.payingLast ?? "null"})`;
+    const numbers = { revenue7dUsd: r2(rev0), previous7dUsd: r2(rev1), baselineUsd: r2(B), class: cls, revenueDays56: f.revenueDays56, peakShare56: f.peakShare56 == null ? null : r2(f.peakShare56) };
+    const r1 = (tier, hold = false) => signals.push(signal("R1", f.pool ? tier : "WATCH", input2, opts, { hold, atStakeUsd: r2(Math.max(0, gap)), title: "R1 revenue drop", evidence, numbers, source: SOURCE_MONEY, approximate: approx }));
+    if (cls === "steady") {
+      if (rev0 <= R1.steadyRatio * B && gap >= R1.minGapUsd) r1("PAGE");
+      else if (rev0 < R1.resolveRatio * B) r1("PAGE", true);
+    } else if (cls === "intermittent") {
+      if (rev0 <= R1.intermittentRatio * B && gap >= R1.minGapUsd) r1(rev1 <= R1.intermittentRatio * B ? "PAGE" : "WATCH");
+      else if (rev0 < R1.resolveRatio * B) r1("WATCH", true);
+    } else if (cls === "bursty" && rev1 >= R1.burstRatio * B && rev1 >= B + R1.burstPlusUsd && rev0 < R1.burstEndRatio * B) {
+      signals.push(signal("burst_ended", "info", input2, opts, { atStakeUsd: 0, title: "burst ended", evidence, numbers, source: SOURCE_MONEY, approximate: approx }));
+    }
+    if (rev0 >= R1.burstRatio * B && rev0 >= B + R1.burstPlusUsd) {
+      signals.push(signal("burst_started", "info", input2, opts, { atStakeUsd: 0, title: "burst started", evidence, numbers, source: SOURCE_MONEY, approximate: approx }));
+    }
+  }
+  const last14 = sumWindow(input2.slices, asOf - R2.quietDays * DAY_MS, asOf).v.rev;
+  if (f.revenueDays56 >= R2.quietRevenueDays && f.revenue56 >= R2.quietRevenueUsd && last14 < REVENUE_DAY_USD) {
+    signals.push(
+      signal("R2", "WATCH", input2, opts, {
+        variant: "quiet",
+        atStakeUsd: r2(f.revenue56 / 8),
+        title: "R2 buyer quiet",
+        evidence: `no revenue for 14 days after ${f.revenueDays56} revenue days (${usd(f.revenue56)} in the 56 days before) | ${classText}`,
+        numbers: { revenueDays56: f.revenueDays56, revenue56Usd: r2(f.revenue56), revenue14dUsd: r2(last14) },
+        source: SOURCE_MONEY
+      })
+    );
+  } else if (f.revenueDays56 >= R2.quietRevenueDays && f.revenue56 >= R2.quietRevenueUsd && rev0 < REVENUE_DAY_USD) {
+    signals.push(signal("R2", "WATCH", input2, opts, { variant: "quiet", hold: true, atStakeUsd: r2(f.revenue56 / 8), title: "R2 buyer quiet", evidence: "still no revenue", numbers: {}, source: SOURCE_MONEY }));
+  }
+  if (input2.payingSameDayLastMonth != null && input2.payingSameDayLastMonth >= R2.monthlyMinPrevious && f.payingThis != null && opts.dayOfMonth >= 3) {
+    if (f.payingThis <= R2.monthlyRatio * input2.payingSameDayLastMonth) {
+      signals.push(
+        signal("R2", "WATCH", input2, opts, {
+          variant: "monthly",
+          atStakeUsd: r2(Math.max(0, f.revenue56 / 8)),
+          title: "R2 paying users down",
+          evidence: `${f.payingThis} paying users this month to date vs ${input2.payingSameDayLastMonth} at the same day last month`,
+          numbers: { payingUsers: f.payingThis, payingSameDayLastMonth: input2.payingSameDayLastMonth },
+          source: "Console breakdown (distinct paying users)"
+        })
+      );
+    }
+  }
+  if (opts.weekly && input2.usersDaily) {
+    const pud = (from, to) => {
+      let sum = 0;
+      let days = 0;
+      for (const [day, c] of Object.entries(input2.usersDaily)) {
+        const end = Date.parse(`${day}T00:00:00Z`) + DAY_MS;
+        if (end > from && end <= to) {
+          sum += c.paying;
+          days++;
+        }
+      }
+      return { sum, days };
+    };
+    const now = pud(asOf - WEEK_MS, asOf);
+    const base = [];
+    for (let k = 1; k <= BASELINE.windows; k++) {
+      const w = pud(asOf - (k + 1) * WEEK_MS, asOf - k * WEEK_MS);
+      if (w.days >= 4) base.push(w.sum);
+    }
+    const med = base.length >= BASELINE.minWindows ? median(base) : null;
+    if (now.days >= 5 && med != null && med >= R2.pudMinMedian && now.sum <= R2.pudRatio * med) {
+      signals.push(
+        signal("R2", "WATCH", input2, opts, {
+          variant: "pud",
+          atStakeUsd: r2(Math.max(0, (B ?? 0) - rev0)),
+          title: "R2 paying user-days down",
+          evidence: `paying user-days ${now.sum} in 7 days vs 8-week median ${med}`,
+          numbers: { payingUserDays: now.sum, medianPayingUserDays: med },
+          source: "Console user-count statistics"
+        })
+      );
+    }
+  }
+  const m = input2.marketing;
+  if (opts.weekly && opts.dayOfMonth >= R6.minDay && m && m.viewers != null && m.starters != null && m.previousViewers && m.previousStarters != null) {
+    const rate = Math.min(1, m.starters / Math.max(1, m.viewers));
+    const prevRate = Math.min(1, m.previousStarters / m.previousViewers);
+    if (m.viewers >= R6.viewers && m.previousStarters >= R6.previousStarters && rate <= R6.rateRatio * prevRate && (prevRate - rate) * 100 >= R6.minPointDrop) {
+      const cn = m.cnNoReferrerShare != null && m.cnNoReferrerShare >= R6.cnShare;
+      signals.push(
+        signal("R6", cn ? "info" : "WATCH", input2, opts, {
+          atStakeUsd: 0,
+          title: "R6 view-to-run collapse",
+          evidence: `view-to-run ${pct(rate)} (${m.starters} of ${m.viewers} viewers) vs ${pct(prevRate)} at the same point last month${cn ? " | most traffic is CN with no referrer (downgraded to info)" : ""}`,
+          numbers: { viewers: m.viewers, starters: m.starters, viewToRunPct: r2(rate * 100), previousViewToRunPct: r2(prevRate * 100) },
+          source: "Console monthly marketing"
+        })
+      );
+    }
+  }
+  if (opts.weekly && f.revenue56 >= R8.revenue56Usd) {
+    const fewPaying = f.payingThis != null && f.payingLast != null && f.payingThis <= R8.maxPayingUsers && f.payingLast <= R8.maxPayingUsers;
+    if (f.peakShare56 != null && f.peakShare56 >= R8.peakShare || fewPaying) {
+      signals.push(
+        signal("R8", "WATCH", input2, opts, {
+          atStakeUsd: r2(f.revenue56 / 8),
+          title: "R8 single-buyer concentration",
+          evidence: `56-day revenue ${usd(f.revenue56)} | peak week ${f.peakShare56 == null ? "null" : pct(f.peakShare56)} | paying users ${f.payingThis ?? "null"} this month, ${f.payingLast ?? "null"} last`,
+          numbers: { revenue56Usd: r2(f.revenue56), peakShare56: f.peakShare56 == null ? null : r2(f.peakShare56), payingUsers: f.payingThis, payingUsersLastMonth: f.payingLast },
+          source: "Facts and Console breakdown (paying users are a proxy: no per-buyer revenue exists)"
+        })
+      );
+    }
+  }
+  const t = input2.thisMonth;
+  if (t && t.source === "breakdown" && t.runs >= NO_REVENUE.minRuns && (f.payingThis ?? 0) >= 1 && t.revenueUsd < NO_REVENUE.maxRevenueUsd && (t.model === "PAY_PER_EVENT" || t.model === "PRICE_PER_DATASET_ITEM")) {
+    signals.push(
+      signal("no_revenue", "info", input2, opts, {
+        atStakeUsd: 0,
+        title: "paying users but $0 charged",
+        evidence: `${t.runs} runs and ${f.payingThis} paying user(s) this month, ${usd(t.revenueUsd)} revenue (${t.model})`,
+        numbers: { runs: t.runs, payingUsers: f.payingThis },
+        source: "Console breakdown"
+      })
+    );
+  }
+  if (signals.some((s) => (s.rule === "R4" || s.rule === "R5") && !s.hold && s.tier === "PAGE")) {
+    for (const s of signals) if (s.rule === "R6" && s.tier === "WATCH") s.tier = "PAGE";
+  }
+  return { signals, facts: f };
+}
+
+// src/core/watch/engine.ts
+var MONEY_RULES = ["R1", "R2", "R3", "R4", "R6", "R7", "R8"];
+function monthOfMs(ms) {
+  return isoDayOf(ms).slice(0, 7);
+}
+function allReadings(month, data) {
+  const readings = readingsOf(month, data.snapshots);
+  for (const b of data.backfill) {
+    if (b.month !== month) continue;
+    const takenAt = Date.parse(b.fetchedAt);
+    readings.push({ month, takenAt, close: takenAt >= monthEndMs(month), rows: b.rows });
+  }
+  return readings.sort((a, b) => a.takenAt - b.takenAt || Number(a.close) - Number(b.close));
+}
+function dataMonths(data) {
+  const months = /* @__PURE__ */ new Set();
+  for (const s of data.snapshots) {
+    months.add(s.month);
+    if (s.prevMonthFinal) months.add(s.prevMonthFinal.month);
+  }
+  for (const b of data.backfill) months.add(b.month);
+  return [...months].sort();
+}
+function deriveAllFacts(data, months = dataMonths(data)) {
+  const out = /* @__PURE__ */ new Map();
+  for (const month of months) out.set(month, deriveMonthFacts(month, allReadings(month, data), data.backfill.find((b) => b.month === month) ?? null));
+  return out;
+}
+function prepare(data) {
+  const months = dataMonths(data);
+  const readingsByMonth = new Map(months.map((m) => [m, allReadings(m, data)]));
+  const facts = deriveAllFacts(data, months);
+  const actors = /* @__PURE__ */ new Map();
+  const touch = (id, name, month, active2) => {
+    let a = actors.get(id);
+    if (!a) actors.set(id, a = { name, slices: [], coveredFrom: Infinity, knownAt: [] });
+    if (active2) a.coveredFrom = Math.min(a.coveredFrom, monthStartMs(month));
+    return a;
+  };
+  const active = (row3) => row3.runs > 0 || Math.abs(row3.rev) > 0 || Math.abs(row3.cost) > 0;
+  for (const [month, readings] of readingsByMonth) {
+    for (const r of readings) for (const row3 of r.rows) touch(row3.id, row3.name, month, active(row3)).knownAt.push(Math.min(r.takenAt, monthEndMs(month)));
+  }
+  for (const b of data.backfill) {
+    for (const [id, actor] of Object.entries(b.actors)) {
+      const a = touch(id, actor.name, b.month, b.rows.some((row3) => row3.id === id && active(row3)));
+      for (const day of Object.keys(actor.days)) a.knownAt.push(dayStartMs(day) + DAY_MS);
+    }
+  }
+  for (const list of facts.values()) for (const f of list) actors.get(f.id)?.slices.push(...toSlices([f]));
+  for (const a of actors.values()) {
+    a.knownAt.sort((x, y) => x - y);
+    a.slices.sort((x, y) => x.t1 - y.t1);
+  }
+  return { data, actors, readingsByMonth, ownerFrom: ownerCoverageStart(data.owner) };
+}
+function ownerCoverageStart(owner) {
+  let first = null;
+  for (const days of Object.values(owner)) for (const day of Object.keys(days)) if (!first || day < first) first = day;
+  return first ? dayStartMs(first) + DAY_MS : null;
+}
+function latestRow(readings, id, asOf) {
+  let best = null;
+  for (const reading of readings ?? []) {
+    if (reading.takenAt > asOf) continue;
+    const row3 = reading.rows.find((r) => r.id === id);
+    if (row3) best = { row: row3, reading };
+  }
+  return best;
+}
+function monthInfo(p, id, month, asOf, slices) {
+  const found = latestRow(p.readingsByMonth.get(month), id, asOf);
+  const end = monthEndMs(month);
+  const elapsed = Math.max(0, Math.min(asOf, end) - monthStartMs(month)) / DAY_MS;
+  if (found) {
+    const { row: row3 } = found;
+    return { month, source: "breakdown", payingUsers: row3.payingUsers, freeUsers: row3.freeUsers, revenueUsd: row3.rev, runs: row3.runs, model: row3.model, charged: row3.charged, results: row3.results, succeeded: row3.succeeded, days: elapsed };
+  }
+  const days = p.data.users[id];
+  if (!days && !slices.length) return null;
+  let paying = 0;
+  let free = 0;
+  let seen = false;
+  for (const [day, c] of Object.entries(days ?? {})) {
+    if (!day.startsWith(month) || dayStartMs(day) + DAY_MS > asOf) continue;
+    seen = true;
+    paying = Math.max(paying, c.paying);
+    free = Math.max(free, c.free);
+  }
+  const w = sumWindow(slices, monthStartMs(month) - 1, Math.min(asOf, end));
+  const model = [...p.readingsByMonth.get(previousMonth(month)) ?? [], ...p.readingsByMonth.get(month) ?? []].flatMap((r) => r.rows).find((r) => r.id === id)?.model ?? null;
+  return {
+    month,
+    source: "daily-max",
+    payingUsers: seen ? paying : null,
+    freeUsers: seen ? free : null,
+    revenueUsd: w.v.rev,
+    runs: w.v.runs,
+    model,
+    charged: null,
+    results: w.v.results,
+    succeeded: w.v.succeeded,
+    days: elapsed
+  };
+}
+function evaluateAll(p, opts) {
+  const asOf = opts.asOf;
+  const thisMonth = monthOfMs(asOf - 1);
+  const lastMonth = previousMonth(thisMonth);
+  const dayOfMonth = Number(isoDayOf(asOf - 1).slice(8));
+  const storeById = new Map((opts.store ?? []).map((s) => [s.id, s]));
+  const ids = /* @__PURE__ */ new Set([...p.actors.keys(), ...storeById.keys()]);
+  const out = [];
+  const factsOut = /* @__PURE__ */ new Map();
+  const sameDay = p.data.snapshots.filter((s) => s.month === lastMonth && s.breakdown && Number(s.day.slice(8)) <= dayOfMonth).sort((a, b) => a.day.localeCompare(b.day)).pop();
+  for (const id of ids) {
+    const index = p.actors.get(id);
+    const store2 = storeById.get(id);
+    const name = index?.name ?? store2?.name ?? id;
+    if (isIgnored(opts.config, { id, name })) continue;
+    const slices = (index?.slices ?? []).filter((s) => s.t1 <= asOf);
+    const known = (index?.knownAt ?? []).filter((t) => t <= asOf);
+    const input2 = {
+      id,
+      name,
+      slices,
+      coveredFrom: index && known.length && Number.isFinite(index.coveredFrom) ? index.coveredFrom : null,
+      latestDataAt: known.length ? Math.min(asOf, known[known.length - 1]) : null,
+      usersDaily: p.data.users[id],
+      ownerDaily: p.data.owner[id],
+      ownerFrom: p.ownerFrom,
+      thisMonth: index ? monthInfo(p, id, thisMonth, asOf, slices) : null,
+      lastMonth: index ? monthInfo(p, id, lastMonth, asOf, slices) : null,
+      ownerRunsThisMonth: ownerRunsInMonth(p.data.owner[id], thisMonth, asOf),
+      ownerRunsLastMonth: ownerRunsInMonth(p.data.owner[id], lastMonth),
+      notice: opts.store ? store2?.notice ?? null : void 0,
+      noticeSince: opts.noticeSince?.get(id) ?? null,
+      users30d: store2?.users30d ?? null,
+      marketing: opts.marketing?.[id] ?? null,
+      payingSameDayLastMonth: sameDay?.breakdown?.find((r) => r.id === id)?.payingUsers ?? null
+    };
+    const { signals, facts } = evaluateActor(input2, { asOf, weekly: opts.weekly, dayOfMonth, money: opts.money && !!index, extraNext: opts.extraNext });
+    if (facts) factsOut.set(id, facts);
+    if (facts?.exclusions.length) for (const s of signals) s.ownerRunExclusion = true;
+    if (signals.length || facts?.exclusions.length) out.push({ id, name, signals, class: facts?.cls ?? null, exclusions: facts?.exclusions ?? [] });
+  }
+  const evaluated = new Set(opts.money ? ["R5", ...MONEY_RULES, "no_revenue"] : ["R5"]);
+  if (!opts.weekly) {
+    evaluated.delete("R6");
+    evaluated.delete("R8");
+  }
+  if (!opts.store) evaluated.delete("R5");
+  return { asOf: new Date(asOf).toISOString(), rulesVersion: RULES_VERSION, actors: out, facts: factsOut, evaluated };
+}
+function noticeSince(snapshots) {
+  const ordered = [...snapshots].filter((s) => s.store).sort((a, b) => b.takenAt.localeCompare(a.takenAt));
+  const since = /* @__PURE__ */ new Map();
+  const latest = ordered[0];
+  if (!latest?.store) return since;
+  for (const row3 of latest.store) {
+    if (!row3.notice) continue;
+    let first = latest.takenAt;
+    for (const snap of ordered.slice(1)) {
+      const r = snap.store?.find((x) => x.id === row3.id);
+      if (!r || r.notice !== row3.notice) break;
+      first = snap.takenAt;
+    }
+    since.set(row3.id, first);
+  }
+  return since;
+}
+
+// src/core/watch/launchd.ts
+import { execFile as execFile2 } from "node:child_process";
+import { join as join9 } from "node:path";
+var LAUNCH_AGENT_LABEL = "com.apify-insights.watch";
+var DEFAULT_TIMES = ["05:45", "09:00", "13:00", "19:00"];
+function launchAgentPath(homeDir) {
+  return join9(homeDir, "Library", "LaunchAgents", `${LAUNCH_AGENT_LABEL}.plist`);
+}
+function xml(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function parseTimes(spec) {
+  const list = spec ? spec.split(",").map((s) => s.trim()).filter(Boolean) : DEFAULT_TIMES;
+  return list.map((t) => {
+    const match = /^(\d{1,2}):(\d{2})$/.exec(t);
+    const hour = Number(match?.[1]);
+    const minute = Number(match?.[2]);
+    if (!match || hour > 23 || minute > 59) throw new Error(`Not a time of day (HH:MM): ${t}`);
+    return { hour, minute };
+  });
+}
+function launchAgentPlist(options) {
+  const times = options.times ?? parseTimes(void 0);
+  const args = [options.nodePath, options.entryPath, "watch", "run", "--experimental"];
+  const log = join9(options.home, "watch", "launchd.log");
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    "<dict>",
+    "    <key>Label</key>",
+    `    <string>${LAUNCH_AGENT_LABEL}</string>`,
+    "    <key>ProgramArguments</key>",
+    "    <array>",
+    ...args.map((arg) => `        <string>${xml(arg)}</string>`),
+    "    </array>",
+    "    <key>EnvironmentVariables</key>",
+    "    <dict>",
+    "        <key>APIFY_INSIGHTS_HOME</key>",
+    `        <string>${xml(options.home)}</string>`,
+    "        <key>APIFY_INSIGHTS_WATCH</key>",
+    "        <string>1</string>",
+    "    </dict>",
+    "    <key>StartCalendarInterval</key>",
+    "    <array>",
+    ...times.flatMap((t) => ["        <dict>", "            <key>Hour</key>", `            <integer>${t.hour}</integer>`, "            <key>Minute</key>", `            <integer>${t.minute}</integer>`, "        </dict>"]),
+    "    </array>",
+    "    <key>RunAtLoad</key>",
+    "    <false/>",
+    "    <key>ProcessType</key>",
+    "    <string>Background</string>",
+    "    <key>StandardOutPath</key>",
+    `    <string>${xml(log)}</string>`,
+    "    <key>StandardErrorPath</key>",
+    `    <string>${xml(log)}</string>`,
+    "</dict>",
+    "</plist>",
+    ""
+  ].join("\n");
+}
+function appleString(value) {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ")}"`;
+}
+function notificationScript(title, message) {
+  return `display notification ${appleString(message)} with title ${appleString(title)}`;
+}
+var osascriptNotifier = (title, message) => new Promise((resolve2) => {
+  if (process.platform !== "darwin") return resolve2(false);
+  execFile2("osascript", ["-e", notificationScript(title, message)], { timeout: 1e4 }, (error62) => resolve2(!error62));
+});
+
+// src/core/watch/run.ts
+import { copyFile as copyFile2 } from "node:fs/promises";
 
 // src/core/flags.ts
 var FAILURE_RATE = 0.05;
@@ -29759,30 +30605,6 @@ function resolveActor(catalog, query) {
   if (!pool.length) return { kind: "not_found" };
   return { kind: "ambiguous", candidates: [...pool].sort((a, b) => (b.users30d ?? -1) - (a.users30d ?? -1)).slice(0, 8) };
 }
-
-// src/core/cache.ts
-var Cache = class {
-  constructor(now = Date.now) {
-    this.now = now;
-  }
-  now;
-  entries = /* @__PURE__ */ new Map();
-  /** True when an unexpired entry exists, finished or still loading. Never starts a load. */
-  has(key) {
-    const hit = this.entries.get(key);
-    return !!hit && hit.expires > this.now();
-  }
-  get(key, ttlMs, load) {
-    const hit = this.entries.get(key);
-    if (hit && hit.expires > this.now()) return hit.value;
-    const value = load();
-    this.entries.set(key, { value, expires: this.now() + ttlMs });
-    value.catch(() => {
-      if (this.entries.get(key)?.value === value) this.entries.delete(key);
-    });
-    return value;
-  }
-};
 
 // src/core/period.ts
 var periodInput = external_exports.union([
@@ -29966,6 +30788,1336 @@ function daysElapsed(month, now) {
   return Number(today.slice(8));
 }
 
+// src/core/run-days.ts
+function n2(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+function statusCounts(date5, stat4) {
+  const runs = n2(stat4?.TOTAL);
+  if (!runs) return { date: date5, runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
+  const succeeded = n2(stat4?.SUCCEEDED);
+  const aborted2 = n2(stat4?.ABORTED);
+  const timedOut = n2(stat4?.["TIMED-OUT"]);
+  const failed = stat4?.FAILED == null ? Math.max(0, runs - succeeded - aborted2 - timedOut) : n2(stat4.FAILED);
+  return { date: date5, runs, succeeded, failed, timedOut, aborted: aborted2 };
+}
+function problems(counts) {
+  return counts.failed + counts.timedOut;
+}
+function failureRatePct(counts) {
+  return counts.runs ? round(problems(counts) / counts.runs * 100, 1) : null;
+}
+function daysOf(stats, days) {
+  const merged = {};
+  for (const month of stats) Object.assign(merged, month.dailyStats);
+  return days.map((day) => statusCounts(day, merged[day]));
+}
+function totalsOf(days) {
+  const sum = { runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
+  for (const day of days) {
+    sum.runs += day.runs;
+    sum.succeeded += day.succeeded;
+    sum.failed += day.failed;
+    sum.timedOut += day.timedOut;
+    sum.aborted += day.aborted;
+  }
+  return { ...sum, failureRatePct: failureRatePct(sum) };
+}
+function worstDay(days) {
+  let worst = null;
+  for (const day of days) if (problems(day) > 0 && (!worst || problems(day) >= problems(worst))) worst = day;
+  return worst;
+}
+function problemDays(days) {
+  return days.filter((day) => problems(day) > 0);
+}
+function dayWindow(period, today) {
+  const todayInPeriod = period.to >= today;
+  const months = [...period.months];
+  if (!months.includes(monthOf(today))) months.push(monthOf(today));
+  return { days: daysInRange(period.from, todayInPeriod ? today : period.to), today, todayInPeriod, months };
+}
+
+// src/core/watch/collect.ts
+var sleep = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
+async function once(call, waitMs = 2e3) {
+  try {
+    return await call();
+  } catch (error62) {
+    if (error62 instanceof TypeError && /fetch failed/i.test(error62.message)) {
+      await sleep(waitMs);
+      return call();
+    }
+    throw error62;
+  }
+}
+function outcomeOf(error62) {
+  if (error62 instanceof ToolError && ["bridge_missing", "warming_up", "other_account", "logged_out", "endpoint_changed"].includes(error62.code)) return error62.code;
+  return "error";
+}
+function errorCode(error62) {
+  if (error62 instanceof ToolError) return error62.code;
+  if (error62 instanceof Error) return error62.name === "TypeError" ? "network" : error62.name || "error";
+  return "error";
+}
+async function fetchCatalog(api, username) {
+  const mine = await api.myActors();
+  const store2 = await api.storeActors(username);
+  const actors = buildCatalog(mine, store2);
+  return { actors, store: actors.filter((a) => a.isPublic).map(storeRow), ownIds: new Set(mine.map((a) => a.id)) };
+}
+async function fetchBreakdown(consoleApi, month) {
+  return normalizeBreakdown((await once(() => consoleApi.actorBreakdown(month))).monetizationPerActor).map(slimRow);
+}
+async function fetchOwnerRuns(api, since, ownIds) {
+  if (!api.myRuns) return null;
+  return aggregateOwnerRuns(await api.myRuns(`${since}T00:00:00.000Z`), ownIds);
+}
+async function fetchActorMonth(consoleApi, id, month, todayStart) {
+  const pm = await once(() => consoleApi.profitMargin(month, [id]));
+  const rs = await once(() => consoleApi.runStatistics(month, [id]));
+  const uc = await once(() => consoleApi.userCounts(month, [id]));
+  const days = {};
+  const end = Math.min(todayStart, monthEndMs(month));
+  for (let t = monthStartMs(month); t < end; t += DAY_MS) {
+    const day = isoDayOf(t);
+    days[day] = { rev: 0, cost: 0, runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0, results: 0 };
+  }
+  for (const [key, stats] of Object.entries(pm.dailyProfitMarginStats)) {
+    const v = days[key.slice(0, 10)];
+    if (!v) continue;
+    v.rev += stats.payingUsersUsd.revenueUsd;
+    v.cost += stats.payingUsersUsd.costUsd;
+  }
+  for (const [key, stat4] of Object.entries(rs.dailyStats)) {
+    const v = days[key.slice(0, 10)];
+    if (!v) continue;
+    const c = statusCounts(key.slice(0, 10), stat4);
+    v.runs += c.runs;
+    v.succeeded += c.succeeded;
+    v.failed += c.failed;
+    v.timedOut += c.timedOut;
+    v.aborted += c.aborted;
+    v.results += typeof stat4.RESULTS === "number" ? stat4.RESULTS : 0;
+  }
+  const users = {};
+  for (const [key, c] of Object.entries(uc)) {
+    const day = key.slice(0, 10);
+    if (dayStartMs(day) < end && day.startsWith(month)) users[day] = { paying: c.payingUsers, free: c.freeUsers };
+  }
+  return { days, users };
+}
+function backfillCandidates(monthRows, thresholds2) {
+  const out = /* @__PURE__ */ new Map();
+  for (const rows of monthRows) {
+    for (const row3 of rows) {
+      if (row3.rev >= thresholds2.minRevenueUsd || row3.cost >= thresholds2.minCostUsd || row3.failed + row3.timedOut >= thresholds2.minFailures && (row3.payingUsers ?? 0) >= 1) out.set(row3.id, row3.name);
+    }
+  }
+  return out;
+}
+async function runBackfill(consoleApi, months, monthRows, candidates, now, log) {
+  const todayStart = dayStartMs(isoDayOf(now));
+  const out = /* @__PURE__ */ new Map();
+  for (const month of months) {
+    const fetched = monthRows.get(month);
+    const through = isoDayOf(Math.min(todayStart, monthEndMs(month)));
+    out.set(month, { version: 1, month, fetchedAt: fetched.fetchedAt, from: `${month}-01`, through, actors: {}, rows: fetched.rows });
+  }
+  const users = {};
+  const failed = [];
+  let calls = 0;
+  let done = 0;
+  for (const [id, name] of candidates) {
+    for (const month of months) {
+      try {
+        const result = await fetchActorMonth(consoleApi, id, month, todayStart);
+        calls += 3;
+        out.get(month).actors[id] = { name, days: result.days };
+        Object.assign(users[id] ??= {}, result.users);
+      } catch (error62) {
+        calls += 1;
+        failed.push({ name, month, code: errorCode(error62) });
+        if (error62 instanceof ToolError && (error62.code === "logged_out" || error62.code === "warming_up")) throw error62;
+      }
+    }
+    done++;
+    if (done % 10 === 0 || done === candidates.size) log(`backfill: ${done}/${candidates.size} actors`);
+  }
+  return { months: [...out.values()], users, calls, failed };
+}
+async function fetchUserCounts(consoleApi, ids, months) {
+  const users = {};
+  let failed = 0;
+  for (const id of ids) {
+    for (const month of months) {
+      try {
+        const uc = await once(() => consoleApi.userCounts(month, [id]));
+        for (const [key, c] of Object.entries(uc)) if (key.startsWith(month)) (users[id] ??= {})[key.slice(0, 10)] = { paying: c.payingUsers, free: c.freeUsers };
+      } catch {
+        failed++;
+      }
+    }
+  }
+  return { users, failed };
+}
+function share(list, match) {
+  if (!list) return null;
+  return list.filter((x) => match(x.origin)).reduce((sum, x) => sum + x.trafficPercent, 0) / 100;
+}
+async function fetchMarketing(consoleApi, ids, month, previous, portion) {
+  const rows = {};
+  let failed = 0;
+  for (const id of ids) {
+    try {
+      const now = await once(() => consoleApi.marketing(month, [id]));
+      const before = portion > 0 ? await once(() => consoleApi.marketing(previous, [id], portion)) : null;
+      const cn = share(now.topCountryCodes, (o) => o.toUpperCase() === "CN");
+      const direct = share(now.topReferrers, (o) => !o || /^(direct|\(direct\)|none|null|unknown)$/i.test(o.trim()));
+      rows[id] = {
+        viewers: now.numUniqueViewingUsers,
+        starters: now.numUniqueUsersWithRun,
+        previousViewers: before?.numUniqueViewingUsers ?? null,
+        previousStarters: before?.numUniqueUsersWithRun ?? null,
+        cnNoReferrerShare: cn != null && direct != null ? Math.min(cn, direct) : null
+      };
+    } catch {
+      failed++;
+    }
+  }
+  return { rows, failed };
+}
+
+// src/core/watch/digest.ts
+var usd2 = (v) => `$${(Math.round(v * 100) / 100).toFixed(2)}`;
+function itemBlock(item) {
+  const rules = item.signals.filter((s) => s.tier !== "info" || item.tier === "info");
+  const title = rules.map((s) => s.title).join(" + ");
+  const flags = [item.isNew ? "new" : null, item.snoozed ? "snoozed" : null, rules.some((s) => s.approximate) ? "~approximate" : null].filter(Boolean).join(", ");
+  const lines = [`[${item.tier}] ${item.name} - ${title}${item.firstSeen ? `   first seen ${item.firstSeen.slice(0, 10)}` : ""}${flags ? ` (${flags})` : ""}`];
+  for (const s of rules) lines.push(`  ${s.rule}: ${s.evidence}`);
+  const sources = [...new Set(rules.map((s) => s.source))].join("; ");
+  lines.push(`  at stake ${usd2(item.atStakeUsd)}/week | source: ${sources}`);
+  lines.push(`  Next: ${item.next}`);
+  return lines;
+}
+function oneLine(item) {
+  const s = item.signals.filter((x) => x.tier !== "info");
+  return `${item.name}: ${s.map((x) => `${x.title}: ${x.evidence}`).join(" | ")}`;
+}
+function renderDigest(input2) {
+  const live = input2.items.filter((i) => !(input2.firstRun && i.backlog));
+  const page = live.filter((i) => i.tier === "PAGE" && !i.snoozed);
+  const watch = live.filter((i) => i.tier === "WATCH" && !i.snoozed && !(i.signals.every((s) => s.rule === "R8") && !i.isNew));
+  const info = input2.items.filter((i) => i.tier === "info");
+  const snoozed = input2.items.filter((i) => i.snoozed && i.tier !== "info");
+  const backlog = input2.firstRun ? input2.items.filter((i) => i.backlog && i.tier !== "info") : [];
+  const out = [];
+  out.push(`# Early warning ${input2.day}`);
+  out.push("");
+  let verdict;
+  if (input2.firstRun) verdict = `First run: ${backlog.length} existing problem(s) listed under "Backlog at install" (no notification).`;
+  else if (page.length) {
+    const fresh = page.filter((p) => p.isNew).length;
+    verdict = `${page.length} PAGE item(s) need a look${fresh ? ` (${fresh} new)` : ""}; ${watch.length} WATCH.`;
+  } else verdict = `Nothing to page on. ${watch.length} WATCH item(s).`;
+  out.push(`**${verdict}**`);
+  out.push("");
+  out.push(`Rules ${RULES_VERSION} (experimental) | evaluated ${input2.asOf.slice(0, 16).replace("T", " ")} UTC`);
+  out.push(`- ${input2.consoleLine}`);
+  out.push(`- ${input2.storeLine}`);
+  out.push(`- ${input2.dataLine}`);
+  for (const note of input2.notes) out.push(`- ${note}`);
+  out.push("");
+  if (!input2.firstRun || page.length) {
+    out.push(`## PAGE (${page.length})`);
+    out.push("");
+    if (!page.length) out.push("None.");
+    for (const item of page.slice(0, DIGEST.maxPage)) out.push(...itemBlock(item), "");
+    if (page.length > DIGEST.maxPage) out.push(`(${page.length - DIGEST.maxPage} more PAGE items in state.json)`, "");
+    out.push(`## WATCH (${watch.length})`);
+    out.push("");
+    if (!watch.length) out.push("None.");
+    for (const item of watch.slice(0, DIGEST.maxWatch)) out.push(`- ${oneLine(item)}${item.isNew ? " (new)" : ""}. Next: ${item.next}`);
+    if (watch.length > DIGEST.maxWatch) out.push(`- (${watch.length - DIGEST.maxWatch} more WATCH items in state.json)`);
+    out.push("");
+  }
+  if (backlog.length) {
+    out.push(`## Backlog at install (${backlog.length}, silent)`);
+    out.push("");
+    out.push("Already true on the first run. These do not notify; they notify later only if they get 50% worse.");
+    out.push("");
+    for (const item of backlog) out.push(`- [${item.tier}] ${oneLine(item)}. Next: ${item.next}`);
+    out.push("");
+  }
+  if (info.length) {
+    out.push(`## Info (${info.length})`);
+    out.push("");
+    for (const item of info.slice(0, DIGEST.maxInfo)) out.push(`- ${item.name}: ${item.signals.map((s) => `${s.title}: ${s.evidence}`).join(" | ")}`);
+    if (info.length > DIGEST.maxInfo) out.push(`- (${info.length - DIGEST.maxInfo} more)`);
+    out.push("");
+  }
+  if (input2.resolved.length) {
+    out.push(`## Resolved (${input2.resolved.length})`);
+    out.push("");
+    for (const r of input2.resolved) out.push(`- ${r.name}: ${r.rule} (${r.tier}) open since ${r.firstSeen.slice(0, 10)}, resolved ${r.resolvedAt.slice(0, 10)}`);
+    out.push("");
+  }
+  if (snoozed.length) {
+    out.push(`## Snoozed (${snoozed.length})`);
+    out.push("");
+    for (const item of snoozed) {
+      const until = input2.state.snoozes.filter((s) => s.actorId === item.actorId).map((s) => s.until.slice(0, 10)).sort().pop();
+      out.push(`- ${item.name}: ${item.signals.map((s) => s.rule).join(", ")} until ${until ?? "unknown"}`);
+    }
+    out.push("");
+  }
+  if (input2.weekly) {
+    const conc = input2.actors.filter((a) => a.signals.some((s) => s.rule === "R8"));
+    const total56 = [...input2.facts.values()].reduce((sum, f) => sum + Math.max(0, f.revenue56), 0);
+    const top = [...input2.facts.entries()].sort((a, b) => b[1].revenue56 - a[1].revenue56)[0];
+    const concTotal = conc.reduce((sum, a) => sum + (input2.facts.get(a.id)?.revenue56 ?? 0), 0);
+    out.push(`## Concentration (${conc.length})`);
+    out.push("");
+    out.push("Actors whose 56-day revenue rests on one burst or on at most 2 paying users (proxies: the Console has no per-buyer revenue).");
+    out.push("");
+    for (const a of conc) out.push(`- ${a.name}: ${a.signals.find((s) => s.rule === "R8").evidence}`);
+    if (total56 > 0) {
+      const share2 = (v) => `${Math.round(v / total56 * 1e3) / 10}%`;
+      const topName = top ? input2.actors.find((a) => a.id === top[0])?.name ?? null : null;
+      const topPart = top ? `; the top actor${topName ? ` (${topName})` : ""} holds ${share2(top[1].revenue56)}` : "";
+      out.push(`- Portfolio: concentration actors hold ${share2(concTotal)} of 56-day revenue (${usd2(total56)})${topPart}.`);
+    }
+    out.push("");
+  }
+  const excluded = input2.actors.filter((a) => a.exclusions.length);
+  if (excluded.length) {
+    out.push(`## Owner-run exclusions (${excluded.length}, heuristic)`);
+    out.push("");
+    out.push(OWNER_EXCLUSION_CAVEAT);
+    out.push("");
+    for (const a of excluded) out.push(`- ${a.name}: ${a.exclusions.join("; ")}`);
+    out.push("");
+  }
+  out.push("Tiers: PAGE notifies (new or 50% worse, one reminder after 14 days); WATCH and info only appear here. Snooze with: apify-insights-mcp watch snooze <actor> --days 7 --experimental");
+  return `${out.join("\n")}
+`;
+}
+function notificationText(alerts) {
+  const head = alerts.slice(0, 3).map((a) => `${a.name} (${a.rule}, ${usd2(a.atStakeUsd)}/wk)`).join(", ");
+  const more = alerts.length > 3 ? ` and ${alerts.length - 3} more` : "";
+  return { title: `Early warning: ${alerts.length} PAGE alert${alerts.length === 1 ? "" : "s"}`, message: `${head}${more}. Run decline_watch or read the digest.` };
+}
+
+// src/core/watch/state.ts
+var TIER_RANK = { info: 0, WATCH: 1, PAGE: 2 };
+function emptyState(now) {
+  return {
+    version: 1,
+    installedAt: new Date(now).toISOString(),
+    rulesVersion: RULES_VERSION,
+    open: {},
+    resolved: [],
+    snoozes: [],
+    lastRun: null,
+    lastConsoleOkAt: null,
+    lastNotifiedDay: null,
+    blindNotifiedAt: null,
+    concentration: []
+  };
+}
+function alertKey(actorId, signal2) {
+  return `${actorId}:${signal2.rule}${signal2.variant ? `:${signal2.variant}` : ""}`;
+}
+function isSnoozed(snoozes, actorId, rule, now) {
+  return snoozes.some((s) => s.actorId === actorId && (s.rule == null || s.rule === rule) && Date.parse(s.until) > now);
+}
+function transition(prev, actors, now, evaluated) {
+  const first = prev == null;
+  const state = structuredClone(prev ?? emptyState(now));
+  state.rulesVersion = RULES_VERSION;
+  const at = new Date(now).toISOString();
+  const events = [];
+  const notify = [];
+  const opened = /* @__PURE__ */ new Set();
+  const seen = /* @__PURE__ */ new Set();
+  let pageChanged = false;
+  state.snoozes = state.snoozes.filter((s) => Date.parse(s.until) > now);
+  const event = (kind, alert, signal2) => events.push({
+    t: at,
+    event: kind,
+    key: alert.key,
+    actor: alert.name,
+    rule: alert.rule,
+    tier: alert.tier,
+    atStakeUsd: alert.atStakeUsd,
+    backlog: alert.backlog,
+    snoozed: isSnoozed(state.snoozes, alert.actorId, alert.rule, now),
+    rulesVersion: RULES_VERSION,
+    evidence: alert.evidence,
+    ...signal2?.ownerRunExclusion ? { ownerRunExclusion: true } : {}
+  });
+  for (const actor of actors) {
+    for (const signal2 of actor.signals) {
+      if (signal2.tier === "info") continue;
+      const key = alertKey(actor.id, signal2);
+      const existing = state.open[key];
+      if (signal2.hold) {
+        if (existing) {
+          seen.add(key);
+          existing.lastSeen = at;
+        }
+        continue;
+      }
+      seen.add(key);
+      const snoozed = isSnoozed(state.snoozes, actor.id, signal2.rule, now);
+      if (!existing) {
+        const alert = {
+          key,
+          actorId: actor.id,
+          name: actor.name,
+          rule: signal2.rule,
+          variant: signal2.variant ?? null,
+          tier: signal2.tier,
+          firstSeen: at,
+          lastSeen: at,
+          lastNotified: null,
+          notifiedAtStakeUsd: signal2.atStakeUsd,
+          atStakeUsd: signal2.atStakeUsd,
+          reminded: first,
+          backlog: first,
+          title: signal2.title,
+          evidence: signal2.evidence,
+          next: signal2.next
+        };
+        state.open[key] = alert;
+        opened.add(key);
+        event("open", alert, signal2);
+        if (alert.tier === "PAGE" && !first) {
+          pageChanged = true;
+          if (!snoozed) notify.push({ alert, reason: "new" });
+        }
+        continue;
+      }
+      const before = existing.tier;
+      existing.lastSeen = at;
+      existing.atStakeUsd = signal2.atStakeUsd;
+      existing.title = signal2.title;
+      existing.evidence = signal2.evidence;
+      existing.next = signal2.next;
+      if (TIER_RANK[signal2.tier] > TIER_RANK[before]) {
+        existing.tier = signal2.tier;
+        existing.backlog = false;
+        event("upgrade", existing, signal2);
+        if (signal2.tier === "PAGE") {
+          pageChanged = true;
+          existing.notifiedAtStakeUsd = signal2.atStakeUsd;
+          if (!snoozed) notify.push({ alert: existing, reason: "upgrade" });
+        }
+        continue;
+      }
+      const base = existing.notifiedAtStakeUsd ?? 0;
+      if (existing.tier === "PAGE" && signal2.atStakeUsd > 0 && signal2.atStakeUsd >= NOTIFY.worseRatio * Math.max(base, 0.01) && signal2.atStakeUsd - base >= 1) {
+        existing.notifiedAtStakeUsd = signal2.atStakeUsd;
+        event("worse", existing, signal2);
+        pageChanged = true;
+        if (!snoozed) notify.push({ alert: existing, reason: "worse" });
+        continue;
+      }
+      const remindAfter = (existing.rule === "R5" ? R5.remindDays : NOTIFY.remindDays) * DAY_MS;
+      if (existing.tier === "PAGE" && !existing.reminded && now - Date.parse(existing.firstSeen) >= remindAfter) {
+        existing.reminded = true;
+        event("remind", existing, signal2);
+        if (!snoozed) notify.push({ alert: existing, reason: "remind" });
+      }
+    }
+  }
+  for (const [key, alert] of Object.entries(state.open)) {
+    if (seen.has(key) || !evaluated.has(alert.rule)) continue;
+    delete state.open[key];
+    event("resolve", alert);
+    if (alert.tier === "PAGE") pageChanged = true;
+    state.resolved.push({ key, name: alert.name, rule: alert.rule, tier: alert.tier, firstSeen: alert.firstSeen, resolvedAt: at, reported: false });
+  }
+  state.resolved = state.resolved.filter((r) => now - Date.parse(r.resolvedAt) < DIGEST.resolvedKeepDays * DAY_MS);
+  return { state, events, notify, pageChanged, opened };
+}
+function buildItems(actors, state, opened, now) {
+  const items = [];
+  for (const actor of actors) {
+    const live = actor.signals.filter((s) => !s.hold || state.open[alertKey(actor.id, s)]);
+    if (!live.length) continue;
+    const tierOf = (s) => s.hold ? state.open[alertKey(actor.id, s)]?.tier ?? s.tier : s.tier;
+    const tier = live.reduce((best, s) => TIER_RANK[tierOf(s)] > TIER_RANK[best] ? tierOf(s) : best, "info");
+    const urgent = [...live].sort((a, b) => URGENCY.indexOf(a.rule) - URGENCY.indexOf(b.rule))[0];
+    const keys = live.map((s) => alertKey(actor.id, s));
+    const alerts = keys.map((k) => state.open[k]).filter((a) => !!a);
+    const firstSeen = alerts.map((a) => a.firstSeen).sort()[0] ?? null;
+    items.push({
+      actorId: actor.id,
+      name: actor.name,
+      tier,
+      signals: live.map((s) => {
+        if (!s.hold) return s;
+        const open3 = state.open[alertKey(actor.id, s)];
+        return { ...s, tier: open3.tier, title: open3.title, evidence: `${open3.evidence} (still open: ${s.evidence})`, next: open3.next };
+      }),
+      atStakeUsd: Math.max(0, ...live.map((s) => s.atStakeUsd)),
+      next: urgent.next,
+      firstSeen,
+      isNew: keys.some((k) => opened.has(k)),
+      snoozed: live.every((s) => isSnoozed(state.snoozes, actor.id, s.rule, now)),
+      backlog: alerts.length > 0 && alerts.every((a) => a.backlog)
+    });
+  }
+  return items.sort((a, b) => TIER_RANK[b.tier] - TIER_RANK[a.tier] || b.atStakeUsd - a.atStakeUsd || a.name.localeCompare(b.name));
+}
+
+// src/core/watch/store.ts
+var SNAPSHOT_FILE = /^(\d{4}-\d{2}-\d{2})\.json\.gz$/;
+var MONTH_FILE = /^(\d{4}-\d{2})\.json\.gz$/;
+async function loadSnapshots(home, fromDay = "0000-00-00") {
+  const p = paths(home);
+  const out = [];
+  for (const name of await listNames(p.snapshots, SNAPSHOT_FILE)) {
+    const day = SNAPSHOT_FILE.exec(name)[1];
+    if (day < fromDay) continue;
+    const snap = await readGz(p.snapshot(day));
+    if (snap?.version === 1) out.push(snap);
+  }
+  return out;
+}
+async function latestSnapshot(home, predicate = () => true) {
+  const p = paths(home);
+  const names = (await listNames(p.snapshots, SNAPSHOT_FILE)).reverse();
+  for (const name of names) {
+    const snap = await readGz(p.snapshot(SNAPSHOT_FILE.exec(name)[1]));
+    if (snap?.version === 1 && predicate(snap)) return snap;
+  }
+  return null;
+}
+async function loadBackfill(home) {
+  const p = paths(home);
+  const out = [];
+  for (const name of await listNames(p.backfill, MONTH_FILE)) {
+    const b = await readGz(p.backfillMonth(MONTH_FILE.exec(name)[1]));
+    if (b?.version === 1) out.push(b);
+  }
+  return out;
+}
+async function loadMonthly(dir, file2) {
+  const merged = {};
+  for (const name of await listNames(dir, MONTH_FILE)) {
+    const data = await readGz(file2(MONTH_FILE.exec(name)[1]));
+    for (const [id, days] of Object.entries(data?.byActor ?? {})) Object.assign(merged[id] ??= {}, days);
+  }
+  return merged;
+}
+var loadUsers = (home) => loadMonthly(paths(home).users, paths(home).usersMonth);
+var loadOwnerRuns = (home) => loadMonthly(paths(home).ownerRuns, paths(home).ownerMonth);
+async function loadData(home, fromDay) {
+  const [snapshots, backfill, users, owner] = await Promise.all([loadSnapshots(home, fromDay), loadBackfill(home), loadUsers(home), loadOwnerRuns(home)]);
+  return { snapshots, backfill, users, owner };
+}
+async function saveMonthly(dir, file2, byActor, replaceFrom, actorScope) {
+  const months = /* @__PURE__ */ new Map();
+  for (const [id, days] of Object.entries(byActor)) {
+    for (const [day, value] of Object.entries(days)) {
+      const month = day.slice(0, 7);
+      let m = months.get(month);
+      if (!m) months.set(month, m = {});
+      (m[id] ??= {})[day] = value;
+    }
+  }
+  if (replaceFrom) {
+    for (const name of await listNames(dir, MONTH_FILE)) {
+      const month = MONTH_FILE.exec(name)[1];
+      if (month >= replaceFrom.slice(0, 7) && !months.has(month)) months.set(month, {});
+    }
+  }
+  for (const [month, fresh] of months) {
+    const existing = (await readGz(file2(month)))?.byActor ?? {};
+    for (const [id, days] of Object.entries(existing)) {
+      const keep = actorScope === "all" || id in byActor;
+      for (const day of Object.keys(days)) if (replaceFrom && day >= replaceFrom && keep) delete days[day];
+    }
+    for (const [id, days] of Object.entries(fresh)) Object.assign(existing[id] ??= {}, days);
+    await writeGz(file2(month), { version: 1, month, byActor: existing });
+  }
+}
+function saveUsers(home, byActor, replaceFrom = null) {
+  return saveMonthly(paths(home).users, paths(home).usersMonth, byActor, replaceFrom, "given");
+}
+function saveOwnerRuns(home, byActor, sinceDay) {
+  return saveMonthly(paths(home).ownerRuns, paths(home).ownerMonth, byActor, sinceDay, "all");
+}
+async function saveBackfill(home, month) {
+  await writeGz(paths(home).backfillMonth(month.month), month);
+}
+async function saveSnapshot(home, snapshot) {
+  await writeGz(paths(home).snapshot(snapshot.day), snapshot);
+}
+async function writeFacts(home, facts) {
+  for (const [month, list] of facts) await writeSecure(paths(home).factsMonth(month), list.map((f) => JSON.stringify(f)).join("\n") + (list.length ? "\n" : ""));
+}
+async function cleanup(home, now) {
+  const p = paths(home);
+  const cut = (days) => new Date(now - days * DAY_MS).toISOString().slice(0, 10);
+  for (const name of await listNames(p.snapshots, SNAPSHOT_FILE)) if (SNAPSHOT_FILE.exec(name)[1] < cut(RETENTION.snapshotDays)) await removeFile(`${p.snapshots}/${name}`);
+  for (const name of await listNames(p.digests, /^\d{4}-\d{2}-\d{2}\.md$/)) if (name.slice(0, 10) < cut(DIGEST.keepDays)) await removeFile(`${p.digests}/${name}`);
+}
+
+// src/core/watch/run.ts
+var LOCK_STALE_MS = 20 * 6e4;
+async function withLock(home, now, run) {
+  const p = paths(home);
+  await ensureDir(p.root);
+  const held = await readJson(p.lock);
+  if (held && now - held.at < LOCK_STALE_MS) return "locked";
+  await writeJson(p.lock, { pid: process.pid, at: now });
+  try {
+    return await run();
+  } finally {
+    await removeFile(p.lock);
+  }
+}
+function usd3(v) {
+  return `$${(Math.round(v * 100) / 100).toFixed(2)}`;
+}
+async function loadState(home) {
+  const state = await readJson(paths(home).state);
+  return state?.version === 1 ? state : null;
+}
+async function appendEvents(home, events) {
+  if (!events.length) return;
+  await appendSecure(paths(home).alerts, events.map((e) => JSON.stringify(e)).join("\n") + "\n");
+}
+function consoleLine(snapshot, lastOk, now) {
+  if (snapshot?.console === "ok") return `Console snapshot ${snapshot.takenAt.slice(0, 16).replace("T", " ")} UTC (fresh)`;
+  const age = lastOk ? `${Math.round((now - Date.parse(lastOk)) / HOUR_MS)} h old (${lastOk.slice(0, 16).replace("T", " ")} UTC)` : "never taken";
+  return `Console money MISSING this run (${snapshot?.console ?? "not tried"}); the last Console snapshot is ${age}. Money rules were not judged; only public signals (R5) ran.`;
+}
+function topEarners(prepared, now, config2, limit) {
+  const month = monthOfMs(now);
+  const totals = /* @__PURE__ */ new Map();
+  for (const m of [month, previousMonth(month)]) {
+    const readings = prepared.readingsByMonth.get(m) ?? [];
+    const last = readings[readings.length - 1];
+    for (const row3 of last?.rows ?? []) if (!isIgnored(config2, row3)) totals.set(row3.id, (totals.get(row3.id) ?? 0) + row3.rev);
+  }
+  return [...totals.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, limit).map(([id]) => id);
+}
+async function watchRun(deps, options = {}) {
+  const started = deps.now();
+  const result = await withLock(deps.home, started, () => runLocked(deps, options));
+  if (result === "locked") {
+    deps.log("watch run: another run is in progress; exiting.");
+    return { code: 0, summary: "locked" };
+  }
+  return result;
+}
+async function runLocked(deps, options) {
+  const { home, api, log } = deps;
+  const now = deps.now();
+  const p = paths(home);
+  const day = isoDayOf(now);
+  const month = day.slice(0, 7);
+  const prevMonth = previousMonth(month);
+  const dayOfMonth = Number(day.slice(8));
+  const errors = [];
+  const prevState = await loadState(home);
+  const config2 = await loadWatchConfig(home);
+  const existing = await readGz(p.snapshot(day));
+  if (existing?.console === "ok" && !options.force) {
+    log(`watch run: today's snapshot was already taken at ${existing.takenAt} (first success per UTC day wins). Nothing to do.`);
+    return { code: 0, summary: "already done" };
+  }
+  let catalog = null;
+  let accountId = null;
+  try {
+    const me = await api.me();
+    accountId = me.id;
+    catalog = await fetchCatalog(api, me.username);
+    log(`store: ${catalog.store.length} public actors`);
+  } catch (error62) {
+    errors.push(`store:${errorCode(error62)}`);
+    log(`store: failed (${errorCode(error62)})`);
+  }
+  let outcome = "bridge_missing";
+  let breakdown2 = null;
+  let prevMonthFinal = null;
+  let consoleApi = null;
+  if (accountId) {
+    const made = await deps.console(accountId);
+    outcome = made.outcome;
+    consoleApi = made.api;
+  }
+  const earlier = await loadData(home, isoDayOf(now - 120 * DAY_MS));
+  if (consoleApi) {
+    try {
+      breakdown2 = await fetchBreakdown(consoleApi, month);
+      outcome = "ok";
+      log(`console: breakdown ${month} (${breakdown2.length} rows)`);
+      const hadPrev = earlier.snapshots.some((s) => s.month === prevMonth) || earlier.backfill.some((b) => b.month === prevMonth);
+      const closed = earlier.snapshots.some((s) => s.month === month && s.prevMonthFinal?.month === prevMonth);
+      if (dayOfMonth <= CLOSE_DAYS || hadPrev && !closed) {
+        prevMonthFinal = { month: prevMonth, rows: await fetchBreakdown(consoleApi, prevMonth) };
+        log(`console: closing rows for ${prevMonth}`);
+      }
+    } catch (error62) {
+      outcome = outcomeOf(error62);
+      errors.push(`console:${errorCode(error62)}`);
+      log(`console: failed (${errorCode(error62)}); continuing with public data only`);
+      if (!breakdown2) consoleApi = null;
+    }
+  } else {
+    log(`console: no session (${outcome}); continuing with public data only`);
+  }
+  if (catalog) {
+    const since = prevMonthFinal || dayOfMonth <= 7 ? `${prevMonth}-01` : `${month}-01`;
+    try {
+      const owner = await fetchOwnerRuns(api, since, catalog.ownIds);
+      if (owner) await saveOwnerRuns(home, owner, since);
+    } catch (error62) {
+      errors.push(`owner-runs:${errorCode(error62)}`);
+    }
+  }
+  const weekly = !!options.weekly || new Date(now).getUTCDay() === 1 || !prevState;
+  let weeklyData = null;
+  if (weekly && consoleApi && breakdown2) {
+    const pre = prepare({ ...earlier, snapshots: [...earlier.snapshots, { version: 1, takenAt: new Date(now).toISOString(), day, month, rulesVersion: RULES_VERSION, console: "ok", breakdown: breakdown2, prevMonthFinal, store: null, weekly: null, errors: [] }] });
+    const watched = topEarners(pre, now, config2, R2.watchedActors);
+    const months = dayOfMonth <= 8 ? [prevMonth, month] : [month];
+    const counts2 = await fetchUserCounts(consoleApi, watched, months);
+    if (counts2.failed) errors.push(`user-counts:${counts2.failed}`);
+    await saveUsers(home, counts2.users, `${months[0]}-01`);
+    let marketing2 = {};
+    if (dayOfMonth >= R6.minDay && catalog) {
+      const byUsers = [...catalog.store].filter((s) => !isIgnored(config2, s)).sort((a, b) => (b.users30d ?? 0) - (a.users30d ?? 0)).slice(0, R6.actors).map((s) => s.id);
+      const daysIn = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 0)).getUTCDate();
+      const m = await fetchMarketing(consoleApi, byUsers, month, prevMonth, (dayOfMonth - 1) / daysIn);
+      if (m.failed) errors.push(`marketing:${m.failed}`);
+      marketing2 = m.rows;
+    }
+    weeklyData = { marketing: marketing2, userCountActors: watched };
+    log(`weekly: user counts for ${watched.length} actors, marketing for ${Object.keys(marketing2).length}`);
+  }
+  const snapshot = {
+    version: 1,
+    takenAt: new Date(now).toISOString(),
+    day,
+    month,
+    rulesVersion: RULES_VERSION,
+    console: breakdown2 ? "ok" : outcome === "ok" ? "error" : outcome,
+    breakdown: breakdown2,
+    prevMonthFinal,
+    store: catalog?.store ?? existing?.store ?? null,
+    weekly: weeklyData,
+    errors
+  };
+  await saveSnapshot(home, snapshot);
+  const data = await loadData(home, isoDayOf(now - 120 * DAY_MS));
+  const prepared = prepare(data);
+  const facts = deriveAllFacts(data);
+  await writeFacts(home, facts);
+  const money2 = snapshot.console === "ok";
+  const storeRows = snapshot.store ?? (await latestSnapshot(home, (s) => !!s.store))?.store ?? void 0;
+  const evaluation = evaluateAll(prepared, {
+    asOf: now,
+    weekly,
+    money: money2,
+    config: config2,
+    store: storeRows,
+    noticeSince: noticeSince(data.snapshots),
+    marketing: weeklyData?.marketing,
+    extraNext: config2.extraNext
+  });
+  const first = !prevState;
+  const tr = transition(prevState, evaluation.actors, now, evaluation.evaluated);
+  const state = tr.state;
+  if (money2) state.lastConsoleOkAt = snapshot.takenAt;
+  await appendEvents(home, tr.events);
+  const items = buildItems(evaluation.actors, state, tr.opened, now);
+  let digestPath = null;
+  const unreported = state.resolved.filter((r) => !r.reported);
+  if (weekly || tr.pageChanged || first) {
+    const backfill = data.backfill;
+    const dataLine = backfill.length ? `Facts from ${backfill.map((b) => b.from).sort()[0]} (backfill: ${Object.keys(backfill[backfill.length - 1].actors).length} actors at day level); later days from daily snapshots` : "No backfill yet: baselines fill in over 4 weeks of daily snapshots (run `watch backfill` once to start with 63 days)";
+    const text = renderDigest({
+      day,
+      asOf: evaluation.asOf,
+      items,
+      actors: evaluation.actors,
+      facts: evaluation.facts,
+      state,
+      resolved: unreported,
+      firstRun: first,
+      weekly,
+      consoleLine: consoleLine(snapshot, state.lastConsoleOkAt, now),
+      storeLine: snapshot.store ? `Store stats ${snapshot.takenAt.slice(0, 16).replace("T", " ")} UTC (${snapshot.store.length} public actors)` : "Store stats MISSING this run",
+      dataLine,
+      notes: [
+        "Money is paying-users money. Run counts and results cover every run of the actor (all users, your own included); R4 subtracts your own runs where the run list has them.",
+        ...config2.ignore.length ? [`Ignored by config: ${config2.ignore.join(", ")}`] : []
+      ]
+    });
+    digestPath = p.digest(day);
+    await writeSecure(digestPath, text);
+    for (const r of unreported) r.reported = true;
+    if (config2.digestCopyPath) {
+      try {
+        await copyFile2(digestPath, config2.digestCopyPath);
+      } catch {
+        errors.push("digest-copy:failed");
+      }
+    }
+  }
+  let notified = false;
+  const pageNotify = tr.notify.filter((n3) => n3.alert.tier === "PAGE");
+  if (!first && pageNotify.length && config2.notifications && state.lastNotifiedDay !== day) {
+    const text = notificationText(pageNotify.map((n3) => ({ name: n3.alert.name, rule: n3.alert.rule, atStakeUsd: n3.alert.atStakeUsd })));
+    notified = await deps.notifier(text.title, text.message);
+    if (notified) state.lastNotifiedDay = day;
+  }
+  if (!money2) {
+    const blindSince = Date.parse(state.lastConsoleOkAt ?? state.installedAt);
+    const already = state.blindNotifiedAt && Date.parse(state.blindNotifiedAt) >= blindSince;
+    if (now - blindSince >= BLIND_HOURS * HOUR_MS && !already && config2.notifications) {
+      const since = new Date(blindSince).toISOString().slice(0, 10);
+      const ok2 = await deps.notifier("Early warning paused", `Money signals paused since ${since}: open Chrome and check you are logged in to console.apify.com.`);
+      if (ok2) state.blindNotifiedAt = new Date(now).toISOString();
+      log(`blind: no Console money since ${since}${ok2 ? " (notified)" : ""}`);
+    }
+  }
+  state.lastRun = { at: new Date(now).toISOString(), console: snapshot.console, errors, digest: digestPath, notified };
+  await writeJson(p.state, state);
+  await cleanup(home, now);
+  const counts = { PAGE: 0, WATCH: 0 };
+  for (const a of Object.values(state.open)) if (a.tier === "PAGE" || a.tier === "WATCH") counts[a.tier]++;
+  const summary = `watch run ${day}: console ${snapshot.console}, ${counts.PAGE} PAGE and ${counts.WATCH} WATCH open, ${tr.events.filter((e) => e.event === "open").length} opened, ${tr.events.filter((e) => e.event === "resolve").length} resolved${first ? " (first run: backlog, no notification)" : ""}${notified ? ", notified" : ""}${digestPath ? `, digest ${digestPath}` : ""}${errors.length ? `, errors: ${errors.join(" ")}` : ""}`;
+  log(summary);
+  return { code: 0, summary };
+}
+async function watchBackfill(deps, options = {}) {
+  const result = await withLock(deps.home, deps.now(), () => backfillLocked(deps, options));
+  if (result === "locked") return { code: 1, summary: "another watch run is in progress" };
+  return result;
+}
+async function backfillLocked(deps, options) {
+  const { home, api, log } = deps;
+  const now = deps.now();
+  const days = options.days ?? BACKFILL.defaultDays;
+  const existing = await loadBackfill(home);
+  if (existing.length && !options.force) {
+    const msg = `A backfill already exists (${existing.map((b) => b.month).join(", ")}). It runs once; pass --force to fetch it again.`;
+    log(msg);
+    return { code: 1, summary: msg };
+  }
+  const me = await api.me();
+  const made = await deps.console(me.id);
+  if (!made.api) {
+    const msg = `No Console session (${made.outcome}): open Chrome logged in to console.apify.com, run \`touch ~/.apify-insights/wanted\`, wait a minute and retry.`;
+    log(msg);
+    return { code: 1, summary: msg };
+  }
+  const config2 = await loadWatchConfig(home);
+  const todayStart = dayStartMs(isoDayOf(now));
+  const fromDay = isoDayOf(todayStart - days * DAY_MS);
+  const months = [];
+  for (let m = fromDay.slice(0, 7); m <= isoDayOf(now).slice(0, 7); m = isoDayOf(monthStartMs(m) + 32 * DAY_MS).slice(0, 7)) months.push(m);
+  const started = Date.now();
+  log(`backfill: ${days} days from ${fromDay} (whole months ${months.join(", ")}), one request at a time`);
+  const monthRows = /* @__PURE__ */ new Map();
+  try {
+    for (const month of months) monthRows.set(month, { rows: await fetchBreakdown(made.api, month), fetchedAt: new Date(deps.now()).toISOString() });
+  } catch (error62) {
+    const msg = `backfill: Console breakdown failed (${errorCode(error62)}).${error62 instanceof ToolError ? ` ${error62.fix}` : ""}`;
+    log(msg);
+    return { code: 1, summary: msg };
+  }
+  const candidates = backfillCandidates([...monthRows.values()].map((m) => m.rows), BACKFILL);
+  for (const [id, name] of candidates) if (isIgnored(config2, { id, name })) candidates.delete(id);
+  log(`backfill: ${candidates.size} actors (revenue or cost $1+ in a month, or 5+ failures with a paying user)`);
+  let result;
+  try {
+    result = await runBackfill(made.api, months, monthRows, candidates, now, log);
+  } catch (error62) {
+    const msg = `backfill: stopped (${errorCode(error62)}).${error62 instanceof ToolError ? ` ${error62.fix}` : ""} Nothing was saved; retry.`;
+    log(msg);
+    return { code: 1, summary: msg };
+  }
+  for (const month of result.months) await saveBackfill(home, month);
+  await saveUsers(home, result.users);
+  try {
+    const ids = /* @__PURE__ */ new Set([...(await api.myActors()).map((a) => a.id)]);
+    const owner = await fetchOwnerRuns(api, `${months[0]}-01`, ids);
+    if (owner) await saveOwnerRuns(home, owner, `${months[0]}-01`);
+  } catch (error62) {
+    log(`backfill: owner runs failed (${errorCode(error62)}); the owner-run exclusion will start with the next run`);
+  }
+  const data = await loadData(home);
+  await writeFacts(home, deriveAllFacts(data));
+  const seconds = Math.round((Date.now() - started) / 1e3);
+  const summary = `backfill done: ${candidates.size} actors, months ${months.join(", ")}, ${result.calls + months.length} Console requests in ${seconds} s${result.failed.length ? `, ${result.failed.length} actor-months failed (${[...new Set(result.failed.map((f) => f.code))].join(", ")})` : ""}`;
+  log(summary);
+  return { code: result.failed.length ? 1 : 0, summary };
+}
+async function watchStatus(home, now, extra) {
+  const p = paths(home);
+  const state = await loadState(home);
+  const backfill = await loadBackfill(home);
+  const lastOk = await latestSnapshot(home, (s) => s.console === "ok");
+  const lines = [];
+  lines.push(`Early-warning watch (experimental, rules ${RULES_VERSION}): ${extra.flagOn ? "flag on" : "flag off (set APIFY_INSIGHTS_WATCH=1 or pass --experimental)"}`);
+  lines.push(`Data folder: ${p.root}${await exists(p.root) ? "" : " (not created yet)"}`);
+  lines.push(`LaunchAgent: ${extra.launchAgentInstalled == null ? "n/a (macOS only)" : extra.launchAgentInstalled ? "installed" : "not installed (run `watch install`)"}`);
+  if (backfill.length) {
+    const actors = new Set(backfill.flatMap((b) => Object.keys(b.actors)));
+    lines.push(`Backfill: complete, ${actors.size} actors at day level, ${backfill.map((b) => b.from).sort()[0]} to ${backfill.map((b) => b.through).sort().pop()} (exclusive), fetched ${backfill[0].fetchedAt.slice(0, 16).replace("T", " ")} UTC`);
+  } else lines.push("Backfill: not run (run `watch backfill` once)");
+  lines.push(`Last Console snapshot: ${lastOk ? `${lastOk.takenAt.slice(0, 16).replace("T", " ")} UTC (${Math.round((now - Date.parse(lastOk.takenAt)) / HOUR_MS)} h ago)` : "none"}`);
+  if (state?.lastRun) {
+    lines.push(`Last run: ${state.lastRun.at.slice(0, 16).replace("T", " ")} UTC, console ${state.lastRun.console}, ${state.lastRun.errors.length} errors${state.lastRun.errors.length ? ` (${state.lastRun.errors.join(" ")})` : ""}`);
+    const open3 = Object.values(state.open);
+    const pages = open3.filter((a) => a.tier === "PAGE");
+    const oldest = pages.map((a) => a.firstSeen).sort()[0];
+    lines.push(`Open alerts: ${pages.length} PAGE${oldest ? ` (oldest since ${oldest.slice(0, 10)})` : ""}, ${open3.filter((a) => a.tier === "WATCH").length} WATCH; ${state.snoozes.filter((s) => Date.parse(s.until) > now).length} snoozed`);
+    for (const a of pages.sort((x, y) => y.atStakeUsd - x.atStakeUsd).slice(0, 5)) lines.push(`  [PAGE] ${a.name} ${a.rule} ${usd3(a.atStakeUsd)}/week since ${a.firstSeen.slice(0, 10)}${a.backlog ? " (backlog)" : ""}`);
+    if (state.lastRun.digest) lines.push(`Last digest: ${state.lastRun.digest}`);
+  } else lines.push("Last run: never");
+  const errors = state?.lastRun?.errors.length ?? 0;
+  return { code: errors ? 1 : 0, lines };
+}
+async function watchSnooze(home, now, query, days, rule, remove = false) {
+  const state = await loadState(home);
+  if (!state) return { code: 1, lines: ["No watch state yet: run `watch run` first."] };
+  const latest = await latestSnapshot(home);
+  const known = /* @__PURE__ */ new Map();
+  for (const row3 of latest?.store ?? []) known.set(row3.id, row3.name);
+  for (const row3 of latest?.breakdown ?? []) known.set(row3.id, row3.name);
+  for (const a of Object.values(state.open)) known.set(a.actorId, a.name);
+  const q = query.trim().toLowerCase();
+  const exact = [...known].filter(([id, name2]) => id.toLowerCase() === q || name2.toLowerCase() === q);
+  const matches = exact.length ? exact : [...known].filter(([, name2]) => name2.toLowerCase().includes(q));
+  if (matches.length !== 1) return { code: 1, lines: [matches.length ? `"${query}" matches ${matches.length} actors: ${matches.slice(0, 8).map(([, n3]) => n3).join(", ")}` : `No actor matches "${query}".`] };
+  const [actorId, name] = matches[0];
+  state.snoozes = state.snoozes.filter((s) => !(s.actorId === actorId && (rule == null || s.rule === rule)) && Date.parse(s.until) > now);
+  if (!remove) state.snoozes.push({ actorId, name, rule, until: new Date(now + days * DAY_MS).toISOString() });
+  await writeJson(paths(home).state, state);
+  return { code: 0, lines: [remove ? `Unsnoozed ${name}${rule ? ` (${rule})` : ""}.` : `Snoozed ${name}${rule ? ` (${rule})` : " (all rules)"} until ${new Date(now + days * DAY_MS).toISOString().slice(0, 10)}. It still shows in the digest under Snoozed; it does not notify.`] };
+}
+function replay(prepared, config2, from, to) {
+  let state = emptyState(dayStartMs(from));
+  const actors = /* @__PURE__ */ new Map();
+  const weeks = /* @__PURE__ */ new Map();
+  for (let t = dayStartMs(from); t <= dayStartMs(to); t += DAY_MS) {
+    const day = isoDayOf(t);
+    const weekly = new Date(t).getUTCDay() === 1;
+    const evaluation = evaluateAll(prepared, { asOf: t, weekly, money: true, config: config2 });
+    const tr = transition(state, evaluation.actors, t, evaluation.evaluated);
+    state = tr.state;
+    for (const e of tr.events) {
+      if (e.event !== "open" && e.event !== "upgrade") continue;
+      const id = e.key.split(":")[0];
+      const o = actors.get(id) ?? { name: e.actor, firstPage: null, firstWatch: null, pageOpens: 0, pageDays: [] };
+      if (e.tier === "PAGE") {
+        if (!o.firstPage) o.firstPage = { day, rules: [] };
+        if (o.firstPage.day === day && !o.firstPage.rules.includes(e.rule)) o.firstPage.rules.push(e.rule);
+        o.pageOpens++;
+        o.pageDays.push(`${day} ${e.rule}`);
+        const monday = isoDayOf(t - (new Date(t).getUTCDay() + 6) % 7 * DAY_MS);
+        weeks.set(monday, (weeks.get(monday) ?? 0) + 1);
+      } else if (e.tier === "WATCH") {
+        if (!o.firstWatch) o.firstWatch = { day, rules: [] };
+        if (o.firstWatch.day === day && !o.firstWatch.rules.includes(e.rule)) o.firstWatch.rules.push(e.rule);
+      }
+      actors.set(id, o);
+    }
+  }
+  return { from, to, actors, pagesPerWeek: [...weeks.entries()].sort().map(([week, opens]) => ({ week, opens })) };
+}
+async function loadReplayData(home) {
+  return prepare(await loadData(home));
+}
+
+// src/cli/watch.ts
+var USAGE = [
+  "Usage: apify-insights-mcp watch <command> --experimental",
+  "  run [--force] [--weekly]        take today's snapshot, judge the rules, write the digest, notify on new PAGE items",
+  "  backfill [--days 63] [--force]  one time: day-level money and runs for the earning actors",
+  "  status                          data, last run, open alerts",
+  "  snooze <actor> [--days 7] [--rule R4]   silence an actor (or one rule) for a while; unsnooze <actor> undoes it",
+  "  replay [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--actor a,b] [--explain actor@YYYY-MM-DD]   re-run the rules on stored data",
+  "  install [--print] [--times 05:45,09:00,13:00,19:00]   macOS: add the LaunchAgent (the owner runs this)",
+  "  uninstall                       macOS: remove the LaunchAgent",
+  `The feature is experimental and off by default: pass --experimental or set ${WATCH_FLAG_ENV}=1.`
+].join("\n");
+function flagValue(args, name) {
+  const i = args.indexOf(name);
+  if (i >= 0) return args[i + 1];
+  const inline = args.find((a) => a.startsWith(`${name}=`));
+  return inline?.slice(name.length + 1);
+}
+var RULES = /* @__PURE__ */ new Set(["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"]);
+var defaultRunner2 = (command, args) => new Promise((resolve2) => execFile3(command, args, { timeout: 3e4 }, (error62, stdout, stderr) => resolve2({ ok: !error62, output: `${stdout}${stderr}`.trim() })));
+async function realDeps(options) {
+  const home = options.home;
+  let api = options.deps?.api;
+  if (!api) {
+    const token = await findPublicToken(options.env);
+    if (!token) return "No Apify API token found: run `apify login` once, or set APIFY_TOKEN.";
+    api = createApifyApi(token.token, options.env.APIFY_API_BASE || "https://api.apify.com/v2");
+  }
+  const now = options.deps?.now ?? Date.now;
+  const log = createLog(home, options.log, now);
+  const consoleFactory = options.deps?.console ?? (async (accountId) => {
+    const status = await sessionStatus(home, accountId, now());
+    if (status.state === "bridge_missing" || status.state === "other_account") {
+      await touchWanted(home);
+      return { api: null, outcome: status.state };
+    }
+    const tokens = {
+      current: async () => {
+        const token = await currentConsoleToken(home, accountId, now());
+        registerSecret(token.value);
+        return token;
+      },
+      refresh: async (rejected) => {
+        const token = await refreshedConsoleToken(home, accountId, rejected, { timeoutMs: SESSION_WAIT_MS });
+        registerSecret(token.value);
+        return token;
+      }
+    };
+    return { api: createConsoleApi(tokens), outcome: status.state === "ok" ? "ok" : "warming_up" };
+  });
+  const notifier = options.deps?.notifier ?? osascriptNotifier;
+  return { home, api, console: consoleFactory, now, log, notifier };
+}
+function printReplay(result, focus, log) {
+  log(`Replay ${result.from}..${result.to} (one run per day at 00:00 UTC; R5 has no history and is left out)`);
+  const rows = [...result.actors.values()].sort((a, b) => (a.firstPage?.day ?? "9").localeCompare(b.firstPage?.day ?? "9") || a.name.localeCompare(b.name));
+  const paged = rows.filter((r) => r.firstPage);
+  log(`Actors that paged: ${paged.length}; watch only: ${rows.length - paged.length}`);
+  for (const r of paged) log(`  PAGE ${r.firstPage.day} ${r.firstPage.rules.join("+")}  ${r.name}  (${r.pageOpens} PAGE opens)`);
+  log("PAGE opens per week (Monday):");
+  for (const w of result.pagesPerWeek) log(`  ${w.week}: ${w.opens}`);
+  for (const name of focus) {
+    const r = rows.find((x) => x.name === name || x.name.includes(name));
+    if (!r) {
+      log(`${name}: never alerted`);
+      continue;
+    }
+    log(`${r.name}: first PAGE ${r.firstPage ? `${r.firstPage.day} (${r.firstPage.rules.join("+")})` : "never"}; first WATCH ${r.firstWatch ? `${r.firstWatch.day} (${r.firstWatch.rules.join("+")})` : "never"}; PAGE opens: ${r.pageDays.join(", ") || "none"}`);
+  }
+}
+async function watchCli(args, options) {
+  const { log } = options;
+  const [sub, ...rest] = args;
+  const flagOn = options.env[WATCH_FLAG_ENV] === "1" || args.includes("--experimental");
+  if (!sub || sub === "help" || sub === "--help") {
+    log(USAGE);
+    return sub ? 0 : 1;
+  }
+  if (!flagOn) {
+    log(`watch is experimental and off by default. Pass --experimental or set ${WATCH_FLAG_ENV}=1.`);
+    return 2;
+  }
+  const home = options.home;
+  if (sub === "status") {
+    const installed = options.platform === "darwin" ? await exists(launchAgentPath(options.homeDir)) : null;
+    const result = await watchStatus(home, (options.deps?.now ?? Date.now)(), { flagOn, launchAgentInstalled: installed });
+    for (const line of result.lines) log(line);
+    return result.code;
+  }
+  if (sub === "snooze" || sub === "unsnooze") {
+    const query = rest.find((a) => !a.startsWith("--") && !/^\d+$/.test(a) && !RULES.has(a));
+    if (!query) {
+      log(USAGE);
+      return 1;
+    }
+    const rule = flagValue(rest, "--rule");
+    if (rule && !RULES.has(rule)) {
+      log(`Unknown rule ${rule}; use R1..R8.`);
+      return 1;
+    }
+    const days = Number(flagValue(rest, "--days") ?? 7);
+    const result = await watchSnooze(home, (options.deps?.now ?? Date.now)(), query, Number.isFinite(days) && days > 0 ? days : 7, rule ?? null, sub === "unsnooze");
+    for (const line of result.lines) log(line);
+    return result.code;
+  }
+  if (sub === "replay") {
+    const prepared = await loadReplayData(home);
+    if (!prepared.actors.size) {
+      log("No stored data to replay: run `watch backfill` first.");
+      return 1;
+    }
+    const config2 = await loadWatchConfig(home);
+    const firstKnown = Math.min(...[...prepared.actors.values()].map((a) => a.coveredFrom).filter(Number.isFinite));
+    const from = flagValue(rest, "--from") ?? isoDayOf(firstKnown + 7 * 864e5);
+    const to = flagValue(rest, "--to") ?? isoDayOf((options.deps?.now ?? Date.now)());
+    const focus = (flagValue(rest, "--actor") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    printReplay(replay(prepared, config2, from, to), focus, log);
+    const explain = flagValue(rest, "--explain");
+    if (explain) {
+      const [name, day] = explain.split("@");
+      const evaluation = evaluateAll(prepared, { asOf: dayStartMs(day ?? to), weekly: new Date(dayStartMs(day ?? to)).getUTCDay() === 1, money: true, config: config2 });
+      const actor = evaluation.actors.find((a) => a.name === name) ?? null;
+      const id = actor?.id ?? [...prepared.actors.entries()].find(([, a]) => a.name === name)?.[0];
+      const facts = id ? evaluation.facts.get(id) : void 0;
+      log(`explain ${name} at ${day} 00:00 UTC: ${facts ? JSON.stringify({ rev7d: facts.w0.v.rev, prev7d: facts.w1.v.rev, baseline: facts.baseline, windows: facts.baselineWindows, class: facts.cls, revenueDays56: facts.revenueDays56, peakShare56: facts.peakShare56, pool: facts.pool, runs7d: facts.w0.v.runs, failed7d: facts.w0.v.failed, timedOut7d: facts.w0.v.timedOut, results7d: facts.w0.v.results, cost7d: facts.w0.v.cost }) : "no facts"}`);
+      for (const s of actor?.signals ?? []) log(`  ${s.tier}${s.hold ? " (hold)" : ""} ${s.rule}: ${s.evidence}`);
+    }
+    return 0;
+  }
+  if (sub === "install" || sub === "uninstall") {
+    if (options.platform !== "darwin") {
+      log("watch install uses a macOS LaunchAgent. On other systems, schedule `apify-insights-mcp watch run --experimental` with cron.");
+      return 1;
+    }
+    const plistPath = launchAgentPath(options.homeDir);
+    const run = options.run ?? defaultRunner2;
+    const uid = typeof process.getuid === "function" ? process.getuid() : 501;
+    if (sub === "uninstall") {
+      await run("launchctl", ["bootout", `gui/${uid}/${LAUNCH_AGENT_LABEL}`]);
+      await rm4(plistPath, { force: true });
+      log(`Removed ${plistPath}. Your data in ${home}/watch is kept; delete that folder to remove it.`);
+      return 0;
+    }
+    let times;
+    try {
+      times = parseTimes(flagValue(rest, "--times"));
+    } catch (error62) {
+      log(error62 instanceof Error ? error62.message : String(error62));
+      return 1;
+    }
+    const entryPath = rest.includes("--print") ? `${home}/app/index.js` : await copyServer(options.sourceEntry, home);
+    const plist = launchAgentPlist({ nodePath: options.nodePath, entryPath, home, times });
+    if (rest.includes("--print")) {
+      log(plist);
+      return 0;
+    }
+    await mkdir6(dirname3(plistPath), { recursive: true });
+    await writeFile5(plistPath, plist, { mode: 420 });
+    await chmod4(plistPath, 420);
+    await run("launchctl", ["bootout", `gui/${uid}/${LAUNCH_AGENT_LABEL}`]);
+    const loaded = await run("launchctl", ["bootstrap", `gui/${uid}`, plistPath]);
+    log(`Server copied to ${entryPath}`);
+    log(`LaunchAgent written: ${plistPath}`);
+    log(loaded.ok ? `Loaded: runs daily at ${times.map((t) => `${String(t.hour).padStart(2, "0")}:${String(t.minute).padStart(2, "0")}`).join(", ")} local time (the first success per UTC day does the work).` : `launchctl did not load it: ${loaded.output}`);
+    log("Undo with: apify-insights-mcp watch uninstall --experimental");
+    return loaded.ok ? 0 : 1;
+  }
+  const deps = await realDeps(options);
+  if (typeof deps === "string") {
+    log(deps);
+    return 1;
+  }
+  try {
+    if (sub === "run") return (await watchRun(deps, { force: rest.includes("--force"), weekly: rest.includes("--weekly") })).code;
+    if (sub === "backfill") {
+      const days = Number(flagValue(rest, "--days") ?? 63);
+      return (await watchBackfill(deps, { days: Number.isFinite(days) && days > 0 ? Math.min(days, 400) : 63, force: rest.includes("--force") })).code;
+    }
+  } finally {
+    await deps.log.flush?.();
+  }
+  log(USAGE);
+  return 1;
+}
+
+// src/cli/main.ts
+var MANIFEST_FILE = `${NATIVE_HOST_NAME}.json`;
+var BRIDGE_FILES = ["manifest.json", "sw.js"];
+var GITHUB_SPEC = "github:Devansh-365/apify-insights-mcp";
+function packageRoot() {
+  let dir = dirname4(fileURLToPath(import.meta.url));
+  while (!existsSync2(join10(dir, "package.json")) && dirname4(dir) !== dir) dir = dirname4(dir);
+  return dir;
+}
+function browserDirs(homeDir, platform) {
+  const entry = (browser, configDir) => ({ browser, configDir, hostsDir: join10(configDir, "NativeMessagingHosts") });
+  if (platform === "darwin") {
+    const base = join10(homeDir, "Library", "Application Support");
+    return [
+      entry("Chrome", join10(base, "Google", "Chrome")),
+      entry("Chromium", join10(base, "Chromium")),
+      entry("Brave", join10(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join10(base, "Microsoft Edge")),
+      entry("Arc", join10(base, "Arc", "User Data"))
+    ];
+  }
+  if (platform === "linux") {
+    const base = join10(homeDir, ".config");
+    return [
+      entry("Chrome", join10(base, "google-chrome")),
+      entry("Chromium", join10(base, "chromium")),
+      entry("Brave", join10(base, "BraveSoftware", "Brave-Browser")),
+      entry("Edge", join10(base, "microsoft-edge"))
+    ];
+  }
+  return [];
+}
+function shellQuote(value) {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+async function exists2(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function resolve(options) {
+  const env = options.env ?? process.env;
+  return {
+    env,
+    homeDir: options.homeDir ?? homedir3(),
+    home: options.home ?? loadConfig(env).home,
+    platform: options.platform ?? process.platform,
+    log: options.log ?? ((line) => console.log(line))
+  };
+}
+async function install(options) {
+  const { homeDir, home, platform, log } = resolve(options);
+  const dirs = browserDirs(homeDir, platform);
+  if (dirs.length === 0) {
+    log(`install supports macOS and Linux only (this is ${platform}).`);
+    return 1;
+  }
+  const nodePath = options.nodePath ?? process.execPath;
+  const sourceEntry = options.entryPath ?? join10(packageRoot(), "dist", "index.js");
+  const sourceBridge = options.extensionDir ?? join10(packageRoot(), "bridge");
+  const entryPath = await copyServer(sourceEntry, home);
+  const extensionDir = join10(home, "bridge");
+  await mkdir7(extensionDir, { recursive: true });
+  for (const file2 of BRIDGE_FILES) await copyFile3(join10(sourceBridge, file2), join10(extensionDir, file2));
+  log(`Server copied to ${entryPath}`);
+  const binDir = join10(home, "bin");
+  await mkdir7(binDir, { recursive: true, mode: 448 });
+  const launcher = join10(binDir, "native-host");
+  const script = [
+    "#!/bin/sh",
+    "# Written by `apify-insights-mcp install`. Chrome starts this once per Apify Insights Bridge message.",
+    `APIFY_INSIGHTS_HOME=${shellQuote(home)} exec ${shellQuote(nodePath)} ${shellQuote(entryPath)} native-host "$@"`,
+    ""
+  ].join("\n");
+  await writeFile6(launcher, script, { mode: 448 });
+  await chmod5(launcher, 448);
+  log(`Launcher: ${launcher}`);
+  const manifest = {
+    name: NATIVE_HOST_NAME,
+    description: "apify-insights-mcp native host for the Apify Insights Bridge extension",
+    path: launcher,
+    type: "stdio",
+    allowed_origins: [`chrome-extension://${BRIDGE_EXTENSION_ID}/`]
+  };
+  let installed = 0;
+  for (const dir of dirs) {
+    if (!await exists2(dir.configDir)) continue;
+    await mkdir7(dir.hostsDir, { recursive: true });
+    await writeFile6(join10(dir.hostsDir, MANIFEST_FILE), `${JSON.stringify(manifest, null, 4)}
+`);
+    log(`Native host registered for ${dir.browser}: ${join10(dir.hostsDir, MANIFEST_FILE)}`);
+    installed++;
+  }
+  if (installed === 0) log("No supported browser profile folder found (Chrome, Chromium, Brave, Edge, Arc). Nothing registered.");
+  log("");
+  log("Next:");
+  log(`1. In your browser open chrome://extensions, turn on Developer mode, click "Load unpacked" and pick:
+   ${extensionDir}`);
+  log(`   The extension ID must be ${BRIDGE_EXTENSION_ID}.`);
+  log(`2. If you have not yet, register the server with your AI clients:
+   npx -y ${GITHUB_SPEC} setup`);
+  return installed > 0 ? 0 : 1;
+}
+async function uninstall(options) {
+  const { homeDir, home, platform, log } = resolve(options);
+  for (const platformDirs of /* @__PURE__ */ new Set([platform, "darwin", "linux"])) {
+    for (const dir of browserDirs(homeDir, platformDirs)) {
+      const path = join10(dir.hostsDir, MANIFEST_FILE);
+      if (await exists2(path)) {
+        await rm5(path, { force: true });
+        log(`Removed ${path}`);
+      }
+    }
+  }
+  const binDir = join10(home, "bin");
+  for (const path of [join10(binDir, "native-host"), join10(home, "app"), join10(home, "bridge"), join10(home, "sessions"), join10(home, "wanted")]) {
+    if (await exists2(path)) {
+      await rm5(path, { recursive: true, force: true });
+      log(`Removed ${path}`);
+    }
+  }
+  await rmdir(binDir).catch(() => void 0);
+  log("Remove the Apify Insights Bridge extension from chrome://extensions yourself.");
+  return 0;
+}
+async function runCli(argv, options = {}) {
+  const [command, ...rest] = argv;
+  if (command === "native-host" || command?.startsWith("chrome-extension://")) {
+    const args = command === "native-host" ? rest : argv;
+    const origin = args.map((arg) => /^chrome-extension:\/\/([a-p]{32})\/?$/.exec(arg)?.[1]).find(Boolean);
+    const { home } = resolve(options);
+    return runNativeHost(options.stdin ?? process.stdin, options.stdout ?? process.stdout, home, Date.now, origin ?? BRIDGE_EXTENSION_ID);
+  }
+  if (command === "setup") {
+    const { env, homeDir, home, platform, log } = resolve(options);
+    const sourceEntry = options.entryPath ?? join10(packageRoot(), "dist", "index.js");
+    return setup({ env, homeDir, home, platform, sourceEntry, log, run: options.run, which: options.which });
+  }
+  if (command === "cache") {
+    const { home, log } = resolve(options);
+    if (rest[0] !== "clear") {
+      log("Usage: apify-insights-mcp cache clear   (deletes the local money cache; always safe)");
+      return 1;
+    }
+    log(await clearDiskCache(home) ? `Cleared the local cache in ${cacheRoot(home)}.` : "The local cache was already empty.");
+    return 0;
+  }
+  if (command === "watch") {
+    const { env, homeDir, home, platform, log } = resolve(options);
+    return watchCli(rest, {
+      env,
+      homeDir,
+      home,
+      platform,
+      log,
+      nodePath: options.nodePath ?? process.execPath,
+      sourceEntry: options.entryPath ?? join10(packageRoot(), "dist", "index.js"),
+      run: options.run,
+      deps: options.watchDeps
+    });
+  }
+  if (command === "install") return install(options);
+  if (command === "uninstall") return uninstall(options);
+  return null;
+}
+
+// src/core/cache.ts
+var Cache = class {
+  constructor(now = Date.now) {
+    this.now = now;
+  }
+  now;
+  entries = /* @__PURE__ */ new Map();
+  /** True when an unexpired entry exists, finished or still loading. Never starts a load. */
+  has(key) {
+    const hit = this.entries.get(key);
+    return !!hit && hit.expires > this.now();
+  }
+  get(key, ttlMs, load) {
+    const hit = this.entries.get(key);
+    if (hit && hit.expires > this.now()) return hit.value;
+    const value = load();
+    this.entries.set(key, { value, expires: this.now() + ttlMs });
+    value.catch(() => {
+      if (this.entries.get(key)?.value === value) this.entries.delete(key);
+    });
+    return value;
+  }
+};
+
 // src/core/console-data.ts
 var diskOrigins = /* @__PURE__ */ new WeakMap();
 function origins(ctx) {
@@ -30051,23 +32203,23 @@ function qualityBusinessValue(ctx, api, actorId) {
 }
 
 // src/core/repo.ts
-import { readdir as readdir3, readFile as readFile5 } from "node:fs/promises";
-import { join as join9 } from "node:path";
+import { readdir as readdir4, readFile as readFile6 } from "node:fs/promises";
+import { join as join11 } from "node:path";
 async function scanActorDirs(dirs) {
   const byName = /* @__PURE__ */ new Map();
   for (const dir of dirs) {
     let entries;
     try {
-      entries = await readdir3(dir, { withFileTypes: true });
+      entries = await readdir4(dir, { withFileTypes: true });
     } catch {
       continue;
     }
     await Promise.all(
       entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith(".")).map(async (entry) => {
-        const path = join9(dir, entry.name);
+        const path = join11(dir, entry.name);
         let name = entry.name;
         try {
-          const manifest = JSON.parse(await readFile5(join9(path, ".actor", "actor.json"), "utf8"));
+          const manifest = JSON.parse(await readFile6(join11(path, ".actor", "actor.json"), "utf8"));
           if (typeof manifest.name === "string" && manifest.name) name = manifest.name;
         } catch {
           return;
@@ -30219,8 +32371,8 @@ function installTiming(env = process.env, target = globalThis) {
 }
 
 // src/server.ts
-import { appendFile, mkdir as mkdir6 } from "node:fs/promises";
-import { join as join10 } from "node:path";
+import { appendFile as appendFile2, mkdir as mkdir8 } from "node:fs/promises";
+import { join as join12 } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
 var util;
@@ -36544,7 +38696,7 @@ var Protocol = class {
    * @param sessionId Session of the request that waits, passed to the task store
    * @returns Promise that resolves when an update occurs or rejects if aborted
    */
-  async _waitForTaskUpdate(taskId, signal, sessionId) {
+  async _waitForTaskUpdate(taskId, signal2, sessionId) {
     let interval = this._options?.defaultTaskPollInterval ?? 1e3;
     try {
       const task = await this._taskStore?.getTask(taskId, sessionId);
@@ -36554,12 +38706,12 @@ var Protocol = class {
     } catch {
     }
     return new Promise((resolve2, reject) => {
-      if (signal.aborted) {
+      if (signal2.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
       const timeoutId = setTimeout(resolve2, interval);
-      signal.addEventListener("abort", () => {
+      signal2.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
       }, { once: true });
@@ -38299,6 +40451,7 @@ Definitions used by every tool in this server. Repeat numbers as they are given;
 - **Quality score** (actor_quality): Apify's quality score (shown as %) and its percentile among Store actors, with sub-scores when Apify returns them. **pending**: no real score yet, because the actor is not public in the Store (unpublished) or Apify has not scored it (unscored).
 - **Quality work types**: security (weight 5), operations (4), schema (3), pricing (2), listing & docs (1), other (1). Market suggestions (rating, total users, weight 0.5) are not work you can do and are not listed across actors.
 - **Quality impact**: work-type weight \xD7 traffic weight. Traffic weight = max(1, revenue \xD7 100 + runs \xD7 0.1 + paying users \xD7 10 + users \xD7 0.5), each the larger of last month and this month's pace (pace from day 8). Across actors, the top 20% of suggestions by impact are **high**, the next 30% **medium**, the rest **low**; actors with no traffic are always low.
+- **Early warning** (experimental, \`decline_watch\`): a local daily job compares each actor's last 7 days with its own 8-week median and class (steady, intermittent, bursty, new). **PAGE** items notify; **WATCH** items only appear in the digest. **Backlog**: already true when the watch was first run. Money is paying users only; run counts cover every run. **Owner-run exclusion**: a month whose only paying user looks like your own account is not counted (a heuristic; it can hide a real buyer who is never charged).
 `;
 
 // src/core/acquisition.ts
@@ -38487,14 +40640,14 @@ var acquisitionScoreInput = {
   top: external_exports.number().int().min(1).max(50).default(20).describe("How many actors to scan, by 30-day users. Buckets are relative to these actors.")
 };
 var LISTED = { leaking: 5, rising: 5, fading: 5, converting: 5, steady: 0, quiet: 0 };
-function pct(value) {
+function pct2(value) {
   return value == null ? null : round(value * 100, 1);
 }
 function changePct(value) {
-  return value === "new" ? "new" : pct(value);
+  return value === "new" ? "new" : pct2(value);
 }
 function thresholdsOut(t) {
-  return { viewerFloor: t.viewerFloor, leakFloor: t.leakFloor, conversionLowPct: pct(t.conversionLow), conversionHighPct: pct(t.conversionHigh) };
+  return { viewerFloor: t.viewerFloor, leakFloor: t.leakFloor, conversionLowPct: pct2(t.conversionLow), conversionHighPct: pct2(t.conversionHigh) };
 }
 function relativeNote(scanned) {
   return `Thresholds and bucket sizes are relative to the top ${scanned} actors by 30-day users, not the whole portfolio, so they can change with \`top\`. Name one actor to get its detail.`;
@@ -38608,7 +40761,7 @@ function thresholds(rows, daysElapsed2) {
   const materialityUsd = Math.max(MIN_MATERIALITY_USD, MATERIALITY_SHARE * Math.max(0, pace2));
   return { materialityUsd, lossFloorUsd: Math.max(MIN_LOSS_USD, materialityUsd / 4) };
 }
-var MONEY_RULES = (t) => ({
+var MONEY_RULES2 = (t) => ({
   losing: `Loses at least $${round(t.lossFloorUsd)} in the period (cost above paying-users revenue).`,
   thin_margin: `Earns $${round(t.materialityUsd)}+ at under ${THIN_MARGIN * 100}% margin.`,
   below_cost: "Cost per 1,000 results is above revenue per 1,000 charged results.",
@@ -38631,7 +40784,7 @@ function unitEconomics(row3) {
 }
 function moneyFlags(row3, t, pace2) {
   const flags = [];
-  const rules = MONEY_RULES(t);
+  const rules = MONEY_RULES2(t);
   const push = (flag, evidence) => flags.push({ flag, rule: rules[flag], evidence });
   const margin = row3.revenueUsd > 0 ? row3.profitUsd / row3.revenueUsd : null;
   const losing = row3.profitUsd <= -t.lossFloorUsd;
@@ -38718,10 +40871,10 @@ async function resolveIds(ctx, names) {
 async function monthView(ctx, args, period, month, only) {
   const api = await ctx.console();
   const now = ctx.now();
-  const previousMonth = addMonths(month, -1);
-  const [rows, previousRows] = await Promise.all([breakdown(ctx, api, month), breakdown(ctx, api, previousMonth)]);
+  const previousMonth2 = addMonths(month, -1);
+  const [rows, previousRows] = await Promise.all([breakdown(ctx, api, month), breakdown(ctx, api, previousMonth2)]);
   const latestDays = daysElapsed(month, now);
-  const previousDays = daysElapsed(previousMonth, now);
+  const previousDays = daysElapsed(previousMonth2, now);
   const t = thresholds(rows, latestDays);
   const previous = new Map(previousRows.map((row3) => [row3.id, row3]));
   const assessed = rows.map((row3) => ({
@@ -38760,7 +40913,7 @@ async function monthView(ctx, args, period, month, only) {
   );
   const total = sumMoney(rows);
   const usedFlags = new Set(pool.flatMap((item) => item.flags.map((flag) => flag.flag)));
-  const rules = Object.fromEntries(Object.entries(MONEY_RULES(t)).filter(([flag]) => usedFlags.has(flag)));
+  const rules = Object.fromEntries(Object.entries(MONEY_RULES2(t)).filter(([flag]) => usedFlags.has(flag)));
   const catalog = await ctx.catalog();
   const withMoney = new Set(rows.map((row3) => row3.id));
   const withoutRow = catalog.filter((actor) => !withMoney.has(actor.id)).length;
@@ -39033,7 +41186,7 @@ function issuesFrom(items) {
   for (const issue2 of issues.values()) issue2.items.sort((left, right) => right.impact - left.impact);
   return [...issues.values()].sort((left, right) => right.impact - left.impact || right.items.length - left.items.length || left.title.localeCompare(right.title));
 }
-function median(values) {
+function median2(values) {
   if (!values.length) return null;
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);
@@ -39048,7 +41201,7 @@ var actorQualityInput = {
 var TOP_ISSUES = 8;
 var ACTORS_PER_ISSUE = 3;
 var DESCRIPTION_CHARS = 100;
-function pct2(value) {
+function pct3(value) {
   return value == null ? null : round(value * 100, 1);
 }
 function short(text) {
@@ -39106,8 +41259,8 @@ async function actorQuality(ctx, args) {
     assignImpactLevels(items);
     items.sort((left, right) => right.impact - left.impact);
     const { actorQuality: quality, actorQualityPercentile: percentile2, ...rest } = entry.scores ?? {};
-    const qualityPct = pct2(quality);
-    const percentilePct = pct2(percentile2);
+    const qualityPct = pct3(quality);
+    const percentilePct = pct3(percentile2);
     const improvements = items.map((item) => ({
       id: item.improvement.id,
       title: item.improvement.title,
@@ -39139,8 +41292,8 @@ async function actorQuality(ctx, args) {
   const scanned = peers.filter((actor) => scan.results.has(actor.id));
   const inbox = buildInbox(scanned, scan.results, traffic, now);
   const scored = [...scan.results.values()].filter((entry) => !entry.pending && entry.scores);
-  const medianQualityPct = pct2(median(scored.map((entry) => entry.scores.actorQuality).filter((value) => value != null)));
-  const medianPercentilePct = pct2(median(scored.map((entry) => entry.scores.actorQualityPercentile).filter((value) => value != null)));
+  const medianQualityPct = pct3(median2(scored.map((entry) => entry.scores.actorQuality).filter((value) => value != null)));
+  const medianPercentilePct = pct3(median2(scored.map((entry) => entry.scores.actorQualityPercentile).filter((value) => value != null)));
   const visible = inbox.issues.filter((issue2) => !issue2.group.hidden);
   const issues = visible.slice(0, TOP_ISSUES).map((issue2) => ({
     id: issue2.id,
@@ -39150,7 +41303,7 @@ async function actorQuality(ctx, args) {
     groupLabel: issue2.group.label,
     actorCount: issue2.items.length,
     impact: issue2.level,
-    actors: issue2.items.slice(0, ACTORS_PER_ISSUE).map((item) => ({ name: item.actor.name, qualityPct: pct2(item.entry.scores?.actorQuality) }))
+    actors: issue2.items.slice(0, ACTORS_PER_ISSUE).map((item) => ({ name: item.actor.name, qualityPct: pct3(item.entry.scores?.actorQuality) }))
   }));
   const openSuggestions = inbox.items.filter((item) => !item.group.hidden).length;
   const pending = [...scan.results.values()].filter((entry) => entry.pending).length;
@@ -39372,6 +41525,31 @@ async function competitorBenchmarkTool(ctx, args) {
   });
 }
 
+// src/core/watch/reader.ts
+import { readFile as readFile7 } from "node:fs/promises";
+async function readWatchSummary(home) {
+  const state = await readJson(paths(home).state);
+  if (!state || state.version !== 1) return { state: null, pages: [], watches: [], digestPath: null, digest: null };
+  const open3 = Object.values(state.open);
+  const byStake = (a, b) => b.atStakeUsd - a.atStakeUsd || a.name.localeCompare(b.name);
+  const digestPath = state.lastRun?.digest ?? null;
+  let digest = null;
+  if (digestPath) digest = await readFile7(digestPath, "utf8").catch(() => null);
+  return { state, pages: open3.filter((a) => a.tier === "PAGE").sort(byStake), watches: open3.filter((a) => a.tier === "WATCH").sort(byStake), digestPath, digest };
+}
+function briefLine(summary, now) {
+  if (!summary.state?.lastRun) return "Early warning (experimental): not run yet. Run `apify-insights-mcp watch run --experimental`, or install it with `watch install`.";
+  const pages = summary.pages.filter((a) => !a.backlog);
+  const oldest = pages.map((a) => a.firstSeen).sort()[0];
+  const age = Math.round((now - Date.parse(summary.state.lastRun.at)) / HOUR_MS);
+  const stale = age >= 30 ? ` Last run ${age} h ago.` : "";
+  const actors = new Set(pages.map((a) => a.actorId)).size;
+  const backlog = new Set(summary.pages.filter((a) => a.backlog).map((a) => a.actorId)).size;
+  const watching = new Set(summary.watches.map((a) => a.actorId)).size;
+  const head = actors ? `${actors} actor${actors === 1 ? "" : "s"} with open PAGE alerts, oldest since ${oldest.slice(0, 10)}` : "no open PAGE alerts";
+  return `Early warning (experimental): ${head}${backlog ? ` (+${backlog} from the install backlog)` : ""}; ${watching} on WATCH. Details: decline_watch.${stale}`;
+}
+
 // src/tools/daily-brief.ts
 var MAX_ITEMS = 3;
 var PRIORITY = { flagged: 1, no_revenue: 2, losing: 3, failing: 4, declining: 5 };
@@ -39383,8 +41561,8 @@ function moneyText(m) {
 }
 function changeText2(current, previous) {
   if (previous.revenueUsd === 0) return "no revenue in the comparison days";
-  const pct3 = round((current.revenueUsd - previous.revenueUsd) / previous.revenueUsd * 100, 1);
-  return `${pct3 > 0 ? "+" : ""}${pct3}% revenue vs the same days last month ($${round(previous.revenueUsd)})`;
+  const pct4 = round((current.revenueUsd - previous.revenueUsd) / previous.revenueUsd * 100, 1);
+  return `${pct4 > 0 ? "+" : ""}${pct4}% revenue vs the same days last month ($${round(previous.revenueUsd)})`;
 }
 function healthItems(catalog, earned) {
   const items = [];
@@ -39441,6 +41619,14 @@ async function tryConsole(ctx) {
     throw error62;
   }
 }
+async function earlyWarning(ctx) {
+  if (!ctx.config.watch) return null;
+  try {
+    return briefLine(await readWatchSummary(ctx.config.home), ctx.now());
+  } catch {
+    return null;
+  }
+}
 async function dailyBrief(ctx) {
   const now = ctx.now();
   const today = isoDay(now);
@@ -39448,15 +41634,18 @@ async function dailyBrief(ctx) {
   const catalog = await ctx.catalog();
   reportProgress(1, 3, "Actors loaded");
   const { api, reason: reason2 } = await tryConsole(ctx);
+  const watchLine = await earlyWarning(ctx);
   if (!api) {
     const items2 = pickItems(healthItems(catalog, null));
     const lines2 = [`Morning check ${today} (no money: ${reason2})`, ...items2.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}`)];
     if (!items2.length) lines2.push("No flagged or failing actors.");
+    if (watchLine) lines2.push(watchLine);
     return ok(lines2.join("\n"), {
       asOf: new Date(now).toISOString(),
       source: ["apify-api"],
       money: null,
       items: items2.map(itemOut),
+      ...watchLine ? { earlyWarning: watchLine } : {},
       notes: [`Money sections need the Console session: ${reason2}`]
     });
   }
@@ -39469,10 +41658,10 @@ async function dailyBrief(ctx) {
   const y = moneyForPeriod(yesterday, margins, "paying").money;
   const m = mtd ? moneyForPeriod(mtd, margins, "paying").money : null;
   const mc = mtdCompare ? moneyForPeriod(mtdCompare, margins, "paying").money : null;
-  const previousMonth = addMonths(month, -1);
-  const [rows, previousRows] = await Promise.all([breakdown(ctx, api, month), breakdown(ctx, api, previousMonth)]);
+  const previousMonth2 = addMonths(month, -1);
+  const [rows, previousRows] = await Promise.all([breakdown(ctx, api, month), breakdown(ctx, api, previousMonth2)]);
   const latestDays = daysElapsed(month, now);
-  const previousDays = daysElapsed(previousMonth, now);
+  const previousDays = daysElapsed(previousMonth2, now);
   const t = thresholds(rows, latestDays);
   const earned = new Map(rows.map((row3) => [row3.id, row3]));
   const money2 = moneyItems(rows, new Map(previousRows.map((row3) => [row3.id, row3])), latestDays, previousDays, t);
@@ -39487,7 +41676,8 @@ async function dailyBrief(ctx) {
     items.length ? "Look at:" : "Nothing needs attention by the rules.",
     ...items.map((item, i) => `${i + 1}. ${item.actor}: ${item.flag}. Next: ${item.next}`),
     ...money2.growing.length ? [`Growing: ${money2.growing.map((item) => `${item.actor} (+$${item.evidence.monthlyChangeUsd}/month pace)`).join(", ")}.`] : [],
-    `All flags: ${Object.entries(counts).map(([flag, count3]) => `${flag} ${count3}`).join(", ") || "none"}.`
+    `All flags: ${Object.entries(counts).map(([flag, count3]) => `${flag} ${count3}`).join(", ") || "none"}.`,
+    ...watchLine ? [watchLine] : []
   ];
   return ok(lines.join("\n"), {
     asOf: new Date(now).toISOString(),
@@ -39502,10 +41692,149 @@ async function dailyBrief(ctx) {
     items: items.map(itemOut),
     growing: money2.growing.map(itemOut),
     counts,
+    ...watchLine ? { earlyWarning: watchLine } : {},
     notes: [
       "Items are ordered: Apify notice (hidden from search) > paying users but $0 charged > losing money > failing > declining; one item per actor, at most three.",
       "Per-actor rules use this month so far against the month before (revenue per day, so a partial month compares fairly)."
     ]
+  });
+}
+
+// src/tools/decline-watch.ts
+var declineWatchInput = {
+  actor: external_exports.string().min(1).optional().describe("Name, username/name or ID of one of your actors, for a drill-down."),
+  include: external_exports.enum(["page", "all"]).default("page").describe("page: open PAGE alerts only (default). all: also WATCH alerts and the latest digest text.")
+};
+function alertOut(a) {
+  return { actor: a.name, rule: a.rule, tier: a.tier, title: a.title, evidence: a.evidence, atStakeUsdPerWeek: round(a.atStakeUsd), firstSeen: a.firstSeen.slice(0, 10), backlog: a.backlog, next: a.next };
+}
+var NOT_RUN_FIX = "Run `npx -y github:Devansh-365/apify-insights-mcp watch backfill --experimental` once, then `watch run --experimental` (or `watch install` for the daily schedule).";
+async function declineWatch(ctx, args) {
+  const now = ctx.now();
+  const home = ctx.config.home;
+  const summary = await readWatchSummary(home);
+  if (!summary.state) throw new ToolError("disabled", "The early-warning watch has not run on this computer yet.", NOT_RUN_FIX);
+  const include = args.include ?? "page";
+  const lastRun = summary.state.lastRun;
+  const lastOk = summary.state.lastConsoleOkAt;
+  const base = {
+    asOf: new Date(now).toISOString(),
+    source: ["apify-api", "console (unofficial)"],
+    rulesVersion: RULES_VERSION,
+    lastRun: lastRun ? { at: lastRun.at, console: lastRun.console, errors: lastRun.errors } : null,
+    lastConsoleSnapshotAt: lastOk,
+    digestPath: summary.digestPath
+  };
+  if (!args.actor) {
+    const pages = summary.pages.map(alertOut);
+    const watches = include === "all" ? summary.watches.map(alertOut) : void 0;
+    const lines2 = [
+      `Early warning (experimental, rules ${RULES_VERSION}): ${pages.length} open PAGE, ${summary.watches.length} WATCH. Last run ${lastRun ? lastRun.at.slice(0, 16).replace("T", " ") : "never"} UTC${lastRun && lastRun.console !== "ok" ? ` (Console ${lastRun.console}: money signals paused)` : ""}.`,
+      ...pages.slice(0, 5).map((p, i) => `${i + 1}. ${p.actor}: ${p.title} ($${p.atStakeUsdPerWeek}/week, since ${p.firstSeen}${p.backlog ? ", install backlog" : ""}). Next: ${p.next}`)
+    ];
+    return ok(lines2.join("\n"), {
+      ...base,
+      page: pages,
+      ...watches ? { watch: watches } : {},
+      snoozed: summary.state.snoozes.filter((s) => Date.parse(s.until) > now).map((s) => ({ actor: s.name, rule: s.rule, until: s.until.slice(0, 10) })),
+      ...include === "all" && summary.digest ? { digest: summary.digest.slice(0, 12e3) } : {},
+      notes: [
+        "PAGE alerts notify once when new or 50% worse; WATCH alerts appear in the digest only. Backlog alerts were already true when the watch was installed.",
+        "Money is paying-users money; run counts cover every run of the actor. Numbers come from the last watch run, not live."
+      ]
+    });
+  }
+  const catalog = await ctx.catalog();
+  const found = resolveActor(catalog, args.actor);
+  if (found.kind === "not_found") throw new ToolError("actor_not_found", `No actor of yours matches "${args.actor}".`, "Call list_actors with a `query` to find the name.");
+  if (found.kind === "ambiguous") throw new ToolError("actor_ambiguous", `"${args.actor}" matches several actors.`, "Repeat with one of the candidates.", { candidates: found.candidates.map((a) => a.ref) });
+  const actor = found.actor;
+  const config2 = await loadWatchConfig(home);
+  const data = await loadData(home, isoDay(now - 120 * DAY_MS));
+  const prepared = prepare(data);
+  const latestStore = (await latestSnapshot(home, (s) => !!s.store))?.store ?? void 0;
+  const asOf = Math.min(now, Date.parse(lastOk ?? new Date(now).toISOString()));
+  const evaluation = evaluateAll(prepared, { asOf, weekly: false, money: !!lastOk, config: { ...config2, ignore: [] }, store: latestStore });
+  const facts = evaluation.facts.get(actor.id) ?? null;
+  const signals = evaluation.actors.find((a) => a.id === actor.id)?.signals ?? [];
+  const index = prepared.actors.get(actor.id);
+  const weeks = index ? Array.from({ length: 9 }, (_, k) => {
+    const to = asOf - k * WEEK_MS;
+    const w = sumWindow(index.slices.filter((s) => s.t1 <= asOf), to - WEEK_MS, to);
+    return {
+      weekEnding: isoDay(to - 1),
+      revenueUsd: round(w.v.rev),
+      costUsd: round(w.v.cost),
+      runs: Math.round(w.v.runs),
+      failed: Math.round(w.v.failed),
+      timedOut: Math.round(w.v.timedOut),
+      resultsPerRun: w.v.succeeded ? round(w.v.results / w.v.succeeded, 1) : null,
+      approximate: w.approximate
+    };
+  }) : [];
+  const open3 = Object.values(summary.state.open).filter((a) => a.actorId === actor.id).map(alertOut);
+  const notes = [];
+  let live = null;
+  const { api, state } = await ctx.optionalConsole();
+  if (api) {
+    const month = monthOf(isoDay(now));
+    try {
+      const pm = await api.profitMargin(month, [actor.id]);
+      const uc = await api.userCounts(month, [actor.id]);
+      const rs = await api.runStatistics(month, [actor.id]);
+      const days = Object.keys(pm.dailyProfitMarginStats).sort().slice(-7);
+      live = {
+        month,
+        monthToDate: { revenueUsd: round(pm.totalProfitMarginStats.payingUsersUsd.revenueUsd), costUsd: round(pm.totalProfitMarginStats.payingUsersUsd.costUsd) },
+        lastDays: days.map((day) => ({
+          day: day.slice(0, 10),
+          revenueUsd: round(pm.dailyProfitMarginStats[day].payingUsersUsd.revenueUsd),
+          costUsd: round(pm.dailyProfitMarginStats[day].payingUsersUsd.costUsd),
+          payingUsers: uc[day.slice(0, 10)]?.payingUsers ?? null,
+          runs: rs.dailyStats[day.slice(0, 10)]?.TOTAL ?? null
+        }))
+      };
+    } catch (error62) {
+      notes.push(`Live Console reads failed (${error62 instanceof ToolError ? error62.code : "error"}); local facts only.`);
+    }
+  } else notes.push(`Live Console reads skipped: no fresh session (${state}). Local facts only.`);
+  const rivals = [];
+  for (const ref of (config2.rivals[actor.name] ?? []).slice(0, 5)) {
+    try {
+      const detail = await wrapApi(() => ctx.api().actor(ref));
+      rivals.push({ actor: ref, users7d: detail.stats?.totalUsers7Days ?? null });
+    } catch {
+      rivals.push({ actor: ref, users7d: null });
+    }
+  }
+  if (!config2.rivals[actor.name]) notes.push('No rivals listed for this actor in ~/.apify-insights/watch/config.json ("rivals": {"<actor name>": ["username/name"]}).');
+  const lines = [
+    `${actor.name}: ${open3.length ? open3.map((a) => `[${a.tier}] ${a.title}`).join(", ") : "no open alerts"}.`,
+    facts ? `7d revenue $${round(facts.w0.v.rev)} vs 8-week median ${facts.baseline == null ? "n/a (under 4 weeks of data)" : `$${round(facts.baseline)}`}; class ${facts.cls}; revenue on ${facts.revenueDays56} of 56 days; ${facts.pool ? "in" : "not in"} the earning pool.` : "No local facts for this actor yet."
+  ];
+  return ok(lines.join("\n"), {
+    ...base,
+    actor: actor.name,
+    open: open3,
+    signalsNow: signals.map((s) => ({ rule: s.rule, tier: s.tier, hold: !!s.hold, title: s.title, evidence: s.evidence })),
+    facts: facts ? {
+      revenue7dUsd: round(facts.w0.v.rev),
+      previous7dUsd: round(facts.w1.v.rev),
+      baselineUsd: round(facts.baseline),
+      baselineWindows: facts.baselineWindows,
+      class: facts.cls,
+      revenueDays56: facts.revenueDays56,
+      revenue56Usd: round(facts.revenue56),
+      peakShare56: round(facts.peakShare56, 3),
+      earningPool: facts.pool,
+      payingUsersThisMonth: facts.payingThis,
+      payingUsersLastMonth: facts.payingLast,
+      ownerRunExclusions: facts.exclusions
+    } : null,
+    weeks,
+    live,
+    rivals,
+    notes: [...notes, "Weeks end at the last Console snapshot; a week marked approximate holds a multi-day gap spread evenly."]
   });
 }
 
@@ -39641,12 +41970,12 @@ function shape(money2) {
   };
 }
 function delta(current, previous) {
-  const pct3 = (a, b) => b !== 0 ? round((a - b) / Math.abs(b) * 100, 1) : null;
+  const pct4 = (a, b) => b !== 0 ? round((a - b) / Math.abs(b) * 100, 1) : null;
   return {
     revenueUsd: round(current.revenueUsd - previous.revenueUsd),
     profitUsd: round(current.profitUsd - previous.profitUsd),
-    revenuePct: pct3(current.revenueUsd, previous.revenueUsd),
-    profitPct: pct3(current.profitUsd, previous.profitUsd)
+    revenuePct: pct4(current.revenueUsd, previous.revenueUsd),
+    profitPct: pct4(current.profitUsd, previous.profitUsd)
   };
 }
 async function moneyOf(ctx, period, audience) {
@@ -39699,56 +42028,6 @@ async function revenueSummary(ctx, args) {
     ...daily ? { daily } : {},
     notes
   });
-}
-
-// src/core/run-days.ts
-function n2(value) {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-function statusCounts(date5, stat3) {
-  const runs = n2(stat3?.TOTAL);
-  if (!runs) return { date: date5, runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
-  const succeeded = n2(stat3?.SUCCEEDED);
-  const aborted2 = n2(stat3?.ABORTED);
-  const timedOut = n2(stat3?.["TIMED-OUT"]);
-  const failed = stat3?.FAILED == null ? Math.max(0, runs - succeeded - aborted2 - timedOut) : n2(stat3.FAILED);
-  return { date: date5, runs, succeeded, failed, timedOut, aborted: aborted2 };
-}
-function problems(counts) {
-  return counts.failed + counts.timedOut;
-}
-function failureRatePct(counts) {
-  return counts.runs ? round(problems(counts) / counts.runs * 100, 1) : null;
-}
-function daysOf(stats, days) {
-  const merged = {};
-  for (const month of stats) Object.assign(merged, month.dailyStats);
-  return days.map((day) => statusCounts(day, merged[day]));
-}
-function totalsOf(days) {
-  const sum = { runs: 0, succeeded: 0, failed: 0, timedOut: 0, aborted: 0 };
-  for (const day of days) {
-    sum.runs += day.runs;
-    sum.succeeded += day.succeeded;
-    sum.failed += day.failed;
-    sum.timedOut += day.timedOut;
-    sum.aborted += day.aborted;
-  }
-  return { ...sum, failureRatePct: failureRatePct(sum) };
-}
-function worstDay(days) {
-  let worst = null;
-  for (const day of days) if (problems(day) > 0 && (!worst || problems(day) >= problems(worst))) worst = day;
-  return worst;
-}
-function problemDays(days) {
-  return days.filter((day) => problems(day) > 0);
-}
-function dayWindow(period, today) {
-  const todayInPeriod = period.to >= today;
-  const months = [...period.months];
-  if (!months.includes(monthOf(today))) months.push(monthOf(today));
-  return { days: daysInRange(period.from, todayInPeriod ? today : period.to), today, todayInPeriod, months };
 }
 
 // src/tools/run-health-days.ts
@@ -39945,7 +42224,7 @@ var runHealthInput = {
   ),
   logs: external_exports.boolean().default(true).describe("With `actor` and `period`: include the last 30 log lines of up to 3 newest failed shared runs.")
 };
-var RULES = {
+var RULES2 = {
   flagged: "Apify has set a notice on the actor (e.g. UNDER_MAINTENANCE); it is pulled from Store search while set.",
   failing: `At least ${MIN_FAILURES} failed or timed-out runs and a ${FAILURE_RATE * 100}%+ failure rate in users' runs over 30 days (aborted runs excluded).`
 };
@@ -39990,7 +42269,7 @@ async function loadMoney(ctx) {
   const month = monthOf(isoDay(ctx.now()));
   const rows = await breakdown(ctx, api, month);
   const t = thresholds(rows, daysElapsed(month, ctx.now()));
-  return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES(t).no_revenue, month }, t, state, api };
+  return { money: { byId: new Map(rows.map((r) => [r.id, r])), noRevenueRule: MONEY_RULES2(t).no_revenue, month }, t, state, api };
 }
 async function runHealthTool(ctx, args) {
   const catalog = await ctx.catalog();
@@ -39998,7 +42277,7 @@ async function runHealthTool(ctx, args) {
   const period = args.period === void 0 ? null : resolvePeriod(args.period, ctx.now());
   const { money: money2, t, state, api } = await loadMoney(ctx);
   const withDays = period && api ? { period, api } : null;
-  const rules = money2 ? { ...RULES, no_revenue: money2.noRevenueRule } : RULES;
+  const rules = money2 ? { ...RULES2, no_revenue: money2.noRevenueRule } : RULES2;
   const notes = [
     "Run results are your users' runs in the last 30 days (public Store stats); your own test runs are not included.",
     "Private actors have no public run stats and are not checked here.",
@@ -40128,8 +42407,8 @@ var READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: tr
 async function logUsage(ctx, tool) {
   if (!ctx.config.usageLog) return;
   try {
-    await mkdir6(ctx.config.home, { recursive: true, mode: 448 });
-    await appendFile(join10(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
+    await mkdir8(ctx.config.home, { recursive: true, mode: 448 });
+    await appendFile2(join12(ctx.config.home, "usage.jsonl"), `${JSON.stringify({ t: new Date(ctx.now()).toISOString(), tool })}
 `, { mode: 384 });
   } catch {
   }
@@ -40278,6 +42557,18 @@ function createServer(ctx) {
     },
     (args, extra) => guarded(ctx, "competitor_benchmark", () => competitorBenchmarkTool(ctx, args), extra)
   );
+  if (ctx.config.watch) {
+    server.registerTool(
+      "decline_watch",
+      {
+        title: "Early-warning alerts (experimental)",
+        description: "Reads the local early-warning job (`apify-insights-mcp watch run`): open PAGE alerts (revenue drop vs the actor's own 8-week median, results per run drop, failure spike, Apify notice, cost above revenue), WATCH items and the latest digest, each with its rule, numbers and next action. Pass `actor` for a drill-down: weekly revenue, runs and failures from local facts, live month-to-date days (up to 3 Console reads) and rivals from config. Read-only.",
+        inputSchema: declineWatchInput,
+        annotations: READ_ONLY
+      },
+      (args, extra) => guarded(ctx, "decline_watch", () => declineWatch(ctx, args), extra)
+    );
+  }
   server.registerResource(
     "glossary",
     "apify-insights://glossary",

@@ -29,3 +29,22 @@ Prompts: `morning-brief`, `loss-hunt`, `health-check`, `funnel-check`, `quality-
 - **Portfolio scans**: an actor whose data fails to load is left out and named in the notes, never shown with zeros.
 - A missing value is `null`, with a note saying why. It never means zero.
 - **Cached money**: a finished month may come from the local cache (up to 24 hours old). The notes then say which months and when they were fetched.
+
+## Early warning (experimental)
+
+Off by default. Set `APIFY_INSIGHTS_WATCH=1` in the server's environment to register `decline_watch` and add one line to `daily_brief`; the CLI takes `--experimental` instead.
+
+| Command | Does |
+|---|---|
+| `watch backfill --experimental` | One time: day-level money and runs for the last 63 days, one Console request at a time. |
+| `watch run --experimental` | One snapshot and rule pass. The first run lists existing problems as a silent backlog. |
+| `watch status --experimental` | Last run, errors, open alerts. Exit code 1 when the last run had errors. |
+| `watch snooze <actor> [--rule R4] --days 7 --experimental` | Stops notifications for that actor (it stays in the digest). |
+| `watch replay --experimental --from YYYY-MM-DD [--to ...] [--actor a,b] [--explain actor@day]` | Re-runs the rules over stored data, one run per day, to see when each actor would have paged. |
+| `watch install --experimental [--print] [--times 05:45,09:00,13:00,19:00]` | Writes and loads a LaunchAgent. `--print` only shows it. `watch uninstall` removes it. |
+
+- **PAGE** notifies when new or 50% worse (at most once a day, one reminder after 14 days). **WATCH** and info appear only in the digest.
+- Money is paying-users money. Run counts cover every run of the actor; R4 subtracts your own runs where the run list has them (the list keeps only recent runs, so older windows are not netted).
+- Thresholds: R1 steady actors -35% vs the 8-week median with a $5/week floor; R4 5 failures and a 10% rate (fast path: 5 failures and 25% over 2 days); R7 a $1 loss in 24 hours. They are a starting point to review after 4 weeks.
+- Files live in `~/.apify-insights/watch/` (folders 0700, files 0600). No token is ever written there.
+
